@@ -42,27 +42,22 @@ are out of scope for this paper and belong to the downstream journal paper.**
 
 ---
 
-## Pipeline (Stage 1 — 6 sub-steps)
+## Pipeline (Stage 1 — 4 steps)
 
 ```
-RTL (Ibex)
+RTL (Ibex) + NS31A CSV + prompt template (seq/comb)
     │
     ▼ 1A: parse_rtl.py (pyverilog)
 signals.json
     │
-    ▼ 1B: build_prompt.py
-final_prompt_MODULE.txt
+    ▼ 1B: translate.py (Claude Code CLI)
+    │     inputs: signals.json + prompt template + NS31A CSV
+assertions/MODULE_bind.sv  +  TAR log
     │
-    ▼ 1C: translate.py (Claude Code CLI)
-SVA bind file candidate  +  TAR log
-    │
-    ▼ 1D: validate_compile.py (QuestaSim, max 3 retries)
+    ▼ 1C: validate_compile.py (QuestaSim, max 3 retries)
 compiled bind file
     │
-    ▼ 1E: build_wrapper.py
-assertions/MODULE_bind.sv
-    │
-    ▼ 1F: validate_fpv.py (JasperGold FPV — Proven + non-vacuous)
+    ▼ 1D: validate_fpv.py (JasperGold FPV — Proven + non-vacuous)
 results/step1/MODULE_fpv_baseline.txt
 ```
 
@@ -109,11 +104,9 @@ ai-autotrans-rv/
 ├── scripts/                         ← Python pipeline scripts
 │   ├── run_step1.py                 ← master orchestrator
 │   ├── parse_rtl.py                 ← 1A: pyverilog RTL parser
-│   ├── build_prompt.py              ← 1B: prompt builder
-│   ├── translate.py                 ← 1C: Claude Code CLI translation
-│   ├── validate_compile.py          ← 1D: QuestaSim compile loop
-│   ├── build_wrapper.py             ← 1E: bind wrapper builder
-│   ├── validate_fpv.py              ← 1F: JasperGold FPV baseline
+│   ├── translate.py                 ← 1B: Claude Code CLI translation
+│   ├── validate_compile.py          ← 1C: QuestaSim compile loop
+│   ├── validate_fpv.py              ← 1D: JasperGold FPV baseline
 │   ├── signals/                     ← MODULE_signals.json (gitignored)
 │   └── logs/                        ← MODULE_tar_log.json (TAR data)
 │
