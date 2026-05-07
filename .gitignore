@@ -1,6 +1,6 @@
 .claude/
 CLAUDE.md
-scripts/signals/
+results/signals/*.json
 scripts/final_prompt_*.txt
 **/__pycache__/
 *.log

@@ -107,7 +107,6 @@ ai-autotrans-rv/
 │   ├── translate.py                 ← 1B: Claude Code CLI translation
 │   ├── validate_compile.py          ← 1C: QuestaSim compile loop
 │   ├── validate_fpv.py              ← 1D: JasperGold FPV baseline
-│   ├── signals/                     ← MODULE_signals.json (gitignored)
 │   └── logs/                        ← MODULE_tar_log.json (TAR data)
 │
 ├── rtl/
@@ -120,6 +119,7 @@ ai-autotrans-rv/
 ├── assertions/                      ← SVA bind files (pipeline output)
 │
 ├── results/
+│   ├── signals/                     ← MODULE_signals.json (parser output, gitignored)
 │   └── step1/                       ← FPV reports, vacuity, COV files
 │
 └── errors/
