@@ -44,6 +44,22 @@ Internal signals:
 {{INTERNAL_SIGNALS}}
 
 ================================================================================
+PACKAGE TYPE DEFINITIONS — USE SYMBOLIC NAMES, NOT RAW BIT VALUES
+================================================================================
+The following enum and struct types are used by the signals above.
+These are extracted from ibex_pkg.sv by RV-SigEx.
+
+Rules:
+  - For enum-typed signals: always use symbolic constant names, never raw bit values
+      CORRECT:   priv_mode_i == PRIV_LVL_M
+      INCORRECT: priv_mode_i == 2'b11
+  - For struct-typed signals: use dot notation with the exact field names listed below
+      CORRECT:   csr_pmp_cfg_i[r].lock
+      INCORRECT: csr_pmp_cfg_i[r].lock_bit  (invented name — compile error)
+
+{{PKG_TYPES}}
+
+================================================================================
 NS31A SOURCE ASSERTIONS — TRANSLATE EACH ONE
 ================================================================================
 Each row is one assertion from the NS31A reference processor.
@@ -60,12 +76,16 @@ SIGNAL RULES:
   R2. Signal widths must match — check the width column before using a signal.
   R3. Never concatenate or slice signals unless the NS31A assertion explicitly
       requires a sub-field that maps to a known Ibex bit range.
+  R4. For enum-typed signals: use symbolic constant names from PACKAGE TYPE
+      DEFINITIONS above. Never hardcode raw bit values (e.g., 2'b11).
+  R5. For struct-typed signals: use dot notation with exact field names from
+      PACKAGE TYPE DEFINITIONS above. Never invent or guess field names.
 
 SVA SYNTAX RULES (COMBINATIONAL):
-  R4. FORBIDDEN: @(posedge ...), ##N, $past(), $rose(), $fell(),
+  R6. FORBIDDEN: @(posedge ...), ##N, $past(), $rose(), $fell(),
       disable iff, always_ff, posedge, negedge, clocking blocks.
       Any use of these is a compilation error for this module type.
-  R5. Use concurrent assertion syntax WITHOUT a clocking event:
+  R7. Use concurrent assertion syntax WITHOUT a clocking event:
         property PROP_NAME;
           <boolean expression> |-> <boolean expression>;
         endproperty
@@ -74,31 +94,31 @@ SVA SYNTAX RULES (COMBINATIONAL):
         always_comb begin
           PROP_NAME: assert (<boolean expression>);
         end
-  R6. For pure combinational implication (if A then B must hold now):
+  R8. For pure combinational implication (if A then B must hold now):
         property PROP_NAME;
           <condition> |-> <consequence>;
         endproperty
-  R7. Every property must have both a named property block AND a named assert:
+  R9. Every property must have both a named property block AND a named assert:
         property PROP_NAME; <antecedent> |-> <consequent>; endproperty
         assert property (PROP_NAME);
-  R8. Property names: {{MODULE_SHORT}}_SEC_<N> where N is a sequential integer.
-  R9. Antecedent must be reachable in normal (non-Trojan) operation.
-      If the antecedent can never be true, rewrite it.
-  R10. No $display, $error, or simulation-only constructs inside properties.
+  R10. Property names: {{MODULE_SHORT}}_SEC_<N> where N is a sequential integer.
+  R11. Antecedent must be reachable in normal (non-Trojan) operation.
+       If the antecedent can never be true, rewrite it.
+  R12. No $display, $error, or simulation-only constructs inside properties.
 
 BIND FILE RULES:
-  R11. Port list of the assertion module must match the DUT port list exactly.
+  R13. Port list of the assertion module must match the DUT port list exactly.
        Use (input/output + width + name) for each port.
-  R12. NO clock or reset in the port list (combinational module has neither).
-  R13. Bind statement goes OUTSIDE and AFTER the assertion module:
+  R14. NO clock or reset in the port list (combinational module has neither).
+  R15. Bind statement goes OUTSIDE and AFTER the assertion module:
          bind {{MODULE_NAME}} {{MODULE_NAME}}_assertions u_{{MODULE_SHORT}}_assert (.*);
-  R14. The (.*) wildcard connects all ports by name — valid only if port names
+  R16. The (.*) wildcard connects all ports by name — valid only if port names
        in the assertion module exactly match DUT port names.
 
 UNTRANSLATABLE RULES:
-  R15. If a NS31A signal has no Ibex equivalent: mark status "flagged" in the
+  R17. If a NS31A signal has no Ibex equivalent: mark status "flagged" in the
        JSON log and skip that assertion entirely. Do not guess or approximate.
-  R16. If an assertion references MULTIPLE untranslatable signals: one "flagged"
+  R18. If an assertion references MULTIPLE untranslatable signals: one "flagged"
        entry covers all of them — do not create a partial assertion.
 
 ================================================================================
@@ -109,6 +129,8 @@ Before writing output, mentally verify:
   [ ] Zero uses of @(posedge), ##N, $past(), disable iff — this is combinational
   [ ] Every property has both property block and assert statement
   [ ] Antecedent is reachable (not always false) on clean RTL
+  [ ] Enum comparisons use symbolic names (PRIV_LVL_M), not raw bits (2'b11)
+  [ ] Struct field access uses exact names from PACKAGE TYPE DEFINITIONS
   [ ] Bind statement is outside the module
   [ ] No clock or reset port in the module port list
   [ ] JSON signal count matches assertion count in the Excel input

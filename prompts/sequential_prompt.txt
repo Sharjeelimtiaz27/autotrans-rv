@@ -38,6 +38,22 @@ Internal signals:
 {{INTERNAL_SIGNALS}}
 
 ================================================================================
+PACKAGE TYPE DEFINITIONS — USE SYMBOLIC NAMES, NOT RAW BIT VALUES
+================================================================================
+The following enum and struct types are used by the signals above.
+These are extracted from ibex_pkg.sv by RV-SigEx.
+
+Rules:
+  - For enum-typed signals: always use symbolic constant names, never raw bit values
+      CORRECT:   priv_mode_i == PRIV_LVL_M
+      INCORRECT: priv_mode_i == 2'b11
+  - For struct-typed signals: use dot notation with the exact field names listed below
+      CORRECT:   csr_pmp_cfg_i[r].lock
+      INCORRECT: csr_pmp_cfg_i[r].lock_bit  (invented name — compile error)
+
+{{PKG_TYPES}}
+
+================================================================================
 NS31A SOURCE ASSERTIONS — TRANSLATE EACH ONE
 ================================================================================
 Each row is one assertion from the NS31A reference processor.
@@ -54,37 +70,41 @@ SIGNAL RULES:
   R2. Signal widths must match — check the width column before using a signal.
   R3. Never concatenate or slice signals unless the NS31A assertion explicitly
       requires a sub-field that maps to a known Ibex bit range.
+  R4. For enum-typed signals: use symbolic constant names from PACKAGE TYPE
+      DEFINITIONS above. Never hardcode raw bit values (e.g., 2'b11).
+  R5. For struct-typed signals: use dot notation with exact field names from
+      PACKAGE TYPE DEFINITIONS above. Never invent or guess field names.
 
 SVA SYNTAX RULES:
-  R4. Every property block: @(posedge {{CLOCK}}) disable iff (!{{RESET}})
-  R5. Temporal delay: use ##N (N >= 1). Never use #delay.
-  R6. Previous cycle value: use $past(signal) or $past(signal, N).
-  R7. Implication: use |-> (overlapping) or |=> (non-overlapping) correctly.
+  R6. Every property block: @(posedge {{CLOCK}}) disable iff (!{{RESET}})
+  R7. Temporal delay: use ##N (N >= 1). Never use #delay.
+  R8. Previous cycle value: use $past(signal) or $past(signal, N).
+  R9. Implication: use |-> (overlapping) or |=> (non-overlapping) correctly.
       |->  : consequent starts at same clock cycle as antecedent end
       |=>  : consequent starts one cycle after antecedent end
-  R8. Every property must have both a named property block AND a named assert:
+  R10. Every property must have both a named property block AND a named assert:
         property PROP_NAME; @(posedge {{CLOCK}}) disable iff (!{{RESET}})
           <antecedent> |-> <consequent>;
         endproperty
         assert property (PROP_NAME);
-  R9. Property names: {{MODULE_SHORT}}_SEC_<N> where N is a sequential integer.
-  R10. Antecedent must be reachable in normal (non-Trojan) operation.
+  R11. Property names: {{MODULE_SHORT}}_SEC_<N> where N is a sequential integer.
+  R12. Antecedent must be reachable in normal (non-Trojan) operation.
        If the antecedent can never fire on clean RTL, rewrite it.
-  R11. No $display, $error, or simulation-only constructs inside properties.
+  R13. No $display, $error, or simulation-only constructs inside properties.
 
 BIND FILE RULES:
-  R12. Port list of the assertion module must match the DUT port list exactly.
+  R14. Port list of the assertion module must match the DUT port list exactly.
        Use (input/output + width + name) for each port.
-  R13. Clock and reset must be in the port list.
-  R14. Bind statement goes OUTSIDE and AFTER the assertion module:
+  R15. Clock and reset must be in the port list.
+  R16. Bind statement goes OUTSIDE and AFTER the assertion module:
          bind {{MODULE_NAME}} {{MODULE_NAME}}_assertions u_{{MODULE_SHORT}}_assert (.*);
-  R15. The (.*) wildcard connects all ports by name — valid only if port names
+  R17. The (.*) wildcard connects all ports by name — valid only if port names
        in the assertion module exactly match DUT port names.
 
 UNTRANSLATABLE RULES:
-  R16. If a NS31A signal has no Ibex equivalent: mark status "flagged" in the
+  R18. If a NS31A signal has no Ibex equivalent: mark status "flagged" in the
        JSON log and skip that assertion entirely. Do not guess or approximate.
-  R17. If an assertion references MULTIPLE untranslatable signals: one "flagged"
+  R19. If an assertion references MULTIPLE untranslatable signals: one "flagged"
        entry covers all of them — do not create a partial assertion.
 
 ================================================================================
@@ -96,6 +116,8 @@ Before writing output, mentally verify:
   [ ] Every property has both property block and assert statement
   [ ] No temporal operators on combinational signals without clocking
   [ ] Antecedent is reachable (not always false) on clean RTL
+  [ ] Enum comparisons use symbolic names (PRIV_LVL_M), not raw bits (2'b11)
+  [ ] Struct field access uses exact names from PACKAGE TYPE DEFINITIONS
   [ ] Bind statement is outside the module
   [ ] JSON signal count matches assertion count in the Excel input
 
