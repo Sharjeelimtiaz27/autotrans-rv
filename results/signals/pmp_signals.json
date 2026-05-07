@@ -1,0 +1,180 @@
+{
+  "module": "ibex_pmp",
+  "module_key": "pmp",
+  "type": "combinational",
+  "ports": {
+    "inputs": [
+      {
+        "name": "csr_pmp_cfg_i",
+        "width": "ibex_pkg::pmp_cfg_t[PMPNumRegions]"
+      },
+      {
+        "name": "csr_pmp_addr_i",
+        "width": "PMP_ADDR_MSB:0"
+      },
+      {
+        "name": "csr_pmp_mseccfg_i",
+        "width": "ibex_pkg::pmp_mseccfg_t"
+      },
+      {
+        "name": "debug_mode_i",
+        "width": 1
+      },
+      {
+        "name": "priv_mode_i",
+        "width": "ibex_pkg::priv_lvl_e[PMPNumChan]"
+      },
+      {
+        "name": "pmp_req_addr_i",
+        "width": "PMP_ADDR_MSB:0"
+      },
+      {
+        "name": "pmp_req_type_i",
+        "width": "ibex_pkg::pmp_req_e[PMPNumChan]"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "pmp_req_err_o",
+        "width": "1[PMPNumChan]"
+      }
+    ]
+  },
+  "internals": [
+    {
+      "name": "region_start_addr",
+      "width": "PMP_ADDR_MSB:0"
+    },
+    {
+      "name": "region_addr_mask",
+      "width": "PMP_ADDR_MSB:PMPGranularity+PMP_ADDR_LSB"
+    },
+    {
+      "name": "region_match_gt",
+      "width": "PMPNumChan-1:0"
+    },
+    {
+      "name": "region_match_lt",
+      "width": "PMPNumChan-1:0"
+    },
+    {
+      "name": "region_match_eq",
+      "width": "PMPNumChan-1:0"
+    },
+    {
+      "name": "region_match_all",
+      "width": "PMPNumChan-1:0"
+    },
+    {
+      "name": "region_basic_perm_check",
+      "width": "PMPNumChan-1:0"
+    },
+    {
+      "name": "region_perm_check",
+      "width": "PMPNumChan-1:0"
+    },
+    {
+      "name": "access_fault_check_res",
+      "width": "PMPNumChan-1:0"
+    },
+    {
+      "name": "debug_mode_allowed_access",
+      "width": "PMPNumChan-1:0"
+    },
+    {
+      "name": "unused_sigs",
+      "width": 1
+    },
+    {
+      "name": "unused_csr_pmp_mseccfg_rlb",
+      "width": 1
+    }
+  ],
+  "parameters": [
+    "DmBaseAddr",
+    "DmAddrMask",
+    "PMPGranularity",
+    "PMPNumChan",
+    "PMPNumRegions"
+  ],
+  "pkg_types": {
+    "priv_lvl_e": {
+      "kind": "enum",
+      "base_type": "logic[1:0]",
+      "values": {
+        "PRIV_LVL_M": "2'b11",
+        "PRIV_LVL_H": "2'b10",
+        "PRIV_LVL_S": "2'b01",
+        "PRIV_LVL_U": "2'b00"
+      }
+    },
+    "pmp_req_e": {
+      "kind": "enum",
+      "base_type": "logic [1:0]",
+      "values": {
+        "PMP_ACC_EXEC": "2'b00",
+        "PMP_ACC_WRITE": "2'b01",
+        "PMP_ACC_READ": "2'b10"
+      }
+    },
+    "pmp_cfg_t": {
+      "kind": "struct",
+      "fields": [
+        {
+          "name": "lock",
+          "type": "logic"
+        },
+        {
+          "name": "mode",
+          "type": "pmp_cfg_mode_e"
+        },
+        {
+          "name": "exec",
+          "type": "logic"
+        },
+        {
+          "name": "write",
+          "type": "logic"
+        },
+        {
+          "name": "read",
+          "type": "logic"
+        }
+      ]
+    },
+    "pmp_mseccfg_t": {
+      "kind": "struct",
+      "fields": [
+        {
+          "name": "rlb",
+          "type": "logic"
+        },
+        {
+          "name": "mmwp",
+          "type": "logic"
+        },
+        {
+          "name": "mml",
+          "type": "logic"
+        }
+      ]
+    }
+  },
+  "connectivity": [
+    {
+      "lhs": "unused_sigs",
+      "rhs": "^{region_start_addr[r][PMPGranularity+PMP_ADDR_LSB-1:0],\n                             pmp_req_addr_i[c][PMPGranularity+PMP_ADDR_LSB-1:0]}",
+      "rhs_signals": [
+        "region_start_addr",
+        "pmp_req_addr_i"
+      ]
+    },
+    {
+      "lhs": "unused_csr_pmp_mseccfg_rlb",
+      "rhs": "csr_pmp_mseccfg_i.rlb",
+      "rhs_signals": [
+        "csr_pmp_mseccfg_i"
+      ]
+    }
+  ]
+}

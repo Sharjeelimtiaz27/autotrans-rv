@@ -1,0 +1,409 @@
+{
+  "module": "ibex_load_store_unit",
+  "module_key": "ma",
+  "type": "sequential",
+  "ports": {
+    "inputs": [
+      {
+        "name": "clk_i",
+        "width": 1
+      },
+      {
+        "name": "rst_ni",
+        "width": 1
+      },
+      {
+        "name": "data_gnt_i",
+        "width": 1
+      },
+      {
+        "name": "data_rvalid_i",
+        "width": 1
+      },
+      {
+        "name": "data_bus_err_i",
+        "width": 1
+      },
+      {
+        "name": "data_pmp_err_i",
+        "width": 1
+      },
+      {
+        "name": "data_rdata_i",
+        "width": "MemDataWidth-1:0"
+      },
+      {
+        "name": "lsu_we_i",
+        "width": 1
+      },
+      {
+        "name": "lsu_type_i",
+        "width": 2
+      },
+      {
+        "name": "lsu_wdata_i",
+        "width": 32
+      },
+      {
+        "name": "lsu_sign_ext_i",
+        "width": 1
+      },
+      {
+        "name": "lsu_req_i",
+        "width": 1
+      },
+      {
+        "name": "adder_result_ex_i",
+        "width": 32
+      }
+    ],
+    "outputs": [
+      {
+        "name": "data_req_o",
+        "width": 1
+      },
+      {
+        "name": "data_addr_o",
+        "width": 32
+      },
+      {
+        "name": "data_we_o",
+        "width": 1
+      },
+      {
+        "name": "data_be_o",
+        "width": 4
+      },
+      {
+        "name": "data_wdata_o",
+        "width": "MemDataWidth-1:0"
+      },
+      {
+        "name": "lsu_rdata_o",
+        "width": 32
+      },
+      {
+        "name": "lsu_rdata_valid_o",
+        "width": 1
+      },
+      {
+        "name": "addr_incr_req_o",
+        "width": 1
+      },
+      {
+        "name": "addr_last_o",
+        "width": 32
+      },
+      {
+        "name": "lsu_req_done_o",
+        "width": 1
+      },
+      {
+        "name": "lsu_resp_valid_o",
+        "width": 1
+      },
+      {
+        "name": "load_err_o",
+        "width": 1
+      },
+      {
+        "name": "load_resp_intg_err_o",
+        "width": 1
+      },
+      {
+        "name": "store_err_o",
+        "width": 1
+      },
+      {
+        "name": "store_resp_intg_err_o",
+        "width": 1
+      },
+      {
+        "name": "busy_o",
+        "width": 1
+      },
+      {
+        "name": "perf_load_o",
+        "width": 1
+      },
+      {
+        "name": "perf_store_o",
+        "width": 1
+      }
+    ]
+  },
+  "internals": [
+    {
+      "name": "data_addr",
+      "width": 32
+    },
+    {
+      "name": "data_addr_w_aligned",
+      "width": 32
+    },
+    {
+      "name": "addr_update",
+      "width": 1
+    },
+    {
+      "name": "ctrl_update",
+      "width": 1
+    },
+    {
+      "name": "rdata_update",
+      "width": 1
+    },
+    {
+      "name": "rdata_q",
+      "width": 24
+    },
+    {
+      "name": "rdata_offset_q",
+      "width": 2
+    },
+    {
+      "name": "data_type_q",
+      "width": 2
+    },
+    {
+      "name": "data_sign_ext_q",
+      "width": 1
+    },
+    {
+      "name": "data_we_q",
+      "width": 1
+    },
+    {
+      "name": "data_offset",
+      "width": 2
+    },
+    {
+      "name": "data_be",
+      "width": 4
+    },
+    {
+      "name": "data_wdata",
+      "width": 32
+    },
+    {
+      "name": "data_rdata_ext",
+      "width": 32
+    },
+    {
+      "name": "rdata_w_ext",
+      "width": 32
+    },
+    {
+      "name": "rdata_h_ext",
+      "width": 32
+    },
+    {
+      "name": "rdata_b_ext",
+      "width": 32
+    },
+    {
+      "name": "split_misaligned_access",
+      "width": 1
+    },
+    {
+      "name": "ecc_err",
+      "width": 2
+    },
+    {
+      "name": "data_rdata_buf",
+      "width": "MemDataWidth-1:0"
+    }
+  ],
+  "parameters": [
+    "MemECC",
+    "MemDataWidth"
+  ],
+  "clock": "clk_i",
+  "reset": "rst_ni",
+  "reset_polarity": "active_low",
+  "pkg_types": {},
+  "connectivity": [
+    {
+      "lhs": "data_addr",
+      "rhs": "adder_result_ex_i",
+      "rhs_signals": [
+        "adder_result_ex_i"
+      ]
+    },
+    {
+      "lhs": "data_offset",
+      "rhs": "data_addr[1:0]",
+      "rhs_signals": [
+        "data_addr"
+      ]
+    },
+    {
+      "lhs": "addr_last_d",
+      "rhs": "addr_incr_req_o ? data_addr_w_aligned : data_addr",
+      "rhs_signals": [
+        "addr_incr_req_o",
+        "data_addr_w_aligned",
+        "data_addr"
+      ]
+    },
+    {
+      "lhs": "data_intg_err",
+      "rhs": "|ecc_err",
+      "rhs_signals": [
+        "ecc_err"
+      ]
+    },
+    {
+      "lhs": "data_intg_err",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "split_misaligned_access",
+      "rhs": "((lsu_type_i == 2'b00) && (data_offset != 2'b00)) || \n      ((lsu_type_i == 2'b01) && (data_offset == 2'b11))",
+      "rhs_signals": [
+        "lsu_type_i",
+        "data_offset"
+      ]
+    },
+    {
+      "lhs": "lsu_req_done_o",
+      "rhs": "(lsu_req_i | (ls_fsm_cs != IDLE)) & (ls_fsm_ns == IDLE)",
+      "rhs_signals": [
+        "lsu_req_i"
+      ]
+    },
+    {
+      "lhs": "data_or_pmp_err",
+      "rhs": "lsu_err_q | data_bus_err_i | pmp_err_q",
+      "rhs_signals": [
+        "data_bus_err_i"
+      ]
+    },
+    {
+      "lhs": "lsu_resp_valid_o",
+      "rhs": "(data_rvalid_i | pmp_err_q) & (ls_fsm_cs == IDLE)",
+      "rhs_signals": [
+        "data_rvalid_i"
+      ]
+    },
+    {
+      "lhs": "lsu_rdata_valid_o",
+      "rhs": "(ls_fsm_cs == IDLE) & data_rvalid_i & ~data_or_pmp_err & ~data_we_q & ~data_intg_err",
+      "rhs_signals": [
+        "data_rvalid_i",
+        "data_we_q"
+      ]
+    },
+    {
+      "lhs": "lsu_rdata_o",
+      "rhs": "data_rdata_ext",
+      "rhs_signals": [
+        "data_rdata_ext"
+      ]
+    },
+    {
+      "lhs": "data_addr_w_aligned",
+      "rhs": "{data_addr[31:2], 2'b00}",
+      "rhs_signals": [
+        "data_addr"
+      ]
+    },
+    {
+      "lhs": "data_addr_o",
+      "rhs": "data_addr_w_aligned",
+      "rhs_signals": [
+        "data_addr_w_aligned"
+      ]
+    },
+    {
+      "lhs": "data_we_o",
+      "rhs": "lsu_we_i",
+      "rhs_signals": [
+        "lsu_we_i"
+      ]
+    },
+    {
+      "lhs": "data_be_o",
+      "rhs": "data_be",
+      "rhs_signals": [
+        "data_be"
+      ]
+    },
+    {
+      "lhs": "data_wdata_o",
+      "rhs": "data_wdata",
+      "rhs_signals": [
+        "data_wdata"
+      ]
+    },
+    {
+      "lhs": "addr_last_o",
+      "rhs": "addr_last_q",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "load_err_o",
+      "rhs": "data_or_pmp_err & ~data_we_q & lsu_resp_valid_o",
+      "rhs_signals": [
+        "data_we_q",
+        "lsu_resp_valid_o"
+      ]
+    },
+    {
+      "lhs": "store_err_o",
+      "rhs": "data_or_pmp_err &  data_we_q & lsu_resp_valid_o",
+      "rhs_signals": [
+        "data_we_q",
+        "lsu_resp_valid_o"
+      ]
+    },
+    {
+      "lhs": "load_resp_intg_err_o",
+      "rhs": "data_intg_err & data_rvalid_i & ~data_we_q",
+      "rhs_signals": [
+        "data_rvalid_i",
+        "data_we_q"
+      ]
+    },
+    {
+      "lhs": "store_resp_intg_err_o",
+      "rhs": "data_intg_err & data_rvalid_i & data_we_q",
+      "rhs_signals": [
+        "data_rvalid_i",
+        "data_we_q"
+      ]
+    },
+    {
+      "lhs": "busy_o",
+      "rhs": "(ls_fsm_cs != IDLE)",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "fcov_mis_rvalid_1",
+      "rhs": "ls_fsm_cs inside {WAIT_RVALID_MIS, WAIT_RVALID_MIS_GNTS_DONE} &&\n                                data_rvalid_i",
+      "rhs_signals": [
+        "data_rvalid_i"
+      ]
+    },
+    {
+      "lhs": "fcov_mis_rvalid_2",
+      "rhs": "ls_fsm_cs inside {IDLE} && fcov_mis_2_en_q && data_rvalid_i",
+      "rhs_signals": [
+        "data_rvalid_i"
+      ]
+    },
+    {
+      "lhs": "fcov_mis_2_en_d",
+      "rhs": "fcov_mis_rvalid_2 ? 1'b0            :  \n                           fcov_mis_rvalid_1 ? 1'b1            :  \n                                               fcov_mis_2_en_q",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "fcov_mis_bus_err_1_d",
+      "rhs": "fcov_mis_rvalid_2                   ? 1'b0                 : \n                                fcov_mis_rvalid_1 && data_bus_err_i ? 1'b1                 : \n                                                                      fcov_mis_bus_err_1_q",
+      "rhs_signals": [
+        "data_bus_err_i"
+      ]
+    }
+  ]
+}

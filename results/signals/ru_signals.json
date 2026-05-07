@@ -1,0 +1,473 @@
+{
+  "module": "ibex_wb_stage",
+  "module_key": "ru",
+  "type": "sequential",
+  "ports": {
+    "inputs": [
+      {
+        "name": "clk_i",
+        "width": 1
+      },
+      {
+        "name": "rst_ni",
+        "width": 1
+      },
+      {
+        "name": "en_wb_i",
+        "width": 1
+      },
+      {
+        "name": "instr_type_wb_i",
+        "width": "ibex_pkg::wb_instr_type_e"
+      },
+      {
+        "name": "pc_id_i",
+        "width": 32
+      },
+      {
+        "name": "instr_is_compressed_id_i",
+        "width": 1
+      },
+      {
+        "name": "instr_perf_count_id_i",
+        "width": 1
+      },
+      {
+        "name": "rf_waddr_id_i",
+        "width": 5
+      },
+      {
+        "name": "rf_wdata_id_i",
+        "width": 32
+      },
+      {
+        "name": "rf_we_id_i",
+        "width": 1
+      },
+      {
+        "name": "dummy_instr_id_i",
+        "width": 1
+      },
+      {
+        "name": "rf_wdata_lsu_i",
+        "width": 32
+      },
+      {
+        "name": "rf_we_lsu_i",
+        "width": 1
+      },
+      {
+        "name": "lsu_resp_valid_i",
+        "width": 1
+      },
+      {
+        "name": "lsu_resp_err_i",
+        "width": 1
+      }
+    ],
+    "outputs": [
+      {
+        "name": "ready_wb_o",
+        "width": 1
+      },
+      {
+        "name": "rf_write_wb_o",
+        "width": 1
+      },
+      {
+        "name": "outstanding_load_wb_o",
+        "width": 1
+      },
+      {
+        "name": "outstanding_store_wb_o",
+        "width": 1
+      },
+      {
+        "name": "pc_wb_o",
+        "width": 32
+      },
+      {
+        "name": "perf_instr_ret_wb_o",
+        "width": 1
+      },
+      {
+        "name": "perf_instr_ret_compressed_wb_o",
+        "width": 1
+      },
+      {
+        "name": "perf_instr_ret_wb_spec_o",
+        "width": 1
+      },
+      {
+        "name": "perf_instr_ret_compressed_wb_spec_o",
+        "width": 1
+      },
+      {
+        "name": "rf_wdata_fwd_wb_o",
+        "width": 32
+      },
+      {
+        "name": "rf_waddr_wb_o",
+        "width": 5
+      },
+      {
+        "name": "rf_wdata_wb_o",
+        "width": 32
+      },
+      {
+        "name": "rf_we_wb_o",
+        "width": 1
+      },
+      {
+        "name": "dummy_instr_wb_o",
+        "width": 1
+      },
+      {
+        "name": "instr_done_wb_o",
+        "width": 1
+      }
+    ]
+  },
+  "internals": [
+    {
+      "name": "rf_wdata_wb_mux",
+      "width": 32
+    },
+    {
+      "name": "rf_wdata_wb_mux_we",
+      "width": 2
+    },
+    {
+      "name": "rf_wdata_wb_q",
+      "width": 32
+    },
+    {
+      "name": "rf_we_wb_q",
+      "width": 1
+    },
+    {
+      "name": "rf_waddr_wb_q",
+      "width": 5
+    },
+    {
+      "name": "wb_done",
+      "width": 1
+    },
+    {
+      "name": "wb_valid_q",
+      "width": 1
+    },
+    {
+      "name": "wb_pc_q",
+      "width": 32
+    },
+    {
+      "name": "wb_compressed_q",
+      "width": 1
+    },
+    {
+      "name": "wb_count_q",
+      "width": 1
+    },
+    {
+      "name": "wb_valid_d",
+      "width": 1
+    },
+    {
+      "name": "dummy_instr_wb_q",
+      "width": 1
+    },
+    {
+      "name": "unused_dummy_instr_id",
+      "width": 1
+    },
+    {
+      "name": "unused_clk",
+      "width": 1
+    },
+    {
+      "name": "unused_rst",
+      "width": 1
+    },
+    {
+      "name": "unused_pc_id",
+      "width": 32
+    }
+  ],
+  "parameters": [
+    "ResetAll",
+    "WritebackStage",
+    "DummyInstructions"
+  ],
+  "clock": "clk_i",
+  "reset": "rst_ni",
+  "reset_polarity": "active_low",
+  "pkg_types": {
+    "wb_instr_type_e": {
+      "kind": "enum",
+      "base_type": "logic[1:0]",
+      "values": {
+        "WB_INSTR_LOAD": null,
+        "WB_INSTR_STORE": null,
+        "WB_INSTR_OTHER": null
+      }
+    }
+  },
+  "connectivity": [
+    {
+      "lhs": "wb_valid_d",
+      "rhs": "(en_wb_i & ready_wb_o) | (wb_valid_q & ~wb_done)",
+      "rhs_signals": [
+        "en_wb_i",
+        "ready_wb_o",
+        "wb_valid_q",
+        "wb_done"
+      ]
+    },
+    {
+      "lhs": "wb_done",
+      "rhs": "(wb_instr_type_q == WB_INSTR_OTHER) | lsu_resp_valid_i",
+      "rhs_signals": [
+        "lsu_resp_valid_i"
+      ]
+    },
+    {
+      "lhs": "rf_waddr_wb_o",
+      "rhs": "rf_waddr_wb_q",
+      "rhs_signals": [
+        "rf_waddr_wb_q"
+      ]
+    },
+    {
+      "lhs": "ready_wb_o",
+      "rhs": "~wb_valid_q | wb_done",
+      "rhs_signals": [
+        "wb_valid_q",
+        "wb_done"
+      ]
+    },
+    {
+      "lhs": "rf_write_wb_o",
+      "rhs": "wb_valid_q & (rf_we_wb_q | (wb_instr_type_q == WB_INSTR_LOAD))",
+      "rhs_signals": [
+        "wb_valid_q",
+        "rf_we_wb_q"
+      ]
+    },
+    {
+      "lhs": "outstanding_load_wb_o",
+      "rhs": "wb_valid_q & (wb_instr_type_q == WB_INSTR_LOAD)",
+      "rhs_signals": [
+        "wb_valid_q"
+      ]
+    },
+    {
+      "lhs": "outstanding_store_wb_o",
+      "rhs": "wb_valid_q & (wb_instr_type_q == WB_INSTR_STORE)",
+      "rhs_signals": [
+        "wb_valid_q"
+      ]
+    },
+    {
+      "lhs": "pc_wb_o",
+      "rhs": "wb_pc_q",
+      "rhs_signals": [
+        "wb_pc_q"
+      ]
+    },
+    {
+      "lhs": "instr_done_wb_o",
+      "rhs": "wb_valid_q & wb_done",
+      "rhs_signals": [
+        "wb_valid_q",
+        "wb_done"
+      ]
+    },
+    {
+      "lhs": "perf_instr_ret_wb_spec_o",
+      "rhs": "wb_count_q",
+      "rhs_signals": [
+        "wb_count_q"
+      ]
+    },
+    {
+      "lhs": "perf_instr_ret_compressed_wb_spec_o",
+      "rhs": "perf_instr_ret_wb_spec_o & wb_compressed_q",
+      "rhs_signals": [
+        "perf_instr_ret_wb_spec_o",
+        "wb_compressed_q"
+      ]
+    },
+    {
+      "lhs": "perf_instr_ret_wb_o",
+      "rhs": "instr_done_wb_o & wb_count_q &\n                                                 ~(lsu_resp_valid_i & lsu_resp_err_i)",
+      "rhs_signals": [
+        "instr_done_wb_o",
+        "wb_count_q",
+        "lsu_resp_valid_i",
+        "lsu_resp_err_i"
+      ]
+    },
+    {
+      "lhs": "perf_instr_ret_compressed_wb_o",
+      "rhs": "perf_instr_ret_wb_o & wb_compressed_q",
+      "rhs_signals": [
+        "perf_instr_ret_wb_o",
+        "wb_compressed_q"
+      ]
+    },
+    {
+      "lhs": "rf_wdata_fwd_wb_o",
+      "rhs": "rf_wdata_wb_q",
+      "rhs_signals": [
+        "rf_wdata_wb_q"
+      ]
+    },
+    {
+      "lhs": "dummy_instr_wb_o",
+      "rhs": "dummy_instr_wb_q",
+      "rhs_signals": [
+        "dummy_instr_wb_q"
+      ]
+    },
+    {
+      "lhs": "unused_dummy_instr_id",
+      "rhs": "dummy_instr_id_i",
+      "rhs_signals": [
+        "dummy_instr_id_i"
+      ]
+    },
+    {
+      "lhs": "dummy_instr_wb_o",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "rf_waddr_wb_o",
+      "rhs": "rf_waddr_id_i",
+      "rhs_signals": [
+        "rf_waddr_id_i"
+      ]
+    },
+    {
+      "lhs": "dummy_instr_wb_o",
+      "rhs": "dummy_instr_id_i",
+      "rhs_signals": [
+        "dummy_instr_id_i"
+      ]
+    },
+    {
+      "lhs": "perf_instr_ret_wb_spec_o",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "perf_instr_ret_compressed_wb_spec_o",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "perf_instr_ret_wb_o",
+      "rhs": "instr_perf_count_id_i & en_wb_i &\n                                                 ~(lsu_resp_valid_i & lsu_resp_err_i)",
+      "rhs_signals": [
+        "instr_perf_count_id_i",
+        "en_wb_i",
+        "lsu_resp_valid_i",
+        "lsu_resp_err_i"
+      ]
+    },
+    {
+      "lhs": "perf_instr_ret_compressed_wb_o",
+      "rhs": "perf_instr_ret_wb_o & instr_is_compressed_id_i",
+      "rhs_signals": [
+        "perf_instr_ret_wb_o",
+        "instr_is_compressed_id_i"
+      ]
+    },
+    {
+      "lhs": "ready_wb_o",
+      "rhs": "1'b1",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "unused_clk",
+      "rhs": "clk_i",
+      "rhs_signals": [
+        "clk_i"
+      ]
+    },
+    {
+      "lhs": "unused_rst",
+      "rhs": "rst_ni",
+      "rhs_signals": [
+        "rst_ni"
+      ]
+    },
+    {
+      "lhs": "unused_instr_type_wb",
+      "rhs": "instr_type_wb_i",
+      "rhs_signals": [
+        "instr_type_wb_i"
+      ]
+    },
+    {
+      "lhs": "unused_pc_id",
+      "rhs": "pc_id_i",
+      "rhs_signals": [
+        "pc_id_i"
+      ]
+    },
+    {
+      "lhs": "unused_dummy_instr_id",
+      "rhs": "dummy_instr_id_i",
+      "rhs_signals": [
+        "dummy_instr_id_i"
+      ]
+    },
+    {
+      "lhs": "outstanding_load_wb_o",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "outstanding_store_wb_o",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "pc_wb_o",
+      "rhs": "'0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "rf_write_wb_o",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "rf_wdata_fwd_wb_o",
+      "rhs": "32'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "instr_done_wb_o",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "rf_wdata_wb_o",
+      "rhs": "({32{rf_wdata_wb_mux_we[0]}} & rf_wdata_wb_mux[0]) |\n                         ({32{rf_wdata_wb_mux_we[1]}} & rf_wdata_wb_mux[1])",
+      "rhs_signals": [
+        "rf_wdata_wb_mux_we",
+        "rf_wdata_wb_mux"
+      ]
+    },
+    {
+      "lhs": "rf_we_wb_o",
+      "rhs": "|rf_wdata_wb_mux_we",
+      "rhs_signals": [
+        "rf_wdata_wb_mux_we"
+      ]
+    }
+  ]
+}

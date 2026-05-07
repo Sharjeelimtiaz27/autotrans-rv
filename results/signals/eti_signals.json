@@ -1,0 +1,843 @@
+{
+  "module": "ibex_controller",
+  "module_key": "eti",
+  "type": "sequential",
+  "ports": {
+    "inputs": [
+      {
+        "name": "clk_i",
+        "width": 1
+      },
+      {
+        "name": "rst_ni",
+        "width": 1
+      },
+      {
+        "name": "illegal_insn_i",
+        "width": 1
+      },
+      {
+        "name": "ecall_insn_i",
+        "width": 1
+      },
+      {
+        "name": "mret_insn_i",
+        "width": 1
+      },
+      {
+        "name": "dret_insn_i",
+        "width": 1
+      },
+      {
+        "name": "wfi_insn_i",
+        "width": 1
+      },
+      {
+        "name": "ebrk_insn_i",
+        "width": 1
+      },
+      {
+        "name": "csr_pipe_flush_i",
+        "width": 1
+      },
+      {
+        "name": "instr_valid_i",
+        "width": 1
+      },
+      {
+        "name": "instr_i",
+        "width": 32
+      },
+      {
+        "name": "instr_compressed_i",
+        "width": 16
+      },
+      {
+        "name": "instr_is_compressed_i",
+        "width": 1
+      },
+      {
+        "name": "instr_bp_taken_i",
+        "width": 1
+      },
+      {
+        "name": "instr_fetch_err_i",
+        "width": 1
+      },
+      {
+        "name": "instr_fetch_err_plus2_i",
+        "width": 1
+      },
+      {
+        "name": "pc_id_i",
+        "width": 32
+      },
+      {
+        "name": "instr_exec_i",
+        "width": 1
+      },
+      {
+        "name": "lsu_addr_last_i",
+        "width": 32
+      },
+      {
+        "name": "load_err_i",
+        "width": 1
+      },
+      {
+        "name": "store_err_i",
+        "width": 1
+      },
+      {
+        "name": "mem_resp_intg_err_i",
+        "width": 1
+      },
+      {
+        "name": "branch_set_i",
+        "width": 1
+      },
+      {
+        "name": "branch_not_set_i",
+        "width": 1
+      },
+      {
+        "name": "jump_set_i",
+        "width": 1
+      },
+      {
+        "name": "csr_mstatus_mie_i",
+        "width": 1
+      },
+      {
+        "name": "irq_pending_i",
+        "width": 1
+      },
+      {
+        "name": "irqs_i",
+        "width": "ibex_pkg::irqs_t"
+      },
+      {
+        "name": "irq_nm_ext_i",
+        "width": 1
+      },
+      {
+        "name": "debug_req_i",
+        "width": 1
+      },
+      {
+        "name": "debug_single_step_i",
+        "width": 1
+      },
+      {
+        "name": "debug_ebreakm_i",
+        "width": 1
+      },
+      {
+        "name": "debug_ebreaku_i",
+        "width": 1
+      },
+      {
+        "name": "trigger_match_i",
+        "width": 1
+      },
+      {
+        "name": "priv_mode_i",
+        "width": "ibex_pkg::priv_lvl_e"
+      },
+      {
+        "name": "stall_id_i",
+        "width": 1
+      },
+      {
+        "name": "stall_wb_i",
+        "width": 1
+      },
+      {
+        "name": "ready_wb_i",
+        "width": 1
+      }
+    ],
+    "outputs": [
+      {
+        "name": "ctrl_busy_o",
+        "width": 1
+      },
+      {
+        "name": "instr_valid_clear_o",
+        "width": 1
+      },
+      {
+        "name": "id_in_ready_o",
+        "width": 1
+      },
+      {
+        "name": "controller_run_o",
+        "width": 1
+      },
+      {
+        "name": "instr_req_o",
+        "width": 1
+      },
+      {
+        "name": "pc_set_o",
+        "width": 1
+      },
+      {
+        "name": "pc_mux_o",
+        "width": "ibex_pkg::pc_sel_e"
+      },
+      {
+        "name": "nt_branch_mispredict_o",
+        "width": 1
+      },
+      {
+        "name": "exc_pc_mux_o",
+        "width": "ibex_pkg::exc_pc_sel_e"
+      },
+      {
+        "name": "exc_cause_o",
+        "width": "ibex_pkg::exc_cause_t"
+      },
+      {
+        "name": "wb_exception_o",
+        "width": 1
+      },
+      {
+        "name": "id_exception_o",
+        "width": 1
+      },
+      {
+        "name": "nmi_mode_o",
+        "width": 1
+      },
+      {
+        "name": "debug_cause_o",
+        "width": "ibex_pkg::dbg_cause_e"
+      },
+      {
+        "name": "debug_csr_save_o",
+        "width": 1
+      },
+      {
+        "name": "debug_mode_o",
+        "width": 1
+      },
+      {
+        "name": "debug_mode_entering_o",
+        "width": 1
+      },
+      {
+        "name": "csr_save_if_o",
+        "width": 1
+      },
+      {
+        "name": "csr_save_id_o",
+        "width": 1
+      },
+      {
+        "name": "csr_save_wb_o",
+        "width": 1
+      },
+      {
+        "name": "csr_restore_mret_id_o",
+        "width": 1
+      },
+      {
+        "name": "csr_restore_dret_id_o",
+        "width": 1
+      },
+      {
+        "name": "csr_save_cause_o",
+        "width": 1
+      },
+      {
+        "name": "csr_mtval_o",
+        "width": 32
+      },
+      {
+        "name": "flush_id_o",
+        "width": 1
+      },
+      {
+        "name": "perf_jump_o",
+        "width": 1
+      },
+      {
+        "name": "perf_tbranch_o",
+        "width": 1
+      }
+    ]
+  },
+  "internals": [
+    {
+      "name": "instr_fetch_err_prio",
+      "width": 1
+    },
+    {
+      "name": "illegal_insn_prio",
+      "width": 1
+    },
+    {
+      "name": "ecall_insn_prio",
+      "width": 1
+    },
+    {
+      "name": "ebrk_insn_prio",
+      "width": 1
+    },
+    {
+      "name": "store_err_prio",
+      "width": 1
+    },
+    {
+      "name": "load_err_prio",
+      "width": 1
+    },
+    {
+      "name": "stall",
+      "width": 1
+    },
+    {
+      "name": "halt_if",
+      "width": 1
+    },
+    {
+      "name": "retain_id",
+      "width": 1
+    },
+    {
+      "name": "flush_id",
+      "width": 1
+    },
+    {
+      "name": "exc_req_lsu",
+      "width": 1
+    },
+    {
+      "name": "special_req",
+      "width": 1
+    },
+    {
+      "name": "special_req_pc_change",
+      "width": 1
+    },
+    {
+      "name": "special_req_flush_only",
+      "width": 1
+    },
+    {
+      "name": "do_single_step_d",
+      "width": 1
+    },
+    {
+      "name": "do_single_step_q",
+      "width": 1
+    },
+    {
+      "name": "enter_debug_mode_prio_d",
+      "width": 1
+    },
+    {
+      "name": "enter_debug_mode_prio_q",
+      "width": 1
+    },
+    {
+      "name": "enter_debug_mode",
+      "width": 1
+    },
+    {
+      "name": "ebreak_into_debug",
+      "width": 1
+    },
+    {
+      "name": "irq_enabled",
+      "width": 1
+    },
+    {
+      "name": "handle_irq",
+      "width": 1
+    },
+    {
+      "name": "id_wb_pending",
+      "width": 1
+    },
+    {
+      "name": "irq_nm",
+      "width": 1
+    },
+    {
+      "name": "irq_nm_int",
+      "width": 1
+    },
+    {
+      "name": "irq_nm_int_mtval",
+      "width": 32
+    },
+    {
+      "name": "mfip_id",
+      "width": 4
+    },
+    {
+      "name": "unused_irq_timer",
+      "width": 1
+    },
+    {
+      "name": "ecall_insn",
+      "width": 1
+    },
+    {
+      "name": "mret_insn",
+      "width": 1
+    },
+    {
+      "name": "dret_insn",
+      "width": 1
+    },
+    {
+      "name": "wfi_insn",
+      "width": 1
+    },
+    {
+      "name": "ebrk_insn",
+      "width": 1
+    },
+    {
+      "name": "csr_pipe_flush",
+      "width": 1
+    },
+    {
+      "name": "instr_fetch_err",
+      "width": 1
+    },
+    {
+      "name": "entering_nmi",
+      "width": 1
+    },
+    {
+      "name": "unused_mem_resp_intg_err_i",
+      "width": 1
+    },
+    {
+      "name": "rvfi_flush_next",
+      "width": 1
+    }
+  ],
+  "parameters": [
+    "WritebackStage",
+    "BranchPredictor",
+    "MemECC"
+  ],
+  "clock": "clk_i",
+  "reset": "rst_ni",
+  "reset_polarity": "active_low",
+  "pkg_types": {
+    "priv_lvl_e": {
+      "kind": "enum",
+      "base_type": "logic[1:0]",
+      "values": {
+        "PRIV_LVL_M": "2'b11",
+        "PRIV_LVL_H": "2'b10",
+        "PRIV_LVL_S": "2'b01",
+        "PRIV_LVL_U": "2'b00"
+      }
+    },
+    "pc_sel_e": {
+      "kind": "enum",
+      "base_type": "logic [2:0]",
+      "values": {
+        "PC_BOOT": null,
+        "PC_JUMP": null,
+        "PC_EXC": null,
+        "PC_ERET": null,
+        "PC_DRET": null,
+        "PC_BP": null
+      }
+    },
+    "exc_pc_sel_e": {
+      "kind": "enum",
+      "base_type": "logic [1:0]",
+      "values": {
+        "EXC_PC_EXC": null,
+        "EXC_PC_IRQ": null,
+        "EXC_PC_DBD": null,
+        "EXC_PC_DBG_EXC": null
+      }
+    },
+    "dbg_cause_e": {
+      "kind": "enum",
+      "base_type": "logic [2:0]",
+      "values": {
+        "DBG_CAUSE_NONE": "3'h0",
+        "DBG_CAUSE_EBREAK": "3'h1",
+        "DBG_CAUSE_TRIGGER": "3'h2",
+        "DBG_CAUSE_HALTREQ": "3'h3",
+        "DBG_CAUSE_STEP": "3'h4"
+      }
+    },
+    "irqs_t": {
+      "kind": "struct",
+      "fields": [
+        {
+          "name": "irq_software",
+          "type": "logic"
+        },
+        {
+          "name": "irq_timer",
+          "type": "logic"
+        },
+        {
+          "name": "irq_external",
+          "type": "logic"
+        },
+        {
+          "name": "irq_fast",
+          "type": "logic [14:0]"
+        }
+      ]
+    },
+    "exc_cause_t": {
+      "kind": "struct",
+      "fields": [
+        {
+          "name": "irq_int",
+          "type": "logic"
+        },
+        {
+          "name": "irq_ext",
+          "type": "logic"
+        },
+        {
+          "name": "lower_cause",
+          "type": "logic [4:0]"
+        }
+      ]
+    }
+  },
+  "connectivity": [
+    {
+      "lhs": "load_err_d",
+      "rhs": "load_err_i",
+      "rhs_signals": [
+        "load_err_i"
+      ]
+    },
+    {
+      "lhs": "store_err_d",
+      "rhs": "store_err_i",
+      "rhs_signals": [
+        "store_err_i"
+      ]
+    },
+    {
+      "lhs": "ecall_insn",
+      "rhs": "ecall_insn_i      & instr_valid_i",
+      "rhs_signals": [
+        "ecall_insn_i",
+        "instr_valid_i"
+      ]
+    },
+    {
+      "lhs": "mret_insn",
+      "rhs": "mret_insn_i       & instr_valid_i",
+      "rhs_signals": [
+        "mret_insn_i",
+        "instr_valid_i"
+      ]
+    },
+    {
+      "lhs": "dret_insn",
+      "rhs": "dret_insn_i       & instr_valid_i",
+      "rhs_signals": [
+        "dret_insn_i",
+        "instr_valid_i"
+      ]
+    },
+    {
+      "lhs": "wfi_insn",
+      "rhs": "wfi_insn_i        & instr_valid_i",
+      "rhs_signals": [
+        "wfi_insn_i",
+        "instr_valid_i"
+      ]
+    },
+    {
+      "lhs": "ebrk_insn",
+      "rhs": "ebrk_insn_i       & instr_valid_i",
+      "rhs_signals": [
+        "ebrk_insn_i",
+        "instr_valid_i"
+      ]
+    },
+    {
+      "lhs": "csr_pipe_flush",
+      "rhs": "csr_pipe_flush_i  & instr_valid_i",
+      "rhs_signals": [
+        "csr_pipe_flush_i",
+        "instr_valid_i"
+      ]
+    },
+    {
+      "lhs": "instr_fetch_err",
+      "rhs": "instr_fetch_err_i & instr_valid_i",
+      "rhs_signals": [
+        "instr_fetch_err_i",
+        "instr_valid_i"
+      ]
+    },
+    {
+      "lhs": "illegal_insn_d",
+      "rhs": "illegal_insn_i & (ctrl_fsm_cs != FLUSH)",
+      "rhs_signals": [
+        "illegal_insn_i"
+      ]
+    },
+    {
+      "lhs": "exc_req_d",
+      "rhs": "(ecall_insn | ebrk_insn | illegal_insn_d | instr_fetch_err) &\n                     (ctrl_fsm_cs != FLUSH)",
+      "rhs_signals": [
+        "ecall_insn",
+        "ebrk_insn",
+        "instr_fetch_err"
+      ]
+    },
+    {
+      "lhs": "exc_req_lsu",
+      "rhs": "store_err_i | load_err_i",
+      "rhs_signals": [
+        "store_err_i",
+        "load_err_i"
+      ]
+    },
+    {
+      "lhs": "id_exception_o",
+      "rhs": "exc_req_d & ~wb_exception_o",
+      "rhs_signals": [
+        "wb_exception_o"
+      ]
+    },
+    {
+      "lhs": "special_req_flush_only",
+      "rhs": "wfi_insn | csr_pipe_flush",
+      "rhs_signals": [
+        "wfi_insn",
+        "csr_pipe_flush"
+      ]
+    },
+    {
+      "lhs": "special_req_pc_change",
+      "rhs": "mret_insn | dret_insn | exc_req_d | exc_req_lsu",
+      "rhs_signals": [
+        "mret_insn",
+        "dret_insn",
+        "exc_req_lsu"
+      ]
+    },
+    {
+      "lhs": "special_req",
+      "rhs": "special_req_pc_change | special_req_flush_only",
+      "rhs_signals": [
+        "special_req_pc_change",
+        "special_req_flush_only"
+      ]
+    },
+    {
+      "lhs": "id_wb_pending",
+      "rhs": "instr_valid_i | ~ready_wb_i",
+      "rhs_signals": [
+        "instr_valid_i",
+        "ready_wb_i"
+      ]
+    },
+    {
+      "lhs": "wb_exception_o",
+      "rhs": "load_err_q | store_err_q | load_err_i | store_err_i",
+      "rhs_signals": [
+        "load_err_i",
+        "store_err_i"
+      ]
+    },
+    {
+      "lhs": "wb_exception_o",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "entering_nmi",
+      "rhs": "nmi_mode_d & ~nmi_mode_q",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "mem_resp_intg_err_irq_pending_d",
+      "rhs": "(mem_resp_intg_err_irq_pending_q & ~mem_resp_intg_err_irq_clear) | mem_resp_intg_err_irq_set",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "irq_nm_int",
+      "rhs": "mem_resp_intg_err_irq_pending_q",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "irq_nm_int_cause",
+      "rhs": "NMI_INT_CAUSE_ECC",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "irq_nm_int_mtval",
+      "rhs": "mem_resp_intg_err_addr_q",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "unused_mem_resp_intg_err_i",
+      "rhs": "mem_resp_intg_err_i",
+      "rhs_signals": [
+        "mem_resp_intg_err_i"
+      ]
+    },
+    {
+      "lhs": "irq_nm_int",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "irq_nm_int_cause",
+      "rhs": "nmi_int_cause_e'(0)",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "irq_nm_int_mtval",
+      "rhs": "'0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "do_single_step_d",
+      "rhs": "instr_valid_i ? ~debug_mode_q & debug_single_step_i : do_single_step_q",
+      "rhs_signals": [
+        "instr_valid_i",
+        "debug_single_step_i",
+        "do_single_step_q"
+      ]
+    },
+    {
+      "lhs": "enter_debug_mode_prio_d",
+      "rhs": "(debug_req_i | do_single_step_d) & ~debug_mode_q",
+      "rhs_signals": [
+        "debug_req_i",
+        "do_single_step_d"
+      ]
+    },
+    {
+      "lhs": "enter_debug_mode",
+      "rhs": "enter_debug_mode_prio_d | (trigger_match_i & ~debug_mode_q)",
+      "rhs_signals": [
+        "enter_debug_mode_prio_d",
+        "trigger_match_i"
+      ]
+    },
+    {
+      "lhs": "ebreak_into_debug",
+      "rhs": "priv_mode_i == PRIV_LVL_M ? debug_ebreakm_i :\n                             priv_mode_i == PRIV_LVL_U ? debug_ebreaku_i :\n                                                         1'b0",
+      "rhs_signals": [
+        "priv_mode_i",
+        "debug_ebreakm_i",
+        "debug_ebreaku_i"
+      ]
+    },
+    {
+      "lhs": "irq_nm",
+      "rhs": "irq_nm_ext_i | irq_nm_int",
+      "rhs_signals": [
+        "irq_nm_ext_i",
+        "irq_nm_int"
+      ]
+    },
+    {
+      "lhs": "irq_enabled",
+      "rhs": "csr_mstatus_mie_i | (priv_mode_i == PRIV_LVL_U)",
+      "rhs_signals": [
+        "csr_mstatus_mie_i",
+        "priv_mode_i"
+      ]
+    },
+    {
+      "lhs": "handle_irq",
+      "rhs": "~debug_mode_q & ~debug_single_step_i & ~nmi_mode_q &\n      (irq_nm | (irq_pending_i & irq_enabled))",
+      "rhs_signals": [
+        "debug_single_step_i",
+        "irq_nm",
+        "irq_pending_i",
+        "irq_enabled"
+      ]
+    },
+    {
+      "lhs": "unused_irq_timer",
+      "rhs": "irqs_i.irq_timer",
+      "rhs_signals": [
+        "irqs_i"
+      ]
+    },
+    {
+      "lhs": "debug_cause_d",
+      "rhs": "trigger_match_i                    ? DBG_CAUSE_TRIGGER :\n                         ebrk_insn_prio & ebreak_into_debug ? DBG_CAUSE_EBREAK  :\n                         debug_req_i                        ? DBG_CAUSE_HALTREQ :\n                         do_single_step_d                   ? DBG_CAUSE_STEP    :\n                                                              DBG_CAUSE_NONE",
+      "rhs_signals": [
+        "trigger_match_i",
+        "ebrk_insn_prio",
+        "ebreak_into_debug",
+        "debug_req_i",
+        "do_single_step_d"
+      ]
+    },
+    {
+      "lhs": "debug_cause_o",
+      "rhs": "debug_cause_q",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "flush_id_o",
+      "rhs": "flush_id",
+      "rhs_signals": [
+        "flush_id"
+      ]
+    },
+    {
+      "lhs": "debug_mode_o",
+      "rhs": "debug_mode_q",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "nmi_mode_o",
+      "rhs": "nmi_mode_q",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "stall",
+      "rhs": "stall_id_i | stall_wb_i",
+      "rhs_signals": [
+        "stall_id_i",
+        "stall_wb_i"
+      ]
+    },
+    {
+      "lhs": "id_in_ready_o",
+      "rhs": "~stall & ~halt_if & ~retain_id",
+      "rhs_signals": [
+        "stall",
+        "halt_if",
+        "retain_id"
+      ]
+    },
+    {
+      "lhs": "instr_valid_clear_o",
+      "rhs": "~(stall | retain_id) | flush_id",
+      "rhs_signals": [
+        "stall",
+        "retain_id",
+        "flush_id"
+      ]
+    },
+    {
+      "lhs": "rvfi_flush_next",
+      "rhs": "ctrl_fsm_ns == FLUSH",
+      "rhs_signals": []
+    }
+  ]
+}

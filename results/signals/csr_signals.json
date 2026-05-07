@@ -1,0 +1,1625 @@
+{
+  "module": "ibex_cs_registers",
+  "module_key": "csr",
+  "type": "sequential",
+  "ports": {
+    "inputs": [
+      {
+        "name": "clk_i",
+        "width": 1
+      },
+      {
+        "name": "rst_ni",
+        "width": 1
+      },
+      {
+        "name": "hart_id_i",
+        "width": 32
+      },
+      {
+        "name": "csr_mtvec_init_i",
+        "width": 1
+      },
+      {
+        "name": "boot_addr_i",
+        "width": 32
+      },
+      {
+        "name": "csr_access_i",
+        "width": 1
+      },
+      {
+        "name": "csr_addr_i",
+        "width": "ibex_pkg::csr_num_e"
+      },
+      {
+        "name": "csr_wdata_i",
+        "width": 32
+      },
+      {
+        "name": "csr_op_i",
+        "width": "ibex_pkg::csr_op_e"
+      },
+      {
+        "name": "csr_op_en_i",
+        "width": 1
+      },
+      {
+        "name": "irq_software_i",
+        "width": 1
+      },
+      {
+        "name": "irq_timer_i",
+        "width": 1
+      },
+      {
+        "name": "irq_external_i",
+        "width": 1
+      },
+      {
+        "name": "irq_fast_i",
+        "width": 15
+      },
+      {
+        "name": "nmi_mode_i",
+        "width": 1
+      },
+      {
+        "name": "debug_mode_i",
+        "width": 1
+      },
+      {
+        "name": "debug_mode_entering_i",
+        "width": 1
+      },
+      {
+        "name": "debug_cause_i",
+        "width": "ibex_pkg::dbg_cause_e"
+      },
+      {
+        "name": "debug_csr_save_i",
+        "width": 1
+      },
+      {
+        "name": "pc_if_i",
+        "width": 32
+      },
+      {
+        "name": "pc_id_i",
+        "width": 32
+      },
+      {
+        "name": "pc_wb_i",
+        "width": 32
+      },
+      {
+        "name": "ic_scr_key_valid_i",
+        "width": 1
+      },
+      {
+        "name": "csr_save_if_i",
+        "width": 1
+      },
+      {
+        "name": "csr_save_id_i",
+        "width": 1
+      },
+      {
+        "name": "csr_save_wb_i",
+        "width": 1
+      },
+      {
+        "name": "csr_restore_mret_i",
+        "width": 1
+      },
+      {
+        "name": "csr_restore_dret_i",
+        "width": 1
+      },
+      {
+        "name": "csr_save_cause_i",
+        "width": 1
+      },
+      {
+        "name": "csr_mcause_i",
+        "width": "ibex_pkg::exc_cause_t"
+      },
+      {
+        "name": "csr_mtval_i",
+        "width": 32
+      },
+      {
+        "name": "instr_ret_i",
+        "width": 1
+      },
+      {
+        "name": "instr_ret_compressed_i",
+        "width": 1
+      },
+      {
+        "name": "instr_ret_spec_i",
+        "width": 1
+      },
+      {
+        "name": "instr_ret_compressed_spec_i",
+        "width": 1
+      },
+      {
+        "name": "iside_wait_i",
+        "width": 1
+      },
+      {
+        "name": "jump_i",
+        "width": 1
+      },
+      {
+        "name": "branch_i",
+        "width": 1
+      },
+      {
+        "name": "branch_taken_i",
+        "width": 1
+      },
+      {
+        "name": "mem_load_i",
+        "width": 1
+      },
+      {
+        "name": "mem_store_i",
+        "width": 1
+      },
+      {
+        "name": "dside_wait_i",
+        "width": 1
+      },
+      {
+        "name": "mul_wait_i",
+        "width": 1
+      },
+      {
+        "name": "div_wait_i",
+        "width": 1
+      }
+    ],
+    "outputs": [
+      {
+        "name": "priv_mode_id_o",
+        "width": "ibex_pkg::priv_lvl_e"
+      },
+      {
+        "name": "priv_mode_lsu_o",
+        "width": "ibex_pkg::priv_lvl_e"
+      },
+      {
+        "name": "csr_mstatus_tw_o",
+        "width": 1
+      },
+      {
+        "name": "csr_mtvec_o",
+        "width": 32
+      },
+      {
+        "name": "csr_rdata_o",
+        "width": 32
+      },
+      {
+        "name": "irq_pending_o",
+        "width": 1
+      },
+      {
+        "name": "irqs_o",
+        "width": "ibex_pkg::irqs_t"
+      },
+      {
+        "name": "csr_mstatus_mie_o",
+        "width": 1
+      },
+      {
+        "name": "csr_mepc_o",
+        "width": 32
+      },
+      {
+        "name": "csr_mtval_o",
+        "width": 32
+      },
+      {
+        "name": "csr_pmp_cfg_o",
+        "width": "ibex_pkg::pmp_cfg_t[PMPNumRegions]"
+      },
+      {
+        "name": "csr_pmp_addr_o",
+        "width": "PMP_ADDR_MSB:0"
+      },
+      {
+        "name": "csr_pmp_mseccfg_o",
+        "width": "ibex_pkg::pmp_mseccfg_t"
+      },
+      {
+        "name": "csr_depc_o",
+        "width": 32
+      },
+      {
+        "name": "debug_single_step_o",
+        "width": 1
+      },
+      {
+        "name": "debug_ebreakm_o",
+        "width": 1
+      },
+      {
+        "name": "debug_ebreaku_o",
+        "width": 1
+      },
+      {
+        "name": "trigger_match_o",
+        "width": 1
+      },
+      {
+        "name": "data_ind_timing_o",
+        "width": 1
+      },
+      {
+        "name": "dummy_instr_en_o",
+        "width": 1
+      },
+      {
+        "name": "dummy_instr_mask_o",
+        "width": 3
+      },
+      {
+        "name": "dummy_instr_seed_en_o",
+        "width": 1
+      },
+      {
+        "name": "dummy_instr_seed_o",
+        "width": 32
+      },
+      {
+        "name": "icache_enable_o",
+        "width": 1
+      },
+      {
+        "name": "csr_shadow_err_o",
+        "width": 1
+      },
+      {
+        "name": "illegal_csr_insn_o",
+        "width": 1
+      },
+      {
+        "name": "double_fault_seen_o",
+        "width": 1
+      }
+    ]
+  },
+  "internals": [
+    {
+      "name": "mie",
+      "width": 1
+    },
+    {
+      "name": "mpie",
+      "width": 1
+    },
+    {
+      "name": "mprv",
+      "width": 1
+    },
+    {
+      "name": "tw",
+      "width": 1
+    },
+    {
+      "name": "zero2",
+      "width": 12
+    },
+    {
+      "name": "ebreakm",
+      "width": 1
+    },
+    {
+      "name": "zero1",
+      "width": 1
+    },
+    {
+      "name": "ebreaks",
+      "width": 1
+    },
+    {
+      "name": "ebreaku",
+      "width": 1
+    },
+    {
+      "name": "stepie",
+      "width": 1
+    },
+    {
+      "name": "stopcount",
+      "width": 1
+    },
+    {
+      "name": "stoptime",
+      "width": 1
+    },
+    {
+      "name": "zero0",
+      "width": 1
+    },
+    {
+      "name": "mprven",
+      "width": 1
+    },
+    {
+      "name": "nmip",
+      "width": 1
+    },
+    {
+      "name": "step",
+      "width": 1
+    },
+    {
+      "name": "double_fault_seen",
+      "width": 1
+    },
+    {
+      "name": "sync_exc_seen",
+      "width": 1
+    },
+    {
+      "name": "dummy_instr_mask",
+      "width": 3
+    },
+    {
+      "name": "dummy_instr_en",
+      "width": 1
+    },
+    {
+      "name": "data_ind_timing",
+      "width": 1
+    },
+    {
+      "name": "icache_enable",
+      "width": 1
+    },
+    {
+      "name": "exception_pc",
+      "width": 32
+    },
+    {
+      "name": "mstatus_err",
+      "width": 1
+    },
+    {
+      "name": "mstatus_en",
+      "width": 1
+    },
+    {
+      "name": "mie_en",
+      "width": 1
+    },
+    {
+      "name": "mscratch_q",
+      "width": 32
+    },
+    {
+      "name": "mscratch_en",
+      "width": 1
+    },
+    {
+      "name": "mepc_en",
+      "width": 1
+    },
+    {
+      "name": "mcause_en",
+      "width": 1
+    },
+    {
+      "name": "mtval_en",
+      "width": 1
+    },
+    {
+      "name": "mtvec_err",
+      "width": 1
+    },
+    {
+      "name": "mtvec_en",
+      "width": 1
+    },
+    {
+      "name": "dcsr_en",
+      "width": 1
+    },
+    {
+      "name": "depc_en",
+      "width": 1
+    },
+    {
+      "name": "dscratch0_q",
+      "width": 32
+    },
+    {
+      "name": "dscratch1_q",
+      "width": 32
+    },
+    {
+      "name": "mstack_en",
+      "width": 1
+    },
+    {
+      "name": "pmp_addr_rdata",
+      "width": 32
+    },
+    {
+      "name": "pmp_cfg_rdata",
+      "width": "PMP_CFG_W-1:0"
+    },
+    {
+      "name": "pmp_csr_err",
+      "width": 1
+    },
+    {
+      "name": "mcountinhibit",
+      "width": 32
+    },
+    {
+      "name": "mcountinhibit_we",
+      "width": 1
+    },
+    {
+      "name": "mhpmcounter",
+      "width": 64
+    },
+    {
+      "name": "mhpmcounter_we",
+      "width": 32
+    },
+    {
+      "name": "mhpmcounterh_we",
+      "width": 32
+    },
+    {
+      "name": "mhpmcounter_incr",
+      "width": 32
+    },
+    {
+      "name": "mhpmevent",
+      "width": 32
+    },
+    {
+      "name": "mhpmcounter_idx",
+      "width": 5
+    },
+    {
+      "name": "unused_mhpmcounter_we_1",
+      "width": 1
+    },
+    {
+      "name": "unused_mhpmcounterh_we_1",
+      "width": 1
+    },
+    {
+      "name": "unused_mhpmcounter_incr_1",
+      "width": 1
+    },
+    {
+      "name": "tselect_rdata",
+      "width": 32
+    },
+    {
+      "name": "tmatch_control_rdata",
+      "width": 32
+    },
+    {
+      "name": "tmatch_value_rdata",
+      "width": 32
+    },
+    {
+      "name": "cpuctrlsts_part_we",
+      "width": 1
+    },
+    {
+      "name": "cpuctrlsts_part_err",
+      "width": 1
+    },
+    {
+      "name": "cpuctrlsts_ic_scr_key_valid_q",
+      "width": 1
+    },
+    {
+      "name": "cpuctrlsts_ic_scr_key_err",
+      "width": 1
+    },
+    {
+      "name": "csr_wdata_int",
+      "width": 32
+    },
+    {
+      "name": "csr_rdata_int",
+      "width": 32
+    },
+    {
+      "name": "csr_we_int",
+      "width": 1
+    },
+    {
+      "name": "csr_wr",
+      "width": 1
+    },
+    {
+      "name": "dbg_csr",
+      "width": 1
+    },
+    {
+      "name": "illegal_csr",
+      "width": 1
+    },
+    {
+      "name": "illegal_csr_priv",
+      "width": 1
+    },
+    {
+      "name": "illegal_csr_dbg",
+      "width": 1
+    },
+    {
+      "name": "illegal_csr_write",
+      "width": 1
+    },
+    {
+      "name": "unused_boot_addr",
+      "width": 8
+    },
+    {
+      "name": "unused_csr_addr",
+      "width": 3
+    },
+    {
+      "name": "csr_addr",
+      "width": "$bits(csr_num_e)-1:0"
+    },
+    {
+      "name": "pmp_mseccfg_we",
+      "width": 1
+    },
+    {
+      "name": "pmp_mseccfg_err",
+      "width": 1
+    },
+    {
+      "name": "pmp_cfg_locked",
+      "width": "PMPNumRegions-1:0"
+    },
+    {
+      "name": "pmp_cfg_wr_suppress",
+      "width": "PMPNumRegions-1:0"
+    },
+    {
+      "name": "pmp_addr",
+      "width": "PMPAddrWidth-1:0"
+    },
+    {
+      "name": "pmp_cfg_we",
+      "width": "PMPNumRegions-1:0"
+    },
+    {
+      "name": "pmp_cfg_err",
+      "width": "PMPNumRegions-1:0"
+    },
+    {
+      "name": "pmp_addr_we",
+      "width": "PMPNumRegions-1:0"
+    },
+    {
+      "name": "pmp_addr_err",
+      "width": "PMPNumRegions-1:0"
+    },
+    {
+      "name": "any_pmp_entry_locked",
+      "width": 1
+    },
+    {
+      "name": "unused_mhpmcounter_next",
+      "width": 64
+    },
+    {
+      "name": "unused_instr_ret_compressed_spec_i",
+      "width": 1
+    },
+    {
+      "name": "unused_mhphcounter_we",
+      "width": "29-MHPMCounterNum-1:0"
+    },
+    {
+      "name": "unused_mhphcounterh_we",
+      "width": "29-MHPMCounterNum-1:0"
+    },
+    {
+      "name": "unused_mhphcounter_incr",
+      "width": "29-MHPMCounterNum-1:0"
+    },
+    {
+      "name": "tmatch_control_d",
+      "width": 1
+    },
+    {
+      "name": "tmatch_control_q",
+      "width": "DbgHwBreakNum-1:0"
+    },
+    {
+      "name": "tmatch_value_d",
+      "width": 32
+    },
+    {
+      "name": "tmatch_value_q",
+      "width": 32
+    },
+    {
+      "name": "selected_tmatch_control",
+      "width": 1
+    },
+    {
+      "name": "selected_tmatch_value",
+      "width": 32
+    },
+    {
+      "name": "tselect_we",
+      "width": 1
+    },
+    {
+      "name": "tmatch_control_we",
+      "width": "DbgHwBreakNum-1:0"
+    },
+    {
+      "name": "tmatch_value_we",
+      "width": "DbgHwBreakNum-1:0"
+    },
+    {
+      "name": "trigger_match",
+      "width": "DbgHwBreakNum-1:0"
+    },
+    {
+      "name": "unused_dit",
+      "width": 1
+    },
+    {
+      "name": "unused_dummy_en",
+      "width": 1
+    },
+    {
+      "name": "unused_dummy_mask",
+      "width": 3
+    },
+    {
+      "name": "unused_icen",
+      "width": 1
+    },
+    {
+      "name": "unused_ic_scr_key_valid",
+      "width": 1
+    }
+  ],
+  "parameters": [
+    "DbgTriggerEn",
+    "DbgHwBreakNum",
+    "DataIndTiming",
+    "DummyInstructions",
+    "ShadowCSR",
+    "ICache",
+    "MHPMCounterNum",
+    "MHPMCounterWidth",
+    "PMPEnable",
+    "PMPGranularity",
+    "PMPNumRegions",
+    "PMPRstCfg",
+    "PMPRstAddr",
+    "PMPRstMsecCfg",
+    "RV32E",
+    "RV32M",
+    "RV32B",
+    "CsrMvendorId",
+    "CsrMimpId"
+  ],
+  "clock": "clk_i",
+  "reset": "rst_ni",
+  "reset_polarity": "active_low",
+  "pkg_types": {
+    "csr_op_e": {
+      "kind": "enum",
+      "base_type": "logic [1:0]",
+      "values": {
+        "CSR_OP_READ": null,
+        "CSR_OP_WRITE": null,
+        "CSR_OP_SET": null,
+        "CSR_OP_CLEAR": null
+      }
+    },
+    "priv_lvl_e": {
+      "kind": "enum",
+      "base_type": "logic[1:0]",
+      "values": {
+        "PRIV_LVL_M": "2'b11",
+        "PRIV_LVL_H": "2'b10",
+        "PRIV_LVL_S": "2'b01",
+        "PRIV_LVL_U": "2'b00"
+      }
+    },
+    "dbg_cause_e": {
+      "kind": "enum",
+      "base_type": "logic [2:0]",
+      "values": {
+        "DBG_CAUSE_NONE": "3'h0",
+        "DBG_CAUSE_EBREAK": "3'h1",
+        "DBG_CAUSE_TRIGGER": "3'h2",
+        "DBG_CAUSE_HALTREQ": "3'h3",
+        "DBG_CAUSE_STEP": "3'h4"
+      }
+    },
+    "csr_num_e": {
+      "kind": "enum",
+      "base_type": "logic[11:0]",
+      "values": {
+        "CSR_MVENDORID": "12'hF11",
+        "CSR_MARCHID": "12'hF12",
+        "CSR_MIMPID": "12'hF13",
+        "CSR_MHARTID": "12'hF14",
+        "CSR_MCONFIGPTR": "12'hF15",
+        "CSR_MSTATUS": "12'h300",
+        "CSR_MISA": "12'h301",
+        "CSR_MIE": "12'h304",
+        "CSR_MTVEC": "12'h305",
+        "CSR_MCOUNTEREN": "12'h306",
+        "CSR_MSTATUSH": "12'h310",
+        "CSR_MENVCFG": "12'h30A",
+        "CSR_MENVCFGH": "12'h31A",
+        "CSR_MSCRATCH": "12'h340",
+        "CSR_MEPC": "12'h341",
+        "CSR_MCAUSE": "12'h342",
+        "CSR_MTVAL": "12'h343",
+        "CSR_MIP": "12'h344",
+        "CSR_PMPCFG0": "12'h3A0",
+        "CSR_PMPCFG1": "12'h3A1",
+        "CSR_PMPCFG2": "12'h3A2",
+        "CSR_PMPCFG3": "12'h3A3",
+        "CSR_PMPADDR0": "12'h3B0",
+        "CSR_PMPADDR1": "12'h3B1",
+        "CSR_PMPADDR2": "12'h3B2",
+        "CSR_PMPADDR3": "12'h3B3",
+        "CSR_PMPADDR4": "12'h3B4",
+        "CSR_PMPADDR5": "12'h3B5",
+        "CSR_PMPADDR6": "12'h3B6",
+        "CSR_PMPADDR7": "12'h3B7",
+        "CSR_PMPADDR8": "12'h3B8",
+        "CSR_PMPADDR9": "12'h3B9",
+        "CSR_PMPADDR10": "12'h3BA",
+        "CSR_PMPADDR11": "12'h3BB",
+        "CSR_PMPADDR12": "12'h3BC",
+        "CSR_PMPADDR13": "12'h3BD",
+        "CSR_PMPADDR14": "12'h3BE",
+        "CSR_PMPADDR15": "12'h3BF",
+        "CSR_SCONTEXT": "12'h5A8",
+        "CSR_MSECCFG": "12'h747",
+        "CSR_MSECCFGH": "12'h757",
+        "CSR_TSELECT": "12'h7A0",
+        "CSR_TDATA1": "12'h7A1",
+        "CSR_TDATA2": "12'h7A2",
+        "CSR_TDATA3": "12'h7A3",
+        "CSR_MCONTEXT": "12'h7A8",
+        "CSR_MSCONTEXT": "12'h7AA",
+        "CSR_DCSR": "12'h7b0",
+        "CSR_DPC": "12'h7b1",
+        "CSR_DSCRATCH0": "12'h7b2",
+        "CSR_DSCRATCH1": "12'h7b3",
+        "CSR_MCOUNTINHIBIT": "12'h320",
+        "CSR_MHPMEVENT3": "12'h323",
+        "CSR_MHPMEVENT4": "12'h324",
+        "CSR_MHPMEVENT5": "12'h325",
+        "CSR_MHPMEVENT6": "12'h326",
+        "CSR_MHPMEVENT7": "12'h327",
+        "CSR_MHPMEVENT8": "12'h328",
+        "CSR_MHPMEVENT9": "12'h329",
+        "CSR_MHPMEVENT10": "12'h32A",
+        "CSR_MHPMEVENT11": "12'h32B",
+        "CSR_MHPMEVENT12": "12'h32C",
+        "CSR_MHPMEVENT13": "12'h32D",
+        "CSR_MHPMEVENT14": "12'h32E",
+        "CSR_MHPMEVENT15": "12'h32F",
+        "CSR_MHPMEVENT16": "12'h330",
+        "CSR_MHPMEVENT17": "12'h331",
+        "CSR_MHPMEVENT18": "12'h332",
+        "CSR_MHPMEVENT19": "12'h333",
+        "CSR_MHPMEVENT20": "12'h334",
+        "CSR_MHPMEVENT21": "12'h335",
+        "CSR_MHPMEVENT22": "12'h336",
+        "CSR_MHPMEVENT23": "12'h337",
+        "CSR_MHPMEVENT24": "12'h338",
+        "CSR_MHPMEVENT25": "12'h339",
+        "CSR_MHPMEVENT26": "12'h33A",
+        "CSR_MHPMEVENT27": "12'h33B",
+        "CSR_MHPMEVENT28": "12'h33C",
+        "CSR_MHPMEVENT29": "12'h33D",
+        "CSR_MHPMEVENT30": "12'h33E",
+        "CSR_MHPMEVENT31": "12'h33F",
+        "CSR_MCYCLE": "12'hB00",
+        "CSR_MINSTRET": "12'hB02",
+        "CSR_MHPMCOUNTER3": "12'hB03",
+        "CSR_MHPMCOUNTER4": "12'hB04",
+        "CSR_MHPMCOUNTER5": "12'hB05",
+        "CSR_MHPMCOUNTER6": "12'hB06",
+        "CSR_MHPMCOUNTER7": "12'hB07",
+        "CSR_MHPMCOUNTER8": "12'hB08",
+        "CSR_MHPMCOUNTER9": "12'hB09",
+        "CSR_MHPMCOUNTER10": "12'hB0A",
+        "CSR_MHPMCOUNTER11": "12'hB0B",
+        "CSR_MHPMCOUNTER12": "12'hB0C",
+        "CSR_MHPMCOUNTER13": "12'hB0D",
+        "CSR_MHPMCOUNTER14": "12'hB0E",
+        "CSR_MHPMCOUNTER15": "12'hB0F",
+        "CSR_MHPMCOUNTER16": "12'hB10",
+        "CSR_MHPMCOUNTER17": "12'hB11",
+        "CSR_MHPMCOUNTER18": "12'hB12",
+        "CSR_MHPMCOUNTER19": "12'hB13",
+        "CSR_MHPMCOUNTER20": "12'hB14",
+        "CSR_MHPMCOUNTER21": "12'hB15",
+        "CSR_MHPMCOUNTER22": "12'hB16",
+        "CSR_MHPMCOUNTER23": "12'hB17",
+        "CSR_MHPMCOUNTER24": "12'hB18",
+        "CSR_MHPMCOUNTER25": "12'hB19",
+        "CSR_MHPMCOUNTER26": "12'hB1A",
+        "CSR_MHPMCOUNTER27": "12'hB1B",
+        "CSR_MHPMCOUNTER28": "12'hB1C",
+        "CSR_MHPMCOUNTER29": "12'hB1D",
+        "CSR_MHPMCOUNTER30": "12'hB1E",
+        "CSR_MHPMCOUNTER31": "12'hB1F",
+        "CSR_MCYCLEH": "12'hB80",
+        "CSR_MINSTRETH": "12'hB82",
+        "CSR_MHPMCOUNTER3H": "12'hB83",
+        "CSR_MHPMCOUNTER4H": "12'hB84",
+        "CSR_MHPMCOUNTER5H": "12'hB85",
+        "CSR_MHPMCOUNTER6H": "12'hB86",
+        "CSR_MHPMCOUNTER7H": "12'hB87",
+        "CSR_MHPMCOUNTER8H": "12'hB88",
+        "CSR_MHPMCOUNTER9H": "12'hB89",
+        "CSR_MHPMCOUNTER10H": "12'hB8A",
+        "CSR_MHPMCOUNTER11H": "12'hB8B",
+        "CSR_MHPMCOUNTER12H": "12'hB8C",
+        "CSR_MHPMCOUNTER13H": "12'hB8D",
+        "CSR_MHPMCOUNTER14H": "12'hB8E",
+        "CSR_MHPMCOUNTER15H": "12'hB8F",
+        "CSR_MHPMCOUNTER16H": "12'hB90",
+        "CSR_MHPMCOUNTER17H": "12'hB91",
+        "CSR_MHPMCOUNTER18H": "12'hB92",
+        "CSR_MHPMCOUNTER19H": "12'hB93",
+        "CSR_MHPMCOUNTER20H": "12'hB94",
+        "CSR_MHPMCOUNTER21H": "12'hB95",
+        "CSR_MHPMCOUNTER22H": "12'hB96",
+        "CSR_MHPMCOUNTER23H": "12'hB97",
+        "CSR_MHPMCOUNTER24H": "12'hB98",
+        "CSR_MHPMCOUNTER25H": "12'hB99",
+        "CSR_MHPMCOUNTER26H": "12'hB9A",
+        "CSR_MHPMCOUNTER27H": "12'hB9B",
+        "CSR_MHPMCOUNTER28H": "12'hB9C",
+        "CSR_MHPMCOUNTER29H": "12'hB9D",
+        "CSR_MHPMCOUNTER30H": "12'hB9E",
+        "CSR_MHPMCOUNTER31H": "12'hB9F",
+        "CSR_CPUCTRLSTS": "12'h7C0",
+        "CSR_SECURESEED": "12'h7C1"
+      }
+    },
+    "irqs_t": {
+      "kind": "struct",
+      "fields": [
+        {
+          "name": "irq_software",
+          "type": "logic"
+        },
+        {
+          "name": "irq_timer",
+          "type": "logic"
+        },
+        {
+          "name": "irq_external",
+          "type": "logic"
+        },
+        {
+          "name": "irq_fast",
+          "type": "logic [14:0]"
+        }
+      ]
+    },
+    "exc_cause_t": {
+      "kind": "struct",
+      "fields": [
+        {
+          "name": "irq_int",
+          "type": "logic"
+        },
+        {
+          "name": "irq_ext",
+          "type": "logic"
+        },
+        {
+          "name": "lower_cause",
+          "type": "logic [4:0]"
+        }
+      ]
+    },
+    "pmp_cfg_t": {
+      "kind": "struct",
+      "fields": [
+        {
+          "name": "lock",
+          "type": "logic"
+        },
+        {
+          "name": "mode",
+          "type": "pmp_cfg_mode_e"
+        },
+        {
+          "name": "exec",
+          "type": "logic"
+        },
+        {
+          "name": "write",
+          "type": "logic"
+        },
+        {
+          "name": "read",
+          "type": "logic"
+        }
+      ]
+    },
+    "pmp_mseccfg_t": {
+      "kind": "struct",
+      "fields": [
+        {
+          "name": "rlb",
+          "type": "logic"
+        },
+        {
+          "name": "mmwp",
+          "type": "logic"
+        },
+        {
+          "name": "mml",
+          "type": "logic"
+        }
+      ]
+    }
+  },
+  "connectivity": [
+    {
+      "lhs": "unused_boot_addr",
+      "rhs": "boot_addr_i[7:0]",
+      "rhs_signals": [
+        "boot_addr_i"
+      ]
+    },
+    {
+      "lhs": "csr_addr",
+      "rhs": "{csr_addr_i}",
+      "rhs_signals": [
+        "csr_addr_i"
+      ]
+    },
+    {
+      "lhs": "unused_csr_addr",
+      "rhs": "csr_addr[7:5]",
+      "rhs_signals": [
+        "csr_addr"
+      ]
+    },
+    {
+      "lhs": "mhpmcounter_idx",
+      "rhs": "csr_addr[4:0]",
+      "rhs_signals": [
+        "csr_addr"
+      ]
+    },
+    {
+      "lhs": "illegal_csr_dbg",
+      "rhs": "dbg_csr & ~debug_mode_i",
+      "rhs_signals": [
+        "dbg_csr",
+        "debug_mode_i"
+      ]
+    },
+    {
+      "lhs": "illegal_csr_priv",
+      "rhs": "(csr_addr[9:8] > {priv_lvl_q})",
+      "rhs_signals": [
+        "csr_addr"
+      ]
+    },
+    {
+      "lhs": "illegal_csr_write",
+      "rhs": "(csr_addr[11:10] == 2'b11) && csr_wr",
+      "rhs_signals": [
+        "csr_addr",
+        "csr_wr"
+      ]
+    },
+    {
+      "lhs": "illegal_csr_insn_o",
+      "rhs": "csr_access_i & (illegal_csr | illegal_csr_write | illegal_csr_priv |\n                                              illegal_csr_dbg)",
+      "rhs_signals": [
+        "csr_access_i",
+        "illegal_csr",
+        "illegal_csr_write",
+        "illegal_csr_priv",
+        "illegal_csr_dbg"
+      ]
+    },
+    {
+      "lhs": "mip.irq_software",
+      "rhs": "irq_software_i",
+      "rhs_signals": [
+        "irq_software_i"
+      ]
+    },
+    {
+      "lhs": "mip.irq_timer",
+      "rhs": "irq_timer_i",
+      "rhs_signals": [
+        "irq_timer_i"
+      ]
+    },
+    {
+      "lhs": "mip.irq_external",
+      "rhs": "irq_external_i",
+      "rhs_signals": [
+        "irq_external_i"
+      ]
+    },
+    {
+      "lhs": "mip.irq_fast",
+      "rhs": "irq_fast_i",
+      "rhs_signals": [
+        "irq_fast_i"
+      ]
+    },
+    {
+      "lhs": "priv_mode_id_o",
+      "rhs": "priv_lvl_q",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "priv_mode_lsu_o",
+      "rhs": "mstatus_q.mprv ? mstatus_q.mpp : priv_lvl_q",
+      "rhs_signals": [
+        "mprv"
+      ]
+    },
+    {
+      "lhs": "csr_wr",
+      "rhs": "(csr_op_i inside {CSR_OP_WRITE, CSR_OP_SET, CSR_OP_CLEAR})",
+      "rhs_signals": [
+        "csr_op_i"
+      ]
+    },
+    {
+      "lhs": "csr_we_int",
+      "rhs": "csr_wr & csr_op_en_i & ~illegal_csr_insn_o",
+      "rhs_signals": [
+        "csr_wr",
+        "csr_op_en_i",
+        "illegal_csr_insn_o"
+      ]
+    },
+    {
+      "lhs": "csr_rdata_o",
+      "rhs": "csr_rdata_int",
+      "rhs_signals": [
+        "csr_rdata_int"
+      ]
+    },
+    {
+      "lhs": "csr_mepc_o",
+      "rhs": "mepc_q",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "csr_depc_o",
+      "rhs": "depc_q",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "csr_mtvec_o",
+      "rhs": "mtvec_q",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "csr_mtval_o",
+      "rhs": "mtval_q",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "csr_mstatus_mie_o",
+      "rhs": "mstatus_q.mie",
+      "rhs_signals": [
+        "mie"
+      ]
+    },
+    {
+      "lhs": "csr_mstatus_tw_o",
+      "rhs": "mstatus_q.tw",
+      "rhs_signals": [
+        "tw"
+      ]
+    },
+    {
+      "lhs": "debug_single_step_o",
+      "rhs": "dcsr_q.step",
+      "rhs_signals": [
+        "step"
+      ]
+    },
+    {
+      "lhs": "debug_ebreakm_o",
+      "rhs": "dcsr_q.ebreakm",
+      "rhs_signals": [
+        "ebreakm"
+      ]
+    },
+    {
+      "lhs": "debug_ebreaku_o",
+      "rhs": "dcsr_q.ebreaku",
+      "rhs_signals": [
+        "ebreaku"
+      ]
+    },
+    {
+      "lhs": "irqs_o",
+      "rhs": "mip & mie_q",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "irq_pending_o",
+      "rhs": "|irqs_o",
+      "rhs_signals": [
+        "irqs_o"
+      ]
+    },
+    {
+      "lhs": "mie_d.irq_software",
+      "rhs": "csr_wdata_int[CSR_MSIX_BIT]",
+      "rhs_signals": [
+        "csr_wdata_int"
+      ]
+    },
+    {
+      "lhs": "mie_d.irq_timer",
+      "rhs": "csr_wdata_int[CSR_MTIX_BIT]",
+      "rhs_signals": [
+        "csr_wdata_int"
+      ]
+    },
+    {
+      "lhs": "mie_d.irq_external",
+      "rhs": "csr_wdata_int[CSR_MEIX_BIT]",
+      "rhs_signals": [
+        "csr_wdata_int"
+      ]
+    },
+    {
+      "lhs": "mie_d.irq_fast",
+      "rhs": "csr_wdata_int[CSR_MFIX_BIT_HIGH:CSR_MFIX_BIT_LOW]",
+      "rhs_signals": [
+        "csr_wdata_int"
+      ]
+    },
+    {
+      "lhs": "pmp_mseccfg_we",
+      "rhs": "csr_we_int & (csr_addr == CSR_MSECCFG)",
+      "rhs_signals": [
+        "csr_we_int",
+        "csr_addr"
+      ]
+    },
+    {
+      "lhs": "pmp_mseccfg_d.mml",
+      "rhs": "pmp_mseccfg_q.mml  ? 1'b1 : csr_wdata_int[CSR_MSECCFG_MML_BIT]",
+      "rhs_signals": [
+        "csr_wdata_int"
+      ]
+    },
+    {
+      "lhs": "pmp_mseccfg_d.mmwp",
+      "rhs": "pmp_mseccfg_q.mmwp ? 1'b1 : csr_wdata_int[CSR_MSECCFG_MMWP_BIT]",
+      "rhs_signals": [
+        "csr_wdata_int"
+      ]
+    },
+    {
+      "lhs": "any_pmp_entry_locked",
+      "rhs": "|pmp_cfg_locked",
+      "rhs_signals": [
+        "pmp_cfg_locked"
+      ]
+    },
+    {
+      "lhs": "pmp_mseccfg_d.rlb",
+      "rhs": "any_pmp_entry_locked ? 1'b0 : csr_wdata_int[CSR_MSECCFG_RLB_BIT]",
+      "rhs_signals": [
+        "any_pmp_entry_locked",
+        "csr_wdata_int"
+      ]
+    },
+    {
+      "lhs": "pmp_csr_err",
+      "rhs": "(|pmp_cfg_err) | (|pmp_addr_err) | pmp_mseccfg_err",
+      "rhs_signals": [
+        "pmp_cfg_err",
+        "pmp_addr_err",
+        "pmp_mseccfg_err"
+      ]
+    },
+    {
+      "lhs": "pmp_mseccfg",
+      "rhs": "pmp_mseccfg_q",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "pmp_csr_err",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "pmp_mseccfg",
+      "rhs": "'0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "csr_pmp_mseccfg_o",
+      "rhs": "pmp_mseccfg",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "unused_mhpmcounter_we_1",
+      "rhs": "mhpmcounter_we[1]",
+      "rhs_signals": [
+        "mhpmcounter_we"
+      ]
+    },
+    {
+      "lhs": "unused_mhpmcounterh_we_1",
+      "rhs": "mhpmcounterh_we[1]",
+      "rhs_signals": [
+        "mhpmcounterh_we"
+      ]
+    },
+    {
+      "lhs": "unused_mhpmcounter_incr_1",
+      "rhs": "mhpmcounter_incr[1]",
+      "rhs_signals": [
+        "mhpmcounter_incr"
+      ]
+    },
+    {
+      "lhs": "unused_mhpmcounter_next",
+      "rhs": "mhpmcounter_next",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "unused_instr_ret_compressed_spec_i",
+      "rhs": "instr_ret_compressed_spec_i",
+      "rhs_signals": [
+        "instr_ret_compressed_spec_i"
+      ]
+    },
+    {
+      "lhs": "mcountinhibit",
+      "rhs": "{{29 - MHPMCounterNum{1'b0}}, mcountinhibit_q}",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "unused_mhphcounter_we",
+      "rhs": "mhpmcounter_we[31:MHPMCounterNum+3]",
+      "rhs_signals": [
+        "mhpmcounter_we"
+      ]
+    },
+    {
+      "lhs": "unused_mhphcounterh_we",
+      "rhs": "mhpmcounterh_we[31:MHPMCounterNum+3]",
+      "rhs_signals": [
+        "mhpmcounterh_we"
+      ]
+    },
+    {
+      "lhs": "unused_mhphcounter_incr",
+      "rhs": "mhpmcounter_incr[31:MHPMCounterNum+3]",
+      "rhs_signals": [
+        "mhpmcounter_incr"
+      ]
+    },
+    {
+      "lhs": "mcountinhibit",
+      "rhs": "mcountinhibit_q",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "tselect_we",
+      "rhs": "csr_we_int & debug_mode_i & (csr_addr_i == CSR_TSELECT)",
+      "rhs_signals": [
+        "csr_we_int",
+        "debug_mode_i",
+        "csr_addr_i"
+      ]
+    },
+    {
+      "lhs": "tselect_d",
+      "rhs": "(csr_wdata_int < DbgHwBreakNum) ? csr_wdata_int[DbgHwNumLen-1:0] :\n                                                         MaxTselect[DbgHwNumLen-1:0]",
+      "rhs_signals": [
+        "csr_wdata_int"
+      ]
+    },
+    {
+      "lhs": "tmatch_control_d",
+      "rhs": "csr_wdata_int[2]",
+      "rhs_signals": [
+        "csr_wdata_int"
+      ]
+    },
+    {
+      "lhs": "tmatch_value_d",
+      "rhs": "csr_wdata_int[31:0]",
+      "rhs_signals": [
+        "csr_wdata_int"
+      ]
+    },
+    {
+      "lhs": "tselect_rdata",
+      "rhs": "{{TSelectRdataPadlen{1'b0}}, tselect_q}",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "selected_tmatch_control",
+      "rhs": "tmatch_control_q[tselect_q]",
+      "rhs_signals": [
+        "tmatch_control_q"
+      ]
+    },
+    {
+      "lhs": "selected_tmatch_value",
+      "rhs": "tmatch_value_q[tselect_q]",
+      "rhs_signals": [
+        "tmatch_value_q"
+      ]
+    },
+    {
+      "lhs": "selected_tmatch_control",
+      "rhs": "tmatch_control_q[0]",
+      "rhs_signals": [
+        "tmatch_control_q"
+      ]
+    },
+    {
+      "lhs": "selected_tmatch_value",
+      "rhs": "tmatch_value_q[0]",
+      "rhs_signals": [
+        "tmatch_value_q"
+      ]
+    },
+    {
+      "lhs": "tmatch_control_rdata",
+      "rhs": "{4'h2,                    \n                                   1'b1,                    \n                                   6'h00,                   \n                                   1'b0,                    \n                                   1'b0,                    \n                                   1'b0,                    \n                                   2'b00,                   \n                                   4'h1,                    \n                                   1'b0,                    \n                                   4'h0,                    \n                                   1'b1,                    \n                                   1'b0,                    \n                                   1'b0,                    \n                                   1'b1,                    \n                                   selected_tmatch_control, \n                                   1'b0,                    \n                                   1'b0}",
+      "rhs_signals": [
+        "selected_tmatch_control"
+      ]
+    },
+    {
+      "lhs": "tmatch_value_rdata",
+      "rhs": "selected_tmatch_value",
+      "rhs_signals": [
+        "selected_tmatch_value"
+      ]
+    },
+    {
+      "lhs": "trigger_match_o",
+      "rhs": "|trigger_match",
+      "rhs_signals": [
+        "trigger_match"
+      ]
+    },
+    {
+      "lhs": "tselect_rdata",
+      "rhs": "'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "tmatch_control_rdata",
+      "rhs": "'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "tmatch_value_rdata",
+      "rhs": "'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "trigger_match_o",
+      "rhs": "'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "cpuctrlsts_part_wdata_raw",
+      "rhs": "cpu_ctrl_sts_part_t'(csr_wdata_int[$bits(cpu_ctrl_sts_part_t)-1:0])",
+      "rhs_signals": [
+        "csr_wdata_int"
+      ]
+    },
+    {
+      "lhs": "cpuctrlsts_part_wdata.data_ind_timing",
+      "rhs": "cpuctrlsts_part_wdata_raw.data_ind_timing",
+      "rhs_signals": [
+        "data_ind_timing"
+      ]
+    },
+    {
+      "lhs": "unused_dit",
+      "rhs": "cpuctrlsts_part_wdata_raw.data_ind_timing",
+      "rhs_signals": [
+        "data_ind_timing"
+      ]
+    },
+    {
+      "lhs": "cpuctrlsts_part_wdata.data_ind_timing",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "data_ind_timing_o",
+      "rhs": "cpuctrlsts_part_q.data_ind_timing",
+      "rhs_signals": [
+        "data_ind_timing"
+      ]
+    },
+    {
+      "lhs": "cpuctrlsts_part_wdata.dummy_instr_en",
+      "rhs": "cpuctrlsts_part_wdata_raw.dummy_instr_en",
+      "rhs_signals": [
+        "dummy_instr_en"
+      ]
+    },
+    {
+      "lhs": "cpuctrlsts_part_wdata.dummy_instr_mask",
+      "rhs": "cpuctrlsts_part_wdata_raw.dummy_instr_mask",
+      "rhs_signals": [
+        "dummy_instr_mask"
+      ]
+    },
+    {
+      "lhs": "dummy_instr_seed_en_o",
+      "rhs": "csr_we_int && (csr_addr == CSR_SECURESEED)",
+      "rhs_signals": [
+        "csr_we_int",
+        "csr_addr"
+      ]
+    },
+    {
+      "lhs": "dummy_instr_seed_o",
+      "rhs": "csr_wdata_int",
+      "rhs_signals": [
+        "csr_wdata_int"
+      ]
+    },
+    {
+      "lhs": "unused_dummy_en",
+      "rhs": "cpuctrlsts_part_wdata_raw.dummy_instr_en",
+      "rhs_signals": [
+        "dummy_instr_en"
+      ]
+    },
+    {
+      "lhs": "unused_dummy_mask",
+      "rhs": "cpuctrlsts_part_wdata_raw.dummy_instr_mask",
+      "rhs_signals": [
+        "dummy_instr_mask"
+      ]
+    },
+    {
+      "lhs": "cpuctrlsts_part_wdata.dummy_instr_en",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "cpuctrlsts_part_wdata.dummy_instr_mask",
+      "rhs": "3'b000",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "dummy_instr_seed_en_o",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "dummy_instr_seed_o",
+      "rhs": "'0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "dummy_instr_en_o",
+      "rhs": "cpuctrlsts_part_q.dummy_instr_en",
+      "rhs_signals": [
+        "dummy_instr_en"
+      ]
+    },
+    {
+      "lhs": "dummy_instr_mask_o",
+      "rhs": "cpuctrlsts_part_q.dummy_instr_mask",
+      "rhs_signals": [
+        "dummy_instr_mask"
+      ]
+    },
+    {
+      "lhs": "cpuctrlsts_part_wdata.icache_enable",
+      "rhs": "cpuctrlsts_part_wdata_raw.icache_enable",
+      "rhs_signals": [
+        "icache_enable"
+      ]
+    },
+    {
+      "lhs": "unused_icen",
+      "rhs": "cpuctrlsts_part_wdata_raw.icache_enable",
+      "rhs_signals": [
+        "icache_enable"
+      ]
+    },
+    {
+      "lhs": "cpuctrlsts_part_wdata.icache_enable",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "unused_ic_scr_key_valid",
+      "rhs": "ic_scr_key_valid_i",
+      "rhs_signals": [
+        "ic_scr_key_valid_i"
+      ]
+    },
+    {
+      "lhs": "cpuctrlsts_ic_scr_key_valid_q",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "cpuctrlsts_ic_scr_key_err",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "cpuctrlsts_part_wdata.double_fault_seen",
+      "rhs": "cpuctrlsts_part_wdata_raw.double_fault_seen",
+      "rhs_signals": [
+        "double_fault_seen"
+      ]
+    },
+    {
+      "lhs": "cpuctrlsts_part_wdata.sync_exc_seen",
+      "rhs": "cpuctrlsts_part_wdata_raw.sync_exc_seen",
+      "rhs_signals": [
+        "sync_exc_seen"
+      ]
+    },
+    {
+      "lhs": "icache_enable_o",
+      "rhs": "cpuctrlsts_part_q.icache_enable & ~(debug_mode_i | debug_mode_entering_i)",
+      "rhs_signals": [
+        "icache_enable",
+        "debug_mode_i",
+        "debug_mode_entering_i"
+      ]
+    },
+    {
+      "lhs": "csr_shadow_err_o",
+      "rhs": "mstatus_err | mtvec_err | pmp_csr_err | cpuctrlsts_part_err | cpuctrlsts_ic_scr_key_err",
+      "rhs_signals": [
+        "mstatus_err",
+        "mtvec_err",
+        "pmp_csr_err",
+        "cpuctrlsts_part_err",
+        "cpuctrlsts_ic_scr_key_err"
+      ]
+    }
+  ]
+}

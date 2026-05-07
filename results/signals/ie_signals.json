@@ -1,0 +1,2121 @@
+{
+  "module": [
+    "ibex_id_stage",
+    "ibex_ex_block"
+  ],
+  "module_key": "ie",
+  "type": "sequential",
+  "ports": {
+    "inputs": [
+      {
+        "name": "clk_i",
+        "width": 1
+      },
+      {
+        "name": "rst_ni",
+        "width": 1
+      },
+      {
+        "name": "instr_valid_i",
+        "width": 1
+      },
+      {
+        "name": "instr_rdata_i",
+        "width": 32
+      },
+      {
+        "name": "instr_rdata_alu_i",
+        "width": 32
+      },
+      {
+        "name": "instr_rdata_c_i",
+        "width": 16
+      },
+      {
+        "name": "instr_is_compressed_i",
+        "width": 1
+      },
+      {
+        "name": "instr_bp_taken_i",
+        "width": 1
+      },
+      {
+        "name": "instr_exec_i",
+        "width": 1
+      },
+      {
+        "name": "branch_decision_i",
+        "width": 1
+      },
+      {
+        "name": "illegal_c_insn_i",
+        "width": 1
+      },
+      {
+        "name": "instr_fetch_err_i",
+        "width": 1
+      },
+      {
+        "name": "instr_fetch_err_plus2_i",
+        "width": 1
+      },
+      {
+        "name": "pc_id_i",
+        "width": 32
+      },
+      {
+        "name": "ex_valid_i",
+        "width": 1
+      },
+      {
+        "name": "lsu_resp_valid_i",
+        "width": 1
+      },
+      {
+        "name": "imd_val_we_ex_i",
+        "width": 2
+      },
+      {
+        "name": "imd_val_d_ex_i",
+        "width": 34
+      },
+      {
+        "name": "priv_mode_i",
+        "width": "ibex_pkg::priv_lvl_e"
+      },
+      {
+        "name": "csr_mstatus_tw_i",
+        "width": 1
+      },
+      {
+        "name": "illegal_csr_insn_i",
+        "width": 1
+      },
+      {
+        "name": "data_ind_timing_i",
+        "width": 1
+      },
+      {
+        "name": "lsu_req_done_i",
+        "width": 1
+      },
+      {
+        "name": "lsu_addr_incr_req_i",
+        "width": 1
+      },
+      {
+        "name": "lsu_addr_last_i",
+        "width": 32
+      },
+      {
+        "name": "csr_mstatus_mie_i",
+        "width": 1
+      },
+      {
+        "name": "irq_pending_i",
+        "width": 1
+      },
+      {
+        "name": "irqs_i",
+        "width": "ibex_pkg::irqs_t"
+      },
+      {
+        "name": "irq_nm_i",
+        "width": 1
+      },
+      {
+        "name": "lsu_load_err_i",
+        "width": 1
+      },
+      {
+        "name": "lsu_load_resp_intg_err_i",
+        "width": 1
+      },
+      {
+        "name": "lsu_store_err_i",
+        "width": 1
+      },
+      {
+        "name": "lsu_store_resp_intg_err_i",
+        "width": 1
+      },
+      {
+        "name": "debug_req_i",
+        "width": 1
+      },
+      {
+        "name": "debug_single_step_i",
+        "width": 1
+      },
+      {
+        "name": "debug_ebreakm_i",
+        "width": 1
+      },
+      {
+        "name": "debug_ebreaku_i",
+        "width": 1
+      },
+      {
+        "name": "trigger_match_i",
+        "width": 1
+      },
+      {
+        "name": "result_ex_i",
+        "width": 32
+      },
+      {
+        "name": "csr_rdata_i",
+        "width": 32
+      },
+      {
+        "name": "rf_rdata_a_i",
+        "width": 32
+      },
+      {
+        "name": "rf_rdata_b_i",
+        "width": 32
+      },
+      {
+        "name": "rf_waddr_wb_i",
+        "width": 5
+      },
+      {
+        "name": "rf_wdata_fwd_wb_i",
+        "width": 32
+      },
+      {
+        "name": "rf_write_wb_i",
+        "width": 1
+      },
+      {
+        "name": "ready_wb_i",
+        "width": 1
+      },
+      {
+        "name": "outstanding_load_wb_i",
+        "width": 1
+      },
+      {
+        "name": "outstanding_store_wb_i",
+        "width": 1
+      },
+      {
+        "name": "alu_operator_i",
+        "width": "ibex_pkg::alu_op_e"
+      },
+      {
+        "name": "alu_operand_a_i",
+        "width": 32
+      },
+      {
+        "name": "alu_operand_b_i",
+        "width": 32
+      },
+      {
+        "name": "alu_instr_first_cycle_i",
+        "width": 1
+      },
+      {
+        "name": "bt_a_operand_i",
+        "width": 32
+      },
+      {
+        "name": "bt_b_operand_i",
+        "width": 32
+      },
+      {
+        "name": "multdiv_operator_i",
+        "width": "ibex_pkg::md_op_e"
+      },
+      {
+        "name": "mult_en_i",
+        "width": 1
+      },
+      {
+        "name": "div_en_i",
+        "width": 1
+      },
+      {
+        "name": "mult_sel_i",
+        "width": 1
+      },
+      {
+        "name": "div_sel_i",
+        "width": 1
+      },
+      {
+        "name": "multdiv_signed_mode_i",
+        "width": 2
+      },
+      {
+        "name": "multdiv_operand_a_i",
+        "width": 32
+      },
+      {
+        "name": "multdiv_operand_b_i",
+        "width": 32
+      },
+      {
+        "name": "multdiv_ready_id_i",
+        "width": 1
+      },
+      {
+        "name": "imd_val_q_i",
+        "width": 34
+      }
+    ],
+    "outputs": [
+      {
+        "name": "ctrl_busy_o",
+        "width": 1
+      },
+      {
+        "name": "illegal_insn_o",
+        "width": 1
+      },
+      {
+        "name": "instr_req_o",
+        "width": 1
+      },
+      {
+        "name": "instr_first_cycle_id_o",
+        "width": 1
+      },
+      {
+        "name": "instr_valid_clear_o",
+        "width": 1
+      },
+      {
+        "name": "id_in_ready_o",
+        "width": 1
+      },
+      {
+        "name": "icache_inval_o",
+        "width": 1
+      },
+      {
+        "name": "pc_set_o",
+        "width": 1
+      },
+      {
+        "name": "pc_mux_o",
+        "width": "ibex_pkg::pc_sel_e"
+      },
+      {
+        "name": "nt_branch_mispredict_o",
+        "width": 1
+      },
+      {
+        "name": "nt_branch_addr_o",
+        "width": 32
+      },
+      {
+        "name": "exc_pc_mux_o",
+        "width": "ibex_pkg::exc_pc_sel_e"
+      },
+      {
+        "name": "exc_cause_o",
+        "width": "ibex_pkg::exc_cause_t"
+      },
+      {
+        "name": "alu_operator_ex_o",
+        "width": "ibex_pkg::alu_op_e"
+      },
+      {
+        "name": "alu_operand_a_ex_o",
+        "width": 32
+      },
+      {
+        "name": "alu_operand_b_ex_o",
+        "width": 32
+      },
+      {
+        "name": "imd_val_q_ex_o",
+        "width": 34
+      },
+      {
+        "name": "bt_a_operand_o",
+        "width": 32
+      },
+      {
+        "name": "bt_b_operand_o",
+        "width": 32
+      },
+      {
+        "name": "mult_en_ex_o",
+        "width": 1
+      },
+      {
+        "name": "div_en_ex_o",
+        "width": 1
+      },
+      {
+        "name": "mult_sel_ex_o",
+        "width": 1
+      },
+      {
+        "name": "div_sel_ex_o",
+        "width": 1
+      },
+      {
+        "name": "multdiv_operator_ex_o",
+        "width": "ibex_pkg::md_op_e"
+      },
+      {
+        "name": "multdiv_signed_mode_ex_o",
+        "width": 2
+      },
+      {
+        "name": "multdiv_operand_a_ex_o",
+        "width": 32
+      },
+      {
+        "name": "multdiv_operand_b_ex_o",
+        "width": 32
+      },
+      {
+        "name": "multdiv_ready_id_o",
+        "width": 1
+      },
+      {
+        "name": "csr_access_o",
+        "width": 1
+      },
+      {
+        "name": "csr_op_o",
+        "width": "ibex_pkg::csr_op_e"
+      },
+      {
+        "name": "csr_addr_o",
+        "width": "ibex_pkg::csr_num_e"
+      },
+      {
+        "name": "csr_op_en_o",
+        "width": 1
+      },
+      {
+        "name": "csr_save_if_o",
+        "width": 1
+      },
+      {
+        "name": "csr_save_id_o",
+        "width": 1
+      },
+      {
+        "name": "csr_save_wb_o",
+        "width": 1
+      },
+      {
+        "name": "csr_restore_mret_id_o",
+        "width": 1
+      },
+      {
+        "name": "csr_restore_dret_id_o",
+        "width": 1
+      },
+      {
+        "name": "csr_save_cause_o",
+        "width": 1
+      },
+      {
+        "name": "csr_mtval_o",
+        "width": 32
+      },
+      {
+        "name": "lsu_req_o",
+        "width": 1
+      },
+      {
+        "name": "lsu_we_o",
+        "width": 1
+      },
+      {
+        "name": "lsu_type_o",
+        "width": 2
+      },
+      {
+        "name": "lsu_sign_ext_o",
+        "width": 1
+      },
+      {
+        "name": "lsu_wdata_o",
+        "width": 32
+      },
+      {
+        "name": "nmi_mode_o",
+        "width": 1
+      },
+      {
+        "name": "expecting_load_resp_o",
+        "width": 1
+      },
+      {
+        "name": "expecting_store_resp_o",
+        "width": 1
+      },
+      {
+        "name": "debug_mode_o",
+        "width": 1
+      },
+      {
+        "name": "debug_mode_entering_o",
+        "width": 1
+      },
+      {
+        "name": "debug_cause_o",
+        "width": "ibex_pkg::dbg_cause_e"
+      },
+      {
+        "name": "debug_csr_save_o",
+        "width": 1
+      },
+      {
+        "name": "rf_raddr_a_o",
+        "width": 5
+      },
+      {
+        "name": "rf_raddr_b_o",
+        "width": 5
+      },
+      {
+        "name": "rf_ren_a_o",
+        "width": 1
+      },
+      {
+        "name": "rf_ren_b_o",
+        "width": 1
+      },
+      {
+        "name": "rf_waddr_id_o",
+        "width": 5
+      },
+      {
+        "name": "rf_wdata_id_o",
+        "width": 32
+      },
+      {
+        "name": "rf_we_id_o",
+        "width": 1
+      },
+      {
+        "name": "rf_rd_a_wb_match_o",
+        "width": 1
+      },
+      {
+        "name": "rf_rd_b_wb_match_o",
+        "width": 1
+      },
+      {
+        "name": "en_wb_o",
+        "width": 1
+      },
+      {
+        "name": "instr_type_wb_o",
+        "width": "ibex_pkg::wb_instr_type_e"
+      },
+      {
+        "name": "instr_perf_count_id_o",
+        "width": 1
+      },
+      {
+        "name": "perf_jump_o",
+        "width": 1
+      },
+      {
+        "name": "perf_branch_o",
+        "width": 1
+      },
+      {
+        "name": "perf_tbranch_o",
+        "width": 1
+      },
+      {
+        "name": "perf_dside_wait_o",
+        "width": 1
+      },
+      {
+        "name": "perf_mul_wait_o",
+        "width": 1
+      },
+      {
+        "name": "perf_div_wait_o",
+        "width": 1
+      },
+      {
+        "name": "instr_id_done_o",
+        "width": 1
+      },
+      {
+        "name": "imd_val_we_o",
+        "width": 2
+      },
+      {
+        "name": "imd_val_d_o",
+        "width": 34
+      },
+      {
+        "name": "alu_adder_result_ex_o",
+        "width": 32
+      },
+      {
+        "name": "result_ex_o",
+        "width": 32
+      },
+      {
+        "name": "branch_target_o",
+        "width": 32
+      },
+      {
+        "name": "branch_decision_o",
+        "width": 1
+      },
+      {
+        "name": "ex_valid_o",
+        "width": 1
+      }
+    ]
+  },
+  "internals": [
+    {
+      "name": "illegal_insn_dec",
+      "width": 1
+    },
+    {
+      "name": "illegal_dret_insn",
+      "width": 1
+    },
+    {
+      "name": "illegal_umode_insn",
+      "width": 1
+    },
+    {
+      "name": "ebrk_insn",
+      "width": 1
+    },
+    {
+      "name": "mret_insn_dec",
+      "width": 1
+    },
+    {
+      "name": "dret_insn_dec",
+      "width": 1
+    },
+    {
+      "name": "ecall_insn_dec",
+      "width": 1
+    },
+    {
+      "name": "wfi_insn_dec",
+      "width": 1
+    },
+    {
+      "name": "wb_exception",
+      "width": 1
+    },
+    {
+      "name": "id_exception",
+      "width": 1
+    },
+    {
+      "name": "branch_in_dec",
+      "width": 1
+    },
+    {
+      "name": "branch_not_set",
+      "width": 1
+    },
+    {
+      "name": "branch_taken",
+      "width": 1
+    },
+    {
+      "name": "jump_in_dec",
+      "width": 1
+    },
+    {
+      "name": "jump_set_dec",
+      "width": 1
+    },
+    {
+      "name": "instr_first_cycle",
+      "width": 1
+    },
+    {
+      "name": "instr_executing_spec",
+      "width": 1
+    },
+    {
+      "name": "instr_executing",
+      "width": 1
+    },
+    {
+      "name": "instr_done",
+      "width": 1
+    },
+    {
+      "name": "controller_run",
+      "width": 1
+    },
+    {
+      "name": "stall_ld_hz",
+      "width": 1
+    },
+    {
+      "name": "stall_mem",
+      "width": 1
+    },
+    {
+      "name": "stall_multdiv",
+      "width": 1
+    },
+    {
+      "name": "stall_branch",
+      "width": 1
+    },
+    {
+      "name": "stall_jump",
+      "width": 1
+    },
+    {
+      "name": "stall_id",
+      "width": 1
+    },
+    {
+      "name": "stall_wb",
+      "width": 1
+    },
+    {
+      "name": "flush_id",
+      "width": 1
+    },
+    {
+      "name": "multicycle_done",
+      "width": 1
+    },
+    {
+      "name": "mem_resp_intg_err",
+      "width": 1
+    },
+    {
+      "name": "imm_i_type",
+      "width": 32
+    },
+    {
+      "name": "imm_s_type",
+      "width": 32
+    },
+    {
+      "name": "imm_b_type",
+      "width": 32
+    },
+    {
+      "name": "imm_u_type",
+      "width": 32
+    },
+    {
+      "name": "imm_j_type",
+      "width": 32
+    },
+    {
+      "name": "zimm_rs1_type",
+      "width": 32
+    },
+    {
+      "name": "imm_a",
+      "width": 32
+    },
+    {
+      "name": "imm_b",
+      "width": 32
+    },
+    {
+      "name": "rf_rdata_a_fwd",
+      "width": 32
+    },
+    {
+      "name": "rf_rdata_b_fwd",
+      "width": 32
+    },
+    {
+      "name": "alu_multicycle_dec",
+      "width": 1
+    },
+    {
+      "name": "stall_alu",
+      "width": 1
+    },
+    {
+      "name": "imd_val_q",
+      "width": 34
+    },
+    {
+      "name": "multdiv_en_dec",
+      "width": 1
+    },
+    {
+      "name": "multdiv_signed_mode",
+      "width": 2
+    },
+    {
+      "name": "lsu_we",
+      "width": 1
+    },
+    {
+      "name": "lsu_type",
+      "width": 2
+    },
+    {
+      "name": "lsu_sign_ext",
+      "width": 1
+    },
+    {
+      "name": "data_req_allowed",
+      "width": 1
+    },
+    {
+      "name": "no_flush_csr_addr",
+      "width": 1
+    },
+    {
+      "name": "csr_pipe_flush",
+      "width": 1
+    },
+    {
+      "name": "alu_operand_a",
+      "width": 32
+    },
+    {
+      "name": "alu_operand_b",
+      "width": 32
+    },
+    {
+      "name": "branch_set_raw_q",
+      "width": 1
+    },
+    {
+      "name": "branch_taken_q",
+      "width": 1
+    },
+    {
+      "name": "rf_rd_a_wb_match",
+      "width": 1
+    },
+    {
+      "name": "rf_rd_b_wb_match",
+      "width": 1
+    },
+    {
+      "name": "rf_rd_a_hz",
+      "width": 1
+    },
+    {
+      "name": "rf_rd_b_hz",
+      "width": 1
+    },
+    {
+      "name": "outstanding_memory_access",
+      "width": 1
+    },
+    {
+      "name": "instr_kill",
+      "width": 1
+    },
+    {
+      "name": "unused_data_req_done_ex",
+      "width": 1
+    },
+    {
+      "name": "unused_rf_waddr_wb",
+      "width": 5
+    },
+    {
+      "name": "unused_rf_write_wb",
+      "width": 1
+    },
+    {
+      "name": "unused_outstanding_load_wb",
+      "width": 1
+    },
+    {
+      "name": "unused_outstanding_store_wb",
+      "width": 1
+    },
+    {
+      "name": "unused_wb_exception",
+      "width": 1
+    },
+    {
+      "name": "unused_rf_wdata_fwd_wb",
+      "width": 32
+    },
+    {
+      "name": "unused_id_exception",
+      "width": 1
+    },
+    {
+      "name": "alu_adder_result_ext",
+      "width": 34
+    },
+    {
+      "name": "multdiv_valid",
+      "width": 1
+    },
+    {
+      "name": "multdiv_sel",
+      "width": 1
+    },
+    {
+      "name": "alu_imd_val_q",
+      "width": 32
+    },
+    {
+      "name": "alu_imd_val_d",
+      "width": 32
+    },
+    {
+      "name": "alu_imd_val_we",
+      "width": 2
+    },
+    {
+      "name": "multdiv_imd_val_d",
+      "width": 34
+    },
+    {
+      "name": "multdiv_imd_val_we",
+      "width": 2
+    },
+    {
+      "name": "bt_alu_result",
+      "width": 33
+    },
+    {
+      "name": "unused_bt_carry",
+      "width": 1
+    },
+    {
+      "name": "sva_multdiv_fsm_idle",
+      "width": 1
+    },
+    {
+      "name": "unused_sva_multdiv_fsm_idle",
+      "width": 1
+    }
+  ],
+  "parameters": [
+    "RV32E",
+    "RV32M",
+    "RV32B",
+    "DataIndTiming",
+    "BranchTargetALU",
+    "WritebackStage",
+    "BranchPredictor",
+    "MemECC"
+  ],
+  "clock": "clk_i",
+  "reset": "rst_ni",
+  "reset_polarity": "active_low",
+  "pkg_types": {
+    "alu_op_e": {
+      "kind": "enum",
+      "base_type": "logic [6:0]",
+      "values": {
+        "ALU_ADD": null,
+        "ALU_SUB": null,
+        "ALU_XOR": null,
+        "ALU_OR": null,
+        "ALU_AND": null,
+        "ALU_XNOR": null,
+        "ALU_ORN": null,
+        "ALU_ANDN": null,
+        "ALU_SRA": null,
+        "ALU_SRL": null,
+        "ALU_SLL": null,
+        "ALU_SRO": null,
+        "ALU_SLO": null,
+        "ALU_ROR": null,
+        "ALU_ROL": null,
+        "ALU_GREV": null,
+        "ALU_GORC": null,
+        "ALU_SHFL": null,
+        "ALU_UNSHFL": null,
+        "ALU_XPERM_N": null,
+        "ALU_XPERM_B": null,
+        "ALU_XPERM_H": null,
+        "ALU_SH1ADD": null,
+        "ALU_SH2ADD": null,
+        "ALU_SH3ADD": null,
+        "ALU_LT": null,
+        "ALU_LTU": null,
+        "ALU_GE": null,
+        "ALU_GEU": null,
+        "ALU_EQ": null,
+        "ALU_NE": null,
+        "ALU_MIN": null,
+        "ALU_MINU": null,
+        "ALU_MAX": null,
+        "ALU_MAXU": null,
+        "ALU_PACK": null,
+        "ALU_PACKU": null,
+        "ALU_PACKH": null,
+        "ALU_SEXTB": null,
+        "ALU_SEXTH": null,
+        "ALU_CLZ": null,
+        "ALU_CTZ": null,
+        "ALU_CPOP": null,
+        "ALU_SLT": null,
+        "ALU_SLTU": null,
+        "ALU_CMOV": null,
+        "ALU_CMIX": null,
+        "ALU_FSL": null,
+        "ALU_FSR": null,
+        "ALU_BSET": null,
+        "ALU_BCLR": null,
+        "ALU_BINV": null,
+        "ALU_BEXT": null,
+        "ALU_BCOMPRESS": null,
+        "ALU_BDECOMPRESS": null,
+        "ALU_BFP": null,
+        "ALU_CLMUL": null,
+        "ALU_CLMULR": null,
+        "ALU_CLMULH": null,
+        "ALU_CRC32_B": null,
+        "ALU_CRC32C_B": null,
+        "ALU_CRC32_H": null,
+        "ALU_CRC32C_H": null,
+        "ALU_CRC32_W": null,
+        "ALU_CRC32C_W": null
+      }
+    },
+    "md_op_e": {
+      "kind": "enum",
+      "base_type": "logic [1:0]",
+      "values": {
+        "MD_OP_MULL": null,
+        "MD_OP_MULH": null,
+        "MD_OP_DIV": null,
+        "MD_OP_REM": null
+      }
+    },
+    "csr_op_e": {
+      "kind": "enum",
+      "base_type": "logic [1:0]",
+      "values": {
+        "CSR_OP_READ": null,
+        "CSR_OP_WRITE": null,
+        "CSR_OP_SET": null,
+        "CSR_OP_CLEAR": null
+      }
+    },
+    "priv_lvl_e": {
+      "kind": "enum",
+      "base_type": "logic[1:0]",
+      "values": {
+        "PRIV_LVL_M": "2'b11",
+        "PRIV_LVL_H": "2'b10",
+        "PRIV_LVL_S": "2'b01",
+        "PRIV_LVL_U": "2'b00"
+      }
+    },
+    "wb_instr_type_e": {
+      "kind": "enum",
+      "base_type": "logic[1:0]",
+      "values": {
+        "WB_INSTR_LOAD": null,
+        "WB_INSTR_STORE": null,
+        "WB_INSTR_OTHER": null
+      }
+    },
+    "pc_sel_e": {
+      "kind": "enum",
+      "base_type": "logic [2:0]",
+      "values": {
+        "PC_BOOT": null,
+        "PC_JUMP": null,
+        "PC_EXC": null,
+        "PC_ERET": null,
+        "PC_DRET": null,
+        "PC_BP": null
+      }
+    },
+    "exc_pc_sel_e": {
+      "kind": "enum",
+      "base_type": "logic [1:0]",
+      "values": {
+        "EXC_PC_EXC": null,
+        "EXC_PC_IRQ": null,
+        "EXC_PC_DBD": null,
+        "EXC_PC_DBG_EXC": null
+      }
+    },
+    "dbg_cause_e": {
+      "kind": "enum",
+      "base_type": "logic [2:0]",
+      "values": {
+        "DBG_CAUSE_NONE": "3'h0",
+        "DBG_CAUSE_EBREAK": "3'h1",
+        "DBG_CAUSE_TRIGGER": "3'h2",
+        "DBG_CAUSE_HALTREQ": "3'h3",
+        "DBG_CAUSE_STEP": "3'h4"
+      }
+    },
+    "csr_num_e": {
+      "kind": "enum",
+      "base_type": "logic[11:0]",
+      "values": {
+        "CSR_MVENDORID": "12'hF11",
+        "CSR_MARCHID": "12'hF12",
+        "CSR_MIMPID": "12'hF13",
+        "CSR_MHARTID": "12'hF14",
+        "CSR_MCONFIGPTR": "12'hF15",
+        "CSR_MSTATUS": "12'h300",
+        "CSR_MISA": "12'h301",
+        "CSR_MIE": "12'h304",
+        "CSR_MTVEC": "12'h305",
+        "CSR_MCOUNTEREN": "12'h306",
+        "CSR_MSTATUSH": "12'h310",
+        "CSR_MENVCFG": "12'h30A",
+        "CSR_MENVCFGH": "12'h31A",
+        "CSR_MSCRATCH": "12'h340",
+        "CSR_MEPC": "12'h341",
+        "CSR_MCAUSE": "12'h342",
+        "CSR_MTVAL": "12'h343",
+        "CSR_MIP": "12'h344",
+        "CSR_PMPCFG0": "12'h3A0",
+        "CSR_PMPCFG1": "12'h3A1",
+        "CSR_PMPCFG2": "12'h3A2",
+        "CSR_PMPCFG3": "12'h3A3",
+        "CSR_PMPADDR0": "12'h3B0",
+        "CSR_PMPADDR1": "12'h3B1",
+        "CSR_PMPADDR2": "12'h3B2",
+        "CSR_PMPADDR3": "12'h3B3",
+        "CSR_PMPADDR4": "12'h3B4",
+        "CSR_PMPADDR5": "12'h3B5",
+        "CSR_PMPADDR6": "12'h3B6",
+        "CSR_PMPADDR7": "12'h3B7",
+        "CSR_PMPADDR8": "12'h3B8",
+        "CSR_PMPADDR9": "12'h3B9",
+        "CSR_PMPADDR10": "12'h3BA",
+        "CSR_PMPADDR11": "12'h3BB",
+        "CSR_PMPADDR12": "12'h3BC",
+        "CSR_PMPADDR13": "12'h3BD",
+        "CSR_PMPADDR14": "12'h3BE",
+        "CSR_PMPADDR15": "12'h3BF",
+        "CSR_SCONTEXT": "12'h5A8",
+        "CSR_MSECCFG": "12'h747",
+        "CSR_MSECCFGH": "12'h757",
+        "CSR_TSELECT": "12'h7A0",
+        "CSR_TDATA1": "12'h7A1",
+        "CSR_TDATA2": "12'h7A2",
+        "CSR_TDATA3": "12'h7A3",
+        "CSR_MCONTEXT": "12'h7A8",
+        "CSR_MSCONTEXT": "12'h7AA",
+        "CSR_DCSR": "12'h7b0",
+        "CSR_DPC": "12'h7b1",
+        "CSR_DSCRATCH0": "12'h7b2",
+        "CSR_DSCRATCH1": "12'h7b3",
+        "CSR_MCOUNTINHIBIT": "12'h320",
+        "CSR_MHPMEVENT3": "12'h323",
+        "CSR_MHPMEVENT4": "12'h324",
+        "CSR_MHPMEVENT5": "12'h325",
+        "CSR_MHPMEVENT6": "12'h326",
+        "CSR_MHPMEVENT7": "12'h327",
+        "CSR_MHPMEVENT8": "12'h328",
+        "CSR_MHPMEVENT9": "12'h329",
+        "CSR_MHPMEVENT10": "12'h32A",
+        "CSR_MHPMEVENT11": "12'h32B",
+        "CSR_MHPMEVENT12": "12'h32C",
+        "CSR_MHPMEVENT13": "12'h32D",
+        "CSR_MHPMEVENT14": "12'h32E",
+        "CSR_MHPMEVENT15": "12'h32F",
+        "CSR_MHPMEVENT16": "12'h330",
+        "CSR_MHPMEVENT17": "12'h331",
+        "CSR_MHPMEVENT18": "12'h332",
+        "CSR_MHPMEVENT19": "12'h333",
+        "CSR_MHPMEVENT20": "12'h334",
+        "CSR_MHPMEVENT21": "12'h335",
+        "CSR_MHPMEVENT22": "12'h336",
+        "CSR_MHPMEVENT23": "12'h337",
+        "CSR_MHPMEVENT24": "12'h338",
+        "CSR_MHPMEVENT25": "12'h339",
+        "CSR_MHPMEVENT26": "12'h33A",
+        "CSR_MHPMEVENT27": "12'h33B",
+        "CSR_MHPMEVENT28": "12'h33C",
+        "CSR_MHPMEVENT29": "12'h33D",
+        "CSR_MHPMEVENT30": "12'h33E",
+        "CSR_MHPMEVENT31": "12'h33F",
+        "CSR_MCYCLE": "12'hB00",
+        "CSR_MINSTRET": "12'hB02",
+        "CSR_MHPMCOUNTER3": "12'hB03",
+        "CSR_MHPMCOUNTER4": "12'hB04",
+        "CSR_MHPMCOUNTER5": "12'hB05",
+        "CSR_MHPMCOUNTER6": "12'hB06",
+        "CSR_MHPMCOUNTER7": "12'hB07",
+        "CSR_MHPMCOUNTER8": "12'hB08",
+        "CSR_MHPMCOUNTER9": "12'hB09",
+        "CSR_MHPMCOUNTER10": "12'hB0A",
+        "CSR_MHPMCOUNTER11": "12'hB0B",
+        "CSR_MHPMCOUNTER12": "12'hB0C",
+        "CSR_MHPMCOUNTER13": "12'hB0D",
+        "CSR_MHPMCOUNTER14": "12'hB0E",
+        "CSR_MHPMCOUNTER15": "12'hB0F",
+        "CSR_MHPMCOUNTER16": "12'hB10",
+        "CSR_MHPMCOUNTER17": "12'hB11",
+        "CSR_MHPMCOUNTER18": "12'hB12",
+        "CSR_MHPMCOUNTER19": "12'hB13",
+        "CSR_MHPMCOUNTER20": "12'hB14",
+        "CSR_MHPMCOUNTER21": "12'hB15",
+        "CSR_MHPMCOUNTER22": "12'hB16",
+        "CSR_MHPMCOUNTER23": "12'hB17",
+        "CSR_MHPMCOUNTER24": "12'hB18",
+        "CSR_MHPMCOUNTER25": "12'hB19",
+        "CSR_MHPMCOUNTER26": "12'hB1A",
+        "CSR_MHPMCOUNTER27": "12'hB1B",
+        "CSR_MHPMCOUNTER28": "12'hB1C",
+        "CSR_MHPMCOUNTER29": "12'hB1D",
+        "CSR_MHPMCOUNTER30": "12'hB1E",
+        "CSR_MHPMCOUNTER31": "12'hB1F",
+        "CSR_MCYCLEH": "12'hB80",
+        "CSR_MINSTRETH": "12'hB82",
+        "CSR_MHPMCOUNTER3H": "12'hB83",
+        "CSR_MHPMCOUNTER4H": "12'hB84",
+        "CSR_MHPMCOUNTER5H": "12'hB85",
+        "CSR_MHPMCOUNTER6H": "12'hB86",
+        "CSR_MHPMCOUNTER7H": "12'hB87",
+        "CSR_MHPMCOUNTER8H": "12'hB88",
+        "CSR_MHPMCOUNTER9H": "12'hB89",
+        "CSR_MHPMCOUNTER10H": "12'hB8A",
+        "CSR_MHPMCOUNTER11H": "12'hB8B",
+        "CSR_MHPMCOUNTER12H": "12'hB8C",
+        "CSR_MHPMCOUNTER13H": "12'hB8D",
+        "CSR_MHPMCOUNTER14H": "12'hB8E",
+        "CSR_MHPMCOUNTER15H": "12'hB8F",
+        "CSR_MHPMCOUNTER16H": "12'hB90",
+        "CSR_MHPMCOUNTER17H": "12'hB91",
+        "CSR_MHPMCOUNTER18H": "12'hB92",
+        "CSR_MHPMCOUNTER19H": "12'hB93",
+        "CSR_MHPMCOUNTER20H": "12'hB94",
+        "CSR_MHPMCOUNTER21H": "12'hB95",
+        "CSR_MHPMCOUNTER22H": "12'hB96",
+        "CSR_MHPMCOUNTER23H": "12'hB97",
+        "CSR_MHPMCOUNTER24H": "12'hB98",
+        "CSR_MHPMCOUNTER25H": "12'hB99",
+        "CSR_MHPMCOUNTER26H": "12'hB9A",
+        "CSR_MHPMCOUNTER27H": "12'hB9B",
+        "CSR_MHPMCOUNTER28H": "12'hB9C",
+        "CSR_MHPMCOUNTER29H": "12'hB9D",
+        "CSR_MHPMCOUNTER30H": "12'hB9E",
+        "CSR_MHPMCOUNTER31H": "12'hB9F",
+        "CSR_CPUCTRLSTS": "12'h7C0",
+        "CSR_SECURESEED": "12'h7C1"
+      }
+    },
+    "irqs_t": {
+      "kind": "struct",
+      "fields": [
+        {
+          "name": "irq_software",
+          "type": "logic"
+        },
+        {
+          "name": "irq_timer",
+          "type": "logic"
+        },
+        {
+          "name": "irq_external",
+          "type": "logic"
+        },
+        {
+          "name": "irq_fast",
+          "type": "logic [14:0]"
+        }
+      ]
+    },
+    "exc_cause_t": {
+      "kind": "struct",
+      "fields": [
+        {
+          "name": "irq_int",
+          "type": "logic"
+        },
+        {
+          "name": "irq_ext",
+          "type": "logic"
+        },
+        {
+          "name": "lower_cause",
+          "type": "logic [4:0]"
+        }
+      ]
+    }
+  },
+  "connectivity": [
+    {
+      "lhs": "rf_ren_a",
+      "rhs": "instr_valid_i & ~instr_fetch_err_i & ~illegal_insn_o & rf_ren_a_dec",
+      "rhs_signals": [
+        "instr_valid_i",
+        "instr_fetch_err_i",
+        "illegal_insn_o"
+      ]
+    },
+    {
+      "lhs": "rf_ren_b",
+      "rhs": "instr_valid_i & ~instr_fetch_err_i & ~illegal_insn_o & rf_ren_b_dec",
+      "rhs_signals": [
+        "instr_valid_i",
+        "instr_fetch_err_i",
+        "illegal_insn_o"
+      ]
+    },
+    {
+      "lhs": "rf_ren_a_o",
+      "rhs": "rf_ren_a",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "rf_ren_b_o",
+      "rhs": "rf_ren_b",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "alu_op_a_mux_sel",
+      "rhs": "lsu_addr_incr_req_i ? OP_A_FWD        : alu_op_a_mux_sel_dec",
+      "rhs_signals": [
+        "lsu_addr_incr_req_i"
+      ]
+    },
+    {
+      "lhs": "alu_op_b_mux_sel",
+      "rhs": "lsu_addr_incr_req_i ? OP_B_IMM        : alu_op_b_mux_sel_dec",
+      "rhs_signals": [
+        "lsu_addr_incr_req_i"
+      ]
+    },
+    {
+      "lhs": "imm_b_mux_sel",
+      "rhs": "lsu_addr_incr_req_i ? IMM_B_INCR_ADDR : imm_b_mux_sel_dec",
+      "rhs_signals": [
+        "lsu_addr_incr_req_i"
+      ]
+    },
+    {
+      "lhs": "imm_a",
+      "rhs": "(imm_a_mux_sel == IMM_A_Z) ? zimm_rs1_type : '0",
+      "rhs_signals": [
+        "zimm_rs1_type"
+      ]
+    },
+    {
+      "lhs": "unused_a_mux_sel",
+      "rhs": "bt_a_mux_sel",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "unused_b_mux_sel",
+      "rhs": "bt_b_mux_sel",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "bt_a_operand_o",
+      "rhs": "'0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "bt_b_operand_o",
+      "rhs": "'0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "alu_operand_b",
+      "rhs": "(alu_op_b_mux_sel == OP_B_IMM) ? imm_b : rf_rdata_b_fwd",
+      "rhs_signals": [
+        "imm_b",
+        "rf_rdata_b_fwd"
+      ]
+    },
+    {
+      "lhs": "imd_val_q_ex_o",
+      "rhs": "imd_val_q",
+      "rhs_signals": [
+        "imd_val_q"
+      ]
+    },
+    {
+      "lhs": "rf_we_id_o",
+      "rhs": "rf_we_raw & instr_executing & ~illegal_csr_insn_i",
+      "rhs_signals": [
+        "instr_executing",
+        "illegal_csr_insn_i"
+      ]
+    },
+    {
+      "lhs": "no_flush_csr_addr",
+      "rhs": "csr_addr_o inside {CSR_MSCRATCH, CSR_MEPC}",
+      "rhs_signals": [
+        "csr_addr_o"
+      ]
+    },
+    {
+      "lhs": "csr_pipe_flush",
+      "rhs": "(csr_op_en_o == 1)                                         &&\n                          (csr_op_o inside {CSR_OP_WRITE, CSR_OP_SET, CSR_OP_CLEAR}) &&\n                          !no_flush_csr_addr",
+      "rhs_signals": [
+        "csr_op_en_o",
+        "csr_op_o",
+        "no_flush_csr_addr"
+      ]
+    },
+    {
+      "lhs": "illegal_dret_insn",
+      "rhs": "dret_insn_dec & ~debug_mode_o",
+      "rhs_signals": [
+        "dret_insn_dec",
+        "debug_mode_o"
+      ]
+    },
+    {
+      "lhs": "illegal_umode_insn",
+      "rhs": "(priv_mode_i != PRIV_LVL_M) &\n                              \n                              (mret_insn_dec | (csr_mstatus_tw_i & wfi_insn_dec))",
+      "rhs_signals": [
+        "priv_mode_i",
+        "mret_insn_dec",
+        "csr_mstatus_tw_i",
+        "wfi_insn_dec"
+      ]
+    },
+    {
+      "lhs": "illegal_insn_o",
+      "rhs": "instr_valid_i &\n      (illegal_insn_dec | illegal_csr_insn_i | illegal_dret_insn | illegal_umode_insn)",
+      "rhs_signals": [
+        "instr_valid_i",
+        "illegal_insn_dec",
+        "illegal_csr_insn_i",
+        "illegal_dret_insn",
+        "illegal_umode_insn"
+      ]
+    },
+    {
+      "lhs": "mem_resp_intg_err",
+      "rhs": "lsu_load_resp_intg_err_i | lsu_store_resp_intg_err_i",
+      "rhs_signals": [
+        "lsu_load_resp_intg_err_i",
+        "lsu_store_resp_intg_err_i"
+      ]
+    },
+    {
+      "lhs": "multdiv_en_dec",
+      "rhs": "mult_en_dec | div_en_dec",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "lsu_req",
+      "rhs": "instr_executing ? data_req_allowed & lsu_req_dec  : 1'b0",
+      "rhs_signals": [
+        "instr_executing",
+        "data_req_allowed"
+      ]
+    },
+    {
+      "lhs": "mult_en_id",
+      "rhs": "instr_executing ? mult_en_dec                     : 1'b0",
+      "rhs_signals": [
+        "instr_executing"
+      ]
+    },
+    {
+      "lhs": "div_en_id",
+      "rhs": "instr_executing ? div_en_dec                      : 1'b0",
+      "rhs_signals": [
+        "instr_executing"
+      ]
+    },
+    {
+      "lhs": "lsu_req_o",
+      "rhs": "lsu_req",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "lsu_we_o",
+      "rhs": "lsu_we",
+      "rhs_signals": [
+        "lsu_we"
+      ]
+    },
+    {
+      "lhs": "lsu_type_o",
+      "rhs": "lsu_type",
+      "rhs_signals": [
+        "lsu_type"
+      ]
+    },
+    {
+      "lhs": "lsu_sign_ext_o",
+      "rhs": "lsu_sign_ext",
+      "rhs_signals": [
+        "lsu_sign_ext"
+      ]
+    },
+    {
+      "lhs": "lsu_wdata_o",
+      "rhs": "rf_rdata_b_fwd",
+      "rhs_signals": [
+        "rf_rdata_b_fwd"
+      ]
+    },
+    {
+      "lhs": "csr_op_en_o",
+      "rhs": "csr_access_o & instr_executing & instr_id_done_o",
+      "rhs_signals": [
+        "csr_access_o",
+        "instr_executing",
+        "instr_id_done_o"
+      ]
+    },
+    {
+      "lhs": "alu_operator_ex_o",
+      "rhs": "alu_operator",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "alu_operand_a_ex_o",
+      "rhs": "alu_operand_a",
+      "rhs_signals": [
+        "alu_operand_a"
+      ]
+    },
+    {
+      "lhs": "alu_operand_b_ex_o",
+      "rhs": "alu_operand_b",
+      "rhs_signals": [
+        "alu_operand_b"
+      ]
+    },
+    {
+      "lhs": "mult_en_ex_o",
+      "rhs": "mult_en_id",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "div_en_ex_o",
+      "rhs": "div_en_id",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "multdiv_operator_ex_o",
+      "rhs": "multdiv_operator",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "multdiv_signed_mode_ex_o",
+      "rhs": "multdiv_signed_mode",
+      "rhs_signals": [
+        "multdiv_signed_mode"
+      ]
+    },
+    {
+      "lhs": "multdiv_operand_a_ex_o",
+      "rhs": "rf_rdata_a_fwd",
+      "rhs_signals": [
+        "rf_rdata_a_fwd"
+      ]
+    },
+    {
+      "lhs": "multdiv_operand_b_ex_o",
+      "rhs": "rf_rdata_b_fwd",
+      "rhs_signals": [
+        "rf_rdata_b_fwd"
+      ]
+    },
+    {
+      "lhs": "branch_set_raw",
+      "rhs": "branch_set_raw_d",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "branch_set_raw",
+      "rhs": "(BranchTargetALU && !data_ind_timing_i) ? branch_set_raw_d :\n                                                                           branch_set_raw_q",
+      "rhs_signals": [
+        "data_ind_timing_i",
+        "branch_set_raw_q"
+      ]
+    },
+    {
+      "lhs": "branch_jump_set_done_d",
+      "rhs": "(branch_set_raw | jump_set_raw | branch_jump_set_done_q) &\n    ~instr_valid_clear_o",
+      "rhs_signals": [
+        "instr_valid_clear_o"
+      ]
+    },
+    {
+      "lhs": "jump_set",
+      "rhs": "jump_set_raw        & ~branch_jump_set_done_q",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "branch_set",
+      "rhs": "branch_set_raw      & ~branch_jump_set_done_q",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "branch_taken",
+      "rhs": "~data_ind_timing_i | branch_taken_q",
+      "rhs_signals": [
+        "data_ind_timing_i",
+        "branch_taken_q"
+      ]
+    },
+    {
+      "lhs": "branch_taken",
+      "rhs": "1'b1",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "nt_branch_addr_o",
+      "rhs": "pc_id_i + (instr_is_compressed_i ? 32'd2 : 32'd4)",
+      "rhs_signals": [
+        "pc_id_i",
+        "instr_is_compressed_i"
+      ]
+    },
+    {
+      "lhs": "nt_branch_addr_o",
+      "rhs": "32'd0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "multdiv_ready_id_o",
+      "rhs": "ready_wb_i",
+      "rhs_signals": [
+        "ready_wb_i"
+      ]
+    },
+    {
+      "lhs": "stall_id",
+      "rhs": "stall_ld_hz | stall_mem | stall_multdiv | stall_jump | stall_branch |\n                      stall_alu",
+      "rhs_signals": [
+        "stall_ld_hz",
+        "stall_mem",
+        "stall_multdiv",
+        "stall_jump",
+        "stall_branch",
+        "stall_alu"
+      ]
+    },
+    {
+      "lhs": "instr_done",
+      "rhs": "~stall_id & ~flush_id & instr_executing",
+      "rhs_signals": [
+        "stall_id",
+        "flush_id",
+        "instr_executing"
+      ]
+    },
+    {
+      "lhs": "instr_first_cycle",
+      "rhs": "instr_valid_i & (id_fsm_q == FIRST_CYCLE)",
+      "rhs_signals": [
+        "instr_valid_i"
+      ]
+    },
+    {
+      "lhs": "instr_first_cycle_id_o",
+      "rhs": "instr_first_cycle",
+      "rhs_signals": [
+        "instr_first_cycle"
+      ]
+    },
+    {
+      "lhs": "multicycle_done",
+      "rhs": "lsu_req_dec ? ~stall_mem : ex_valid_i",
+      "rhs_signals": [
+        "stall_mem",
+        "ex_valid_i"
+      ]
+    },
+    {
+      "lhs": "outstanding_memory_access",
+      "rhs": "(outstanding_load_wb_i | outstanding_store_wb_i) &\n                                       ~lsu_resp_valid_i",
+      "rhs_signals": [
+        "outstanding_load_wb_i",
+        "outstanding_store_wb_i",
+        "lsu_resp_valid_i"
+      ]
+    },
+    {
+      "lhs": "data_req_allowed",
+      "rhs": "~outstanding_memory_access",
+      "rhs_signals": [
+        "outstanding_memory_access"
+      ]
+    },
+    {
+      "lhs": "instr_kill",
+      "rhs": "instr_fetch_err_i |\n                        wb_exception      |\n                        id_exception      |\n                        ~controller_run",
+      "rhs_signals": [
+        "instr_fetch_err_i",
+        "wb_exception",
+        "id_exception",
+        "controller_run"
+      ]
+    },
+    {
+      "lhs": "instr_executing_spec",
+      "rhs": "instr_valid_i      &\n                                  ~instr_fetch_err_i &\n                                  controller_run     &\n                                  ~stall_ld_hz",
+      "rhs_signals": [
+        "instr_valid_i",
+        "instr_fetch_err_i",
+        "controller_run",
+        "stall_ld_hz"
+      ]
+    },
+    {
+      "lhs": "instr_executing",
+      "rhs": "instr_valid_i              &\n                             ~instr_kill                &\n                             ~stall_ld_hz               &\n                             ~outstanding_memory_access",
+      "rhs_signals": [
+        "instr_valid_i",
+        "instr_kill",
+        "stall_ld_hz",
+        "outstanding_memory_access"
+      ]
+    },
+    {
+      "lhs": "stall_mem",
+      "rhs": "instr_valid_i &\n                       (outstanding_memory_access | (lsu_req_dec & ~lsu_req_done_i))",
+      "rhs_signals": [
+        "instr_valid_i",
+        "outstanding_memory_access",
+        "lsu_req_done_i"
+      ]
+    },
+    {
+      "lhs": "rf_rd_a_wb_match",
+      "rhs": "(rf_waddr_wb_i == rf_raddr_a_o) & |rf_raddr_a_o",
+      "rhs_signals": [
+        "rf_waddr_wb_i",
+        "rf_raddr_a_o"
+      ]
+    },
+    {
+      "lhs": "rf_rd_b_wb_match",
+      "rhs": "(rf_waddr_wb_i == rf_raddr_b_o) & |rf_raddr_b_o",
+      "rhs_signals": [
+        "rf_waddr_wb_i",
+        "rf_raddr_b_o"
+      ]
+    },
+    {
+      "lhs": "rf_rd_a_wb_match_o",
+      "rhs": "rf_rd_a_wb_match",
+      "rhs_signals": [
+        "rf_rd_a_wb_match"
+      ]
+    },
+    {
+      "lhs": "rf_rd_b_wb_match_o",
+      "rhs": "rf_rd_b_wb_match",
+      "rhs_signals": [
+        "rf_rd_b_wb_match"
+      ]
+    },
+    {
+      "lhs": "rf_rd_a_hz",
+      "rhs": "rf_rd_a_wb_match & rf_ren_a",
+      "rhs_signals": [
+        "rf_rd_a_wb_match"
+      ]
+    },
+    {
+      "lhs": "rf_rd_b_hz",
+      "rhs": "rf_rd_b_wb_match & rf_ren_b",
+      "rhs_signals": [
+        "rf_rd_b_wb_match"
+      ]
+    },
+    {
+      "lhs": "rf_rdata_a_fwd",
+      "rhs": "rf_rd_a_wb_match & rf_write_wb_i ? rf_wdata_fwd_wb_i : rf_rdata_a_i",
+      "rhs_signals": [
+        "rf_rd_a_wb_match",
+        "rf_write_wb_i",
+        "rf_wdata_fwd_wb_i",
+        "rf_rdata_a_i"
+      ]
+    },
+    {
+      "lhs": "rf_rdata_b_fwd",
+      "rhs": "rf_rd_b_wb_match & rf_write_wb_i ? rf_wdata_fwd_wb_i : rf_rdata_b_i",
+      "rhs_signals": [
+        "rf_rd_b_wb_match",
+        "rf_write_wb_i",
+        "rf_wdata_fwd_wb_i",
+        "rf_rdata_b_i"
+      ]
+    },
+    {
+      "lhs": "stall_ld_hz",
+      "rhs": "outstanding_load_wb_i & (rf_rd_a_hz | rf_rd_b_hz)",
+      "rhs_signals": [
+        "outstanding_load_wb_i",
+        "rf_rd_a_hz",
+        "rf_rd_b_hz"
+      ]
+    },
+    {
+      "lhs": "instr_type_wb_o",
+      "rhs": "~lsu_req_dec ? WB_INSTR_OTHER :\n                              lsu_we      ? WB_INSTR_STORE :\n                                            WB_INSTR_LOAD",
+      "rhs_signals": [
+        "lsu_we"
+      ]
+    },
+    {
+      "lhs": "instr_id_done_o",
+      "rhs": "en_wb_o & ready_wb_i",
+      "rhs_signals": [
+        "en_wb_o",
+        "ready_wb_i"
+      ]
+    },
+    {
+      "lhs": "stall_wb",
+      "rhs": "en_wb_o & ~ready_wb_i",
+      "rhs_signals": [
+        "en_wb_o",
+        "ready_wb_i"
+      ]
+    },
+    {
+      "lhs": "perf_dside_wait_o",
+      "rhs": "instr_valid_i & ~instr_kill &\n                               (outstanding_memory_access | stall_ld_hz)",
+      "rhs_signals": [
+        "instr_valid_i",
+        "instr_kill",
+        "outstanding_memory_access",
+        "stall_ld_hz"
+      ]
+    },
+    {
+      "lhs": "expecting_load_resp_o",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "expecting_store_resp_o",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "multicycle_done",
+      "rhs": "lsu_req_dec ? lsu_resp_valid_i : ex_valid_i",
+      "rhs_signals": [
+        "lsu_resp_valid_i",
+        "ex_valid_i"
+      ]
+    },
+    {
+      "lhs": "data_req_allowed",
+      "rhs": "instr_first_cycle",
+      "rhs_signals": [
+        "instr_first_cycle"
+      ]
+    },
+    {
+      "lhs": "stall_mem",
+      "rhs": "instr_valid_i & (lsu_req_dec & (~lsu_resp_valid_i | instr_first_cycle))",
+      "rhs_signals": [
+        "instr_valid_i",
+        "lsu_resp_valid_i",
+        "instr_first_cycle"
+      ]
+    },
+    {
+      "lhs": "stall_ld_hz",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "instr_executing_spec",
+      "rhs": "instr_valid_i & ~instr_fetch_err_i & controller_run",
+      "rhs_signals": [
+        "instr_valid_i",
+        "instr_fetch_err_i",
+        "controller_run"
+      ]
+    },
+    {
+      "lhs": "instr_executing",
+      "rhs": "instr_executing_spec",
+      "rhs_signals": [
+        "instr_executing_spec"
+      ]
+    },
+    {
+      "lhs": "rf_rdata_a_fwd",
+      "rhs": "rf_rdata_a_i",
+      "rhs_signals": [
+        "rf_rdata_a_i"
+      ]
+    },
+    {
+      "lhs": "rf_rdata_b_fwd",
+      "rhs": "rf_rdata_b_i",
+      "rhs_signals": [
+        "rf_rdata_b_i"
+      ]
+    },
+    {
+      "lhs": "rf_rd_a_wb_match_o",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "rf_rd_b_wb_match_o",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "expecting_load_resp_o",
+      "rhs": "instr_valid_i & lsu_req_dec & ~instr_first_cycle & ~lsu_we",
+      "rhs_signals": [
+        "instr_valid_i",
+        "instr_first_cycle",
+        "lsu_we"
+      ]
+    },
+    {
+      "lhs": "expecting_store_resp_o",
+      "rhs": "instr_valid_i & lsu_req_dec & ~instr_first_cycle &  lsu_we",
+      "rhs_signals": [
+        "instr_valid_i",
+        "instr_first_cycle",
+        "lsu_we"
+      ]
+    },
+    {
+      "lhs": "unused_data_req_done_ex",
+      "rhs": "lsu_req_done_i",
+      "rhs_signals": [
+        "lsu_req_done_i"
+      ]
+    },
+    {
+      "lhs": "unused_rf_waddr_wb",
+      "rhs": "rf_waddr_wb_i",
+      "rhs_signals": [
+        "rf_waddr_wb_i"
+      ]
+    },
+    {
+      "lhs": "unused_rf_write_wb",
+      "rhs": "rf_write_wb_i",
+      "rhs_signals": [
+        "rf_write_wb_i"
+      ]
+    },
+    {
+      "lhs": "unused_outstanding_load_wb",
+      "rhs": "outstanding_load_wb_i",
+      "rhs_signals": [
+        "outstanding_load_wb_i"
+      ]
+    },
+    {
+      "lhs": "unused_outstanding_store_wb",
+      "rhs": "outstanding_store_wb_i",
+      "rhs_signals": [
+        "outstanding_store_wb_i"
+      ]
+    },
+    {
+      "lhs": "unused_wb_exception",
+      "rhs": "wb_exception",
+      "rhs_signals": [
+        "wb_exception"
+      ]
+    },
+    {
+      "lhs": "unused_rf_wdata_fwd_wb",
+      "rhs": "rf_wdata_fwd_wb_i",
+      "rhs_signals": [
+        "rf_wdata_fwd_wb_i"
+      ]
+    },
+    {
+      "lhs": "unused_id_exception",
+      "rhs": "id_exception",
+      "rhs_signals": [
+        "id_exception"
+      ]
+    },
+    {
+      "lhs": "instr_type_wb_o",
+      "rhs": "WB_INSTR_OTHER",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "stall_wb",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "perf_dside_wait_o",
+      "rhs": "instr_executing & lsu_req_dec & ~lsu_resp_valid_i",
+      "rhs_signals": [
+        "instr_executing",
+        "lsu_resp_valid_i"
+      ]
+    },
+    {
+      "lhs": "instr_id_done_o",
+      "rhs": "instr_done",
+      "rhs_signals": [
+        "instr_done"
+      ]
+    },
+    {
+      "lhs": "instr_perf_count_id_o",
+      "rhs": "~ebrk_insn & ~ecall_insn_dec & ~illegal_insn_dec &\n      ~illegal_csr_insn_i & ~instr_fetch_err_i",
+      "rhs_signals": [
+        "ebrk_insn",
+        "ecall_insn_dec",
+        "illegal_insn_dec",
+        "illegal_csr_insn_i",
+        "instr_fetch_err_i"
+      ]
+    },
+    {
+      "lhs": "en_wb_o",
+      "rhs": "instr_done",
+      "rhs_signals": [
+        "instr_done"
+      ]
+    },
+    {
+      "lhs": "perf_mul_wait_o",
+      "rhs": "stall_multdiv & mult_en_dec",
+      "rhs_signals": [
+        "stall_multdiv"
+      ]
+    },
+    {
+      "lhs": "perf_div_wait_o",
+      "rhs": "stall_multdiv & div_en_dec",
+      "rhs_signals": [
+        "stall_multdiv"
+      ]
+    },
+    {
+      "lhs": "multdiv_sel",
+      "rhs": "mult_sel_i | div_sel_i",
+      "rhs_signals": [
+        "mult_sel_i",
+        "div_sel_i"
+      ]
+    },
+    {
+      "lhs": "multdiv_sel",
+      "rhs": "1'b0",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "imd_val_we_o",
+      "rhs": "multdiv_sel ? multdiv_imd_val_we : alu_imd_val_we",
+      "rhs_signals": [
+        "multdiv_sel",
+        "multdiv_imd_val_we",
+        "alu_imd_val_we"
+      ]
+    },
+    {
+      "lhs": "alu_imd_val_q",
+      "rhs": "'{imd_val_q_i[0][31:0], imd_val_q_i[1][31:0]}",
+      "rhs_signals": [
+        "imd_val_q_i"
+      ]
+    },
+    {
+      "lhs": "result_ex_o",
+      "rhs": "multdiv_sel ? multdiv_result : alu_result",
+      "rhs_signals": [
+        "multdiv_sel"
+      ]
+    },
+    {
+      "lhs": "branch_decision_o",
+      "rhs": "alu_cmp_result",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "bt_alu_result",
+      "rhs": "bt_a_operand_i + bt_b_operand_i",
+      "rhs_signals": [
+        "bt_a_operand_i",
+        "bt_b_operand_i"
+      ]
+    },
+    {
+      "lhs": "unused_bt_carry",
+      "rhs": "bt_alu_result[32]",
+      "rhs_signals": [
+        "bt_alu_result"
+      ]
+    },
+    {
+      "lhs": "branch_target_o",
+      "rhs": "bt_alu_result[31:0]",
+      "rhs_signals": [
+        "bt_alu_result"
+      ]
+    },
+    {
+      "lhs": "unused_bt_a_operand",
+      "rhs": "bt_a_operand_i",
+      "rhs_signals": [
+        "bt_a_operand_i"
+      ]
+    },
+    {
+      "lhs": "unused_bt_b_operand",
+      "rhs": "bt_b_operand_i",
+      "rhs_signals": [
+        "bt_b_operand_i"
+      ]
+    },
+    {
+      "lhs": "branch_target_o",
+      "rhs": "alu_adder_result_ex_o",
+      "rhs_signals": [
+        "alu_adder_result_ex_o"
+      ]
+    },
+    {
+      "lhs": "ex_valid_o",
+      "rhs": "multdiv_sel ? multdiv_valid : ~(|alu_imd_val_we)",
+      "rhs_signals": [
+        "multdiv_sel",
+        "multdiv_valid",
+        "alu_imd_val_we"
+      ]
+    },
+    {
+      "lhs": "sva_multdiv_fsm_idle",
+      "rhs": "gen_multdiv_slow.multdiv_i.sva_fsm_idle",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "sva_multdiv_fsm_idle",
+      "rhs": "gen_multdiv_fast.multdiv_i.sva_fsm_idle",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "sva_multdiv_fsm_idle",
+      "rhs": "1'b1",
+      "rhs_signals": []
+    },
+    {
+      "lhs": "unused_sva_multdiv_fsm_idle",
+      "rhs": "sva_multdiv_fsm_idle",
+      "rhs_signals": [
+        "sva_multdiv_fsm_idle"
+      ]
+    }
+  ]
+}
