@@ -18,8 +18,8 @@ This repository implements **Stage 1 (Assertion Translation Stage)** of a
 larger formal security verification flow for RISC-V processors.
 
 The pipeline takes 1146 NS31A security assertions from MEMOCODE 2023
-(Chuah et al.) and automatically translates them to Ibex RTL using a
-PyVerilog-grounded fixed-template approach with Claude Code CLI, validated
+(Chuah et al.) and automatically translates them to Ibex RTL using an
+**RV-SigEx**-grounded fixed-template approach with Claude Code CLI, validated
 end-to-end by QuestaSim compilation and JasperGold FPV.
 
 **Stages 2–5 (quality ranking, Trojan evaluation, refinement, validation)
@@ -29,7 +29,7 @@ are out of scope for this paper and belong to the downstream journal paper.**
 
 ## Three Contributions
 
-1. **LLM-assisted assertion translation pipeline** — PyVerilog-grounded,
+1. **LLM-assisted assertion translation pipeline** — **RV-SigEx**-grounded,
    fixed-template, reproducible. Same RTL + same source assertion = same
    translated SVA every run.
 
@@ -47,7 +47,7 @@ are out of scope for this paper and belong to the downstream journal paper.**
 ```
 RTL (Ibex) + NS31A CSV + prompt template (seq/comb)
     │
-    ▼ 1A: parse_rtl.py (pyverilog)
+    ▼ 1A: parse_rtl.py (RV-SigEx — regex-based SV parser)
 signals.json
     │
     ▼ 1B: translate.py (Claude Code CLI)
@@ -103,7 +103,7 @@ ai-autotrans-rv/
 │
 ├── scripts/                         ← Python pipeline scripts
 │   ├── run_step1.py                 ← master orchestrator
-│   ├── parse_rtl.py                 ← 1A: pyverilog RTL parser
+│   ├── parse_rtl.py                 ← 1A: RV-SigEx (regex-based SV parser)
 │   ├── translate.py                 ← 1B: Claude Code CLI translation
 │   ├── validate_compile.py          ← 1C: QuestaSim compile loop
 │   ├── validate_fpv.py              ← 1D: JasperGold FPV baseline
@@ -184,6 +184,42 @@ git push
 
 All other metrics (AQS, AER, SAPC, TCFC, TDER, WTDR, AAD) belong to
 the downstream journal paper and are out of scope here.
+
+---
+
+## RV-SigEx — RISC-V Signal Extractor
+
+`scripts/parse_rtl.py` implements **RV-SigEx**, a regex-based SystemVerilog
+signal extractor developed for this pipeline.
+
+**What it extracts from any SV module:**
+- Port declarations (inputs/outputs) with width and direction
+- Internal signals (logic/wire/reg and typedef'd enum/struct variables)
+- Parameters
+- Package types (typedef enum/struct from ibex_pkg.sv), filtered per module
+- Connectivity (assign statements + always_comb block assignments)
+
+**Validated on Ibex (9 modules) — signal counts:**
+
+| Module | RTL File | Type | Inputs | Outputs | Internals | Connectivity | PkgTypes |
+|--------|----------|------|--------|---------|-----------|--------------|----------|
+| pmp | ibex_pmp.sv | combinational | 7 | 1 | 12 | 2 | 4 |
+| csr | ibex_cs_registers.sv | sequential | 44 | 27 | 109 | 161 | 9 |
+| do/eti/cf/mt | ibex_controller.sv | sequential | 38 | 27 | 39 | 55 | 7 |
+| ma | ibex_load_store_unit.sv | sequential | 13 | 18 | 20 | 58 | 0 |
+| ie | ibex_id_stage.sv + ibex_ex_block.sv | sequential | 64 | 77 | 89 | 144 | 15 |
+| ru | ibex_wb_stage.sv | sequential | 15 | 15 | 18 | 36 | 1 |
+
+Full stats: [`results/signals/parser_stats.txt`](results/signals/parser_stats.txt)
+
+**Reproducibility:** `git diff results/signals/` = empty on every re-run.
+Same RTL input always produces byte-identical `signals.json`.
+
+**General-purpose usage:**
+```bash
+python scripts/parse_rtl.py --sv-file path/to/any_module.sv
+python scripts/parse_rtl.py --sv-file path/to/any_module.sv --pkg-file path/to/pkg.sv
+```
 
 ---
 

@@ -1,0 +1,83 @@
+RV-SigEx Parser Statistics — Ibex RISC-V Security Modules
+Generated: 2026-05-08
+Parser: scripts/parse_rtl.py (RV-SigEx)
+Target: lowRISC Ibex (rtl/ibex/original/)
+Package: rtl/ibex/original/ibex_pkg.sv  (31 typedefs found)
+
+==========================================================================
+TABLE 1 — Signal Extraction Summary (for paper §4 / Table)
+==========================================================================
+
+Module   RTL File(s)                          Type          In   Out   Int
+------   ------------------------------------  ------------  ---  ---  ----
+pmp      ibex_pmp.sv                          combinational   7    1    12
+csr      ibex_cs_registers.sv                 sequential     44   27   109
+do       ibex_controller.sv                   sequential     38   27    39
+eti      ibex_controller.sv                   sequential     38   27    39
+cf       ibex_controller.sv                   sequential     38   27    39
+mt       ibex_controller.sv                   sequential     38   27    39
+ma       ibex_load_store_unit.sv              sequential     13   18    20
+ie       ibex_id_stage.sv + ibex_ex_block.sv  sequential     64   77    89
+ru       ibex_wb_stage.sv                     sequential     15   15    18
+
+Notes:
+  do/eti/cf/mt share ibex_controller.sv — same RTL, different logical modules
+  ie merges two RTL files — port/internal counts are combined
+  Int = internal signals (logic/wire/reg + typedef'd enum/struct variables)
+
+==========================================================================
+TABLE 2 — Connectivity & Package Types
+==========================================================================
+
+Module   Connectivity   PkgTypes   Pkg Type Names
+------   ------------   --------   -------------------------------------------
+pmp             2          4       priv_lvl_e, pmp_req_e, pmp_cfg_t,
+                                   pmp_mseccfg_t
+csr           161          9       csr_op_e, priv_lvl_e, x_debug_ver_e,
+                                   dbg_cause_e, csr_num_e, irqs_t,
+                                   exc_cause_t, pmp_cfg_t, pmp_mseccfg_t
+do/eti/cf/mt   55          7       ctrl_fsm_e, priv_lvl_e, dbg_cause_e,
+                                   exc_cause_t, irqs_t, pc_sel_e,
+                                   exc_pc_sel_e
+ma             58          0       (none)
+ie            144         15       alu_op_e, md_op_e, csr_op_e, priv_lvl_e,
+                                   wb_instr_type_e, op_a_sel_e, imm_a_sel_e,
+                                   imm_b_sel_e, rf_wd_sel_e, pc_sel_e,
+                                   exc_pc_sel_e, dbg_cause_e, csr_num_e,
+                                   irqs_t, exc_cause_t
+ru             36          1       wb_instr_type_e
+
+Notes:
+  Connectivity = assign statements + always_comb block assignments captured
+  PkgTypes = typedef enum/struct from ibex_pkg.sv used by this module
+
+==========================================================================
+TABLE 3 — Improvement vs Previous Parser Version
+==========================================================================
+
+Module        Internals        Connectivity     PkgTypes
+              old  ->  new     old  ->  new     old  -> new
+-----------   ---------------  ---------------  --------------
+pmp            12  ->   12       2  ->    2       4  ->   4
+csr           101  ->  109      95  ->  161       8  ->   9
+do/eti/cf/mt   38  ->   39      45  ->   55       6  ->   7
+ma             20  ->   20      26  ->   58       0  ->   0
+ie             81  ->   89     121  ->  144      11  ->  15
+ru             16  ->   18      37  ->   36       1  ->   1
+
+Key improvements:
+  + always_comb blocks now captured in connectivity (ma: 26->58, csr: 95->161)
+  + typedef'd enum/struct variables now in internals (csr: +8, ie: +8)
+  + pkg_types filtered to only types used by each module
+  + General-purpose: --sv-file, --pkg-file, --out-dir CLI options
+  + Auto-detects clock/reset from port names (not hardcoded)
+
+==========================================================================
+REPRODUCIBILITY CHECK
+==========================================================================
+
+Run 1:  2026-05-08  (commit dccfbc7)
+Run 2:  2026-05-08  (same session, re-run)
+Result: git diff results/signals/ = EMPTY  (byte-identical output)
+
+Reproducibility confirmed: same RTL input -> same signals.json every run.
