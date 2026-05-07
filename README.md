@@ -1,6 +1,6 @@
 # ai-autotrans-rv
 
-**Automated LLM-Assisted Translation of Security Assertions for RISC-V Processors**
+**AI-AutoTrans: AI-Assisted Automatic Translation of Security Assertions for RISC-V Processors**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -257,8 +257,8 @@ Funded by the Estonian Research Council grant **PSG837**.
 
 ```bibtex
 @inproceedings{imtiaz2026bec,
-  title     = {Automated {LLM}-Assisted Translation of Security Assertions
-               for {RISC-V} Processors},
+  title     = {{AI}-{AutoTrans}: {AI}-Assisted Automatic Translation of
+               Security Assertions for {RISC-V} Processors},
   author    = {Imtiaz, Sharjeel and Reinsalu, Uljana and Ghasempouri, Tara},
   booktitle = {Baltic Electronic Conference (BEC)},
   year      = {2026}
