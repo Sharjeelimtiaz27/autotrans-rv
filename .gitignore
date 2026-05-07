@@ -10,3 +10,4 @@ scripts/final_prompt_*.txt
 .DS_Store
 parser.out
 parsetab.py
+paper/
