@@ -1,7 +1,7 @@
 .claude/
 CLAUDE.md
-pipeline/signals/
-pipeline/final_prompt_*.txt
+scripts/signals/
+scripts/final_prompt_*.txt
 **/__pycache__/
 *.log
 *.jdb

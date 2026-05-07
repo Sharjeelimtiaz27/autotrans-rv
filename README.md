@@ -106,6 +106,17 @@ ai-autotrans-rv/
 │   ├── sequential_prompt.txt
 │   └── combinational_prompt.txt
 │
+├── scripts/                         ← Python pipeline scripts
+│   ├── run_step1.py                 ← master orchestrator
+│   ├── parse_rtl.py                 ← 1A: pyverilog RTL parser
+│   ├── build_prompt.py              ← 1B: prompt builder
+│   ├── translate.py                 ← 1C: Claude Code CLI translation
+│   ├── validate_compile.py          ← 1D: QuestaSim compile loop
+│   ├── build_wrapper.py             ← 1E: bind wrapper builder
+│   ├── validate_fpv.py              ← 1F: JasperGold FPV baseline
+│   ├── signals/                     ← MODULE_signals.json (gitignored)
+│   └── logs/                        ← MODULE_tar_log.json (TAR data)
+│
 ├── rtl/
 │   └── ibex/
 │       ├── original/                ← clean Ibex RTL (parser input — never modify)
@@ -135,18 +146,18 @@ pip install pyverilog pandas
 # Place NS31A CSVs in assertion_dataset/
 
 # Laptop: parse + translate (no licences needed)
-python run_step1.py --module pmp --mode local
-python run_step1.py --module csr --mode local
+python scripts/run_step1.py --module pmp --mode local
+python scripts/run_step1.py --module csr --mode local
 
 # Server: compile + FPV (QuestaSim + JasperGold licences required)
 git pull
-python run_step1.py --module pmp --mode server
+python scripts/run_step1.py --module pmp --mode server
 
 # All 9 modules
-python run_step1.py --all-modules
+python scripts/run_step1.py --all-modules
 
 # Status check
-python run_step1.py --status
+python scripts/run_step1.py --status
 ```
 
 ---
@@ -155,14 +166,14 @@ python run_step1.py --status
 
 ```bash
 # Laptop (parse + translate — no licences)
-python run_step1.py --module csr --mode local
+python scripts/run_step1.py --module csr --mode local
 git add assertions/ logs/
 git commit -m "ATS local: csr translated"
 git push
 
 # Server (QuestaSim + JasperGold)
 git pull
-python run_step1.py --module csr --mode server
+python scripts/run_step1.py --module csr --mode server
 git add results/ errors/
 git commit -m "ATS server: csr validated"
 git push
