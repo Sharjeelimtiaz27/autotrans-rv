@@ -1,6 +1,6 @@
-# AutoAssert-RV — Security Assertion Translation Prompt
+# ai-autotrans-rv — Security Assertion Translation Prompt
 # Module type: COMBINATIONAL
-# Populated by build_prompt.py — placeholders in {{DOUBLE_BRACES}}
+# Populated by translate.py — placeholders in {{DOUBLE_BRACES}}
 # Fixed template — edit only with advisor approval
 # NOTE: This template is for PMP (ibex_pmp.sv) — no always_ff, no clock domain
 
@@ -146,7 +146,7 @@ Output raw JSON (no markdown code fences, no commentary):
 Output complete, compilable SystemVerilog. Begin with this header exactly:
 
 // {{MODULE_NAME}}_bind.sv
-// AutoAssert-RV — ATS pipeline output
+// ai-autotrans-rv — ATS pipeline output
 // Source processor : NS31A
 // Target processor : Ibex (lowRISC)
 // Module           : {{MODULE_NAME}}
@@ -159,7 +159,7 @@ module {{MODULE_NAME}}_assertions (
 );
 
   // -----------------------------------------------------------------------
-  // Security assertions — translated from NS31A by AutoAssert-RV ATS
+  // Security assertions — translated from NS31A by ai-autotrans-rv ATS
   // -----------------------------------------------------------------------
 
   // <ASSERTION_1_NAME>: <brief description of what security property this checks>

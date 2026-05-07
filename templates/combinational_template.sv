@@ -1,11 +1,11 @@
 // combinational_template.sv
-// AutoAssert-RV — SVA bind file skeleton for COMBINATIONAL modules
+// ai-autotrans-rv — SVA bind file skeleton for COMBINATIONAL modules
 // This file shows the expected output structure Claude must produce.
 // Used ONLY for ibex_pmp.sv — the only combinational module in Ibex.
 // FORBIDDEN in this file: @(posedge), ##N, $past(), disable iff
 
 // {{MODULE_NAME}}_bind.sv
-// AutoAssert-RV — ATS pipeline output
+// ai-autotrans-rv — ATS pipeline output
 // Source processor : NS31A
 // Target processor : Ibex (lowRISC)
 // Module           : {{MODULE_NAME}}

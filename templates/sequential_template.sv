@@ -1,10 +1,10 @@
 // sequential_template.sv
-// AutoAssert-RV — SVA bind file skeleton for SEQUENTIAL modules
+// ai-autotrans-rv — SVA bind file skeleton for SEQUENTIAL modules
 // This file shows the expected output structure Claude must produce.
-// All {{PLACEHOLDERS}} are filled by build_prompt.py before sending to Claude.
+// All {{PLACEHOLDERS}} are filled by translate.py before sending to Claude.
 
 // {{MODULE_NAME}}_bind.sv
-// AutoAssert-RV — ATS pipeline output
+// ai-autotrans-rv — ATS pipeline output
 // Source processor : NS31A
 // Target processor : Ibex (lowRISC)
 // Module           : {{MODULE_NAME}}
