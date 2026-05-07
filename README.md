@@ -95,11 +95,18 @@ Clock: `clk_i`. Reset: `rst_ni` (active-low).
 
 ```
 ai-autotrans-rv/
-├── CLAUDE.md                        ← project spec (read every session)
 ├── README.md
 ├── requirements.txt                 ← pyverilog, pandas
 │
-├── pipeline/
+├── templates/                       ← FIXED SVA skeleton templates (input)
+│   ├── sequential_template.sv
+│   └── combinational_template.sv
+│
+├── prompts/                         ← FIXED Claude instruction templates (input)
+│   ├── sequential_prompt.txt
+│   └── combinational_prompt.txt
+│
+├── pipeline/                        ← Python scripts + runtime data
 │   ├── run_step1.py                 ← master orchestrator
 │   ├── parse_rtl.py                 ← 1A: pyverilog RTL parser
 │   ├── build_prompt.py              ← 1B: prompt builder
@@ -107,42 +114,25 @@ ai-autotrans-rv/
 │   ├── validate_compile.py          ← 1D: QuestaSim compile loop
 │   ├── build_wrapper.py             ← 1E: bind wrapper
 │   ├── validate_fpv.py              ← 1F: JasperGold FPV baseline
-│   ├── templates/
-│   │   ├── sequential_prompt.txt    ← FIXED — do not auto-generate
-│   │   └── combinational_prompt.txt ← FIXED — PMP only
 │   ├── signals/                     ← MODULE_signals.json (gitignored)
-│   ├── prompts/                     ← final_prompt_MODULE.txt (auto-gen)
 │   └── logs/                        ← MODULE_tar_log.json (TAR data)
 │
 ├── rtl/
 │   └── ibex/
-│       └── original/                ← Ibex RTL — READ ONLY, never modify
+│       ├── original/                ← clean Ibex RTL (parser input — never modify)
+│       └── trojaned_rtl/            ← trojaned RTL for assertion testing
 │
-├── assertion_dataset/               ← NS31A source assertions (9 CSVs)
-│   ├── ns31a_pmp.csv
-│   ├── ns31a_csr.csv
-│   └── ... (one per logical module)
+├── assertion_dataset/               ← NS31A source CSV files (one per module)
 │
-├── assertions/
-│   └── translated/                  ← SVA bind files (Stage 1 output)
+├── assertions/                      ← SVA bind files (pipeline output)
 │
-├── jasper/
-│   └── fpv_baseline.tcl             ← JasperGold FPV TCL template
+├── jasper_tcl/                      ← TCL scripts for JasperGold FPV + QuestaSim
 │
 ├── results/
 │   └── step1/                       ← FPV reports, vacuity, COV files
 │
-├── errors/
-│   └── archive/                     ← compile + FPV failure logs (NEVER DELETE)
-│
-├── metrics/
-│   ├── compute_tar.py               ← TAR per module
-│   └── compute_satr.py              ← SATR aggregate
-│
-└── paper/                           ← LaTeX source for BEC submission
-    ├── main.tex
-    ├── refs.bib
-    └── figures/
+└── errors/
+    └── archive/                     ← QuestaSim + JasperGold error logs (NEVER DELETE)
 ```
 
 ---
