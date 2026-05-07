@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-# Author: Sharjeel Imtiaz
+#
+# Author  : Sharjeel Imtiaz
+#           Tallinn University of Technology (TalTech)
+#
+# Contact : sharjeel.imtiaz@taltech.ee
+# Project : ai-autotrans-rv — BEC 2026
+#
 """
 Master Orchestrator — Stage 1 (Assertion Translation Stage)
 =======================================================

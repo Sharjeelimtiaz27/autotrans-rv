@@ -1,4 +1,10 @@
-// Author: Sharjeel Imtiaz
+//
+// Author  : Sharjeel Imtiaz
+//           Tallinn University of Technology (TalTech)
+//
+// Contact : sharjeel.imtiaz@taltech.ee
+// Project : ai-autotrans-rv — BEC 2026
+//
 // sequential_template.sv
 // ai-autotrans-rv — SVA bind file skeleton for SEQUENTIAL modules
 // This file shows the expected output structure Claude must produce.
