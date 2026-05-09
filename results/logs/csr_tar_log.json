@@ -1,0 +1,72 @@
+{
+  "module": "ibex_cs_registers",
+  "total_ns31a_signals": 10,
+  "auto_accepted": 8,
+  "untranslatable": 2,
+  "mappings": [
+    {
+      "id": 1,
+      "ns31a_signal": "UserMode",
+      "ibex_signal": "priv_mode_id_o == PRIV_LVL_U",
+      "status": "auto"
+    },
+    {
+      "id": 2,
+      "ns31a_signal": "CsrWriteOp",
+      "ibex_signal": "csr_op_i inside {CSR_OP_WRITE, CSR_OP_SET, CSR_OP_CLEAR}",
+      "status": "auto"
+    },
+    {
+      "id": 3,
+      "ns31a_signal": "WriteEn_mstatus",
+      "ibex_signal": "csr_we_int && csr_addr_i == CSR_MSTATUS",
+      "status": "auto"
+    },
+    {
+      "id": 4,
+      "ns31a_signal": "CsrWtAddr",
+      "ibex_signal": "csr_addr_i",
+      "status": "auto"
+    },
+    {
+      "id": 5,
+      "ns31a_signal": "CsrRdAddr",
+      "ibex_signal": "csr_addr_i",
+      "status": "auto"
+    },
+    {
+      "id": 6,
+      "ns31a_signal": "RdData_mstatus",
+      "ibex_signal": "csr_rdata_o",
+      "status": "auto"
+    },
+    {
+      "id": 7,
+      "ns31a_signal": "CSRRW/CSRRS/CSRRC/CSRRWI/CSRRSI/CSRRCI",
+      "ibex_signal": "csr_op_i",
+      "status": "auto"
+    },
+    {
+      "id": 8,
+      "ns31a_signal": "MieRegOut",
+      "ibex_signal": "mie",
+      "status": "auto"
+    },
+    {
+      "id": 9,
+      "ns31a_signal": "VendorID",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No equivalent constant signal for vendor ID in available signals; CsrMvendorId is a parameter, not a runtime signal"
+    },
+    {
+      "id": 10,
+      "ns31a_signal": "ExceptionFlag",
+      "ibex_signal": "illegal_csr_insn_o",
+      "status": "auto"
+    }
+  ],
+  "timestamp": "2026-05-09T22:01:19.943994+00:00",
+  "human_corrected": 0,
+  "TAR": 80.0
+}

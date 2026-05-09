@@ -9,7 +9,7 @@
 """
 Step 1D: JasperGold FPV Baseline (Proven + non-vacuous)
 =======================================================
-Input:  assertions/<MODULE>_bind.sv + rtl/ibex/original/<MODULE>.sv
+Input:  assertions/translated/<MODULE>_bind.sv + rtl/ibex/original/<MODULE>.sv
 Output: results/step1/<MODULE>_fpv_baseline.txt
         results/step1/<MODULE>_vacuity.txt
         results/step1/<MODULE>_cov.txt

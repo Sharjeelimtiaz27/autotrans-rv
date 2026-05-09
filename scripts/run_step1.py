@@ -10,15 +10,191 @@
 Master Orchestrator — Stage 1 (Assertion Translation Stage)
 =======================================================
 Usage:
-  python scripts/run_step1.py --module <pmp|csr|do|eti|cf|mt|ma|ie|ru>
-  python scripts/run_step1.py --module csr --mode local    # laptop: 1A + 1B only
-  python scripts/run_step1.py --module csr --mode server   # server: 1C + 1D only
-  python scripts/run_step1.py --all-modules                # all 9 logical modules
-  python scripts/run_step1.py --status                     # show pipeline state
+  python scripts/run_step1.py --module pmp               # single module, all steps
+  python scripts/run_step1.py --module csr --mode local  # laptop: 1A + 1B only
+  python scripts/run_step1.py --module csr --mode server # server: 1C + 1D only
+  python scripts/run_step1.py --all-modules              # all 9 modules (local mode)
+  python scripts/run_step1.py --all-modules --mode local # explicit local
+  python scripts/run_step1.py --status                   # show pipeline state
 
 Steps:
   1A  parse_rtl.py         RV-SigEx RTL parser -> signals.json
-  1B  translate.py         Claude Code CLI -> assertions/<MODULE>_bind.sv
-  1C  validate_compile.py  QuestaSim compile loop (max 3 retries)
-  1D  validate_fpv.py      JasperGold FPV baseline (Proven + non-vacuous)
+  1B  translate.py         DeepSeek NVIDIA NIM -> assertions/translated/<MODULE>_bind.sv
+  1C  validate_compile.py  QuestaSim compile loop (max 3 retries)  [server only]
+  1D  validate_fpv.py      JasperGold FPV baseline                 [server only]
+
+Modes:
+  local   Steps 1A + 1B only. No EDA tools required. Runs on any laptop with
+          Python 3.10+ and Claude Code CLI authenticated.
+  server  Steps 1C + 1D only. Requires QuestaSim + JasperGold licences.
+  full    All four steps (default when --mode not specified).
 """
+
+import argparse
+import json
+import subprocess
+import sys
+from datetime import datetime
+from pathlib import Path
+
+ROOT   = Path(__file__).resolve().parent.parent
+LOGS    = ROOT / "results" / "logs"
+SIGS    = ROOT / "results" / "signals"
+ASSERTS = ROOT / "assertions" / "translated"
+
+ALL_MODULES = ["pmp", "csr", "do", "eti", "cf", "mt", "ma", "ie", "ru"]
+
+BIND_FILES = {
+    "pmp": "ibex_pmp_bind.sv",
+    "csr": "ibex_csr_bind.sv",
+    "do":  "ibex_controller_do_bind.sv",
+    "eti": "ibex_controller_eti_bind.sv",
+    "cf":  "ibex_controller_cf_bind.sv",
+    "mt":  "ibex_controller_mt_bind.sv",
+    "ma":  "ibex_lsu_bind.sv",
+    "ie":  "ibex_id_bind.sv",
+    "ru":  "ibex_wb_bind.sv",
+}
+
+
+def _run(script: str, extra_args: list, label: str) -> bool:
+    """Run a pipeline script. Returns True on success."""
+    cmd = [sys.executable, str(ROOT / "scripts" / script)] + extra_args
+    print(f"\n  [{label}] {' '.join(cmd[2:])}")
+    r = subprocess.run(cmd, cwd=ROOT)
+    return r.returncode == 0
+
+
+def step1a(module: str) -> bool:
+    return _run("parse_rtl.py", ["--module", module], "1A parse_rtl")
+
+
+def step1b(module: str) -> bool:
+    return _run("translate.py", ["--module", module], "1B translate")
+
+
+def step1c(module: str) -> bool:
+    return _run("validate_compile.py", ["--module", module], "1C compile")
+
+
+def step1d(module: str) -> bool:
+    return _run("validate_fpv.py", ["--module", module], "1D fpv")
+
+
+def run_module(module: str, mode: str) -> dict:
+    """
+    Run pipeline for a single module. Returns result dict with pass/fail per step.
+    mode: 'local' | 'server' | 'full'
+    """
+    print(f"\n{'='*60}")
+    print(f"  Module: {module}  |  Mode: {mode}  |  {datetime.now().strftime('%H:%M:%S')}")
+    print(f"{'='*60}")
+
+    result = {"module": module, "mode": mode, "steps": {}}
+
+    if mode in ("local", "full"):
+        ok = step1a(module)
+        result["steps"]["1A"] = "pass" if ok else "fail"
+        if not ok:
+            print(f"  ERROR: 1A (parse_rtl) failed for {module} — stopping.", file=sys.stderr)
+            return result
+
+        ok = step1b(module)
+        result["steps"]["1B"] = "pass" if ok else "fail"
+        if not ok:
+            print(f"  ERROR: 1B (translate) failed for {module}.", file=sys.stderr)
+            if mode == "local":
+                return result
+
+    if mode in ("server", "full"):
+        ok = step1c(module)
+        result["steps"]["1C"] = "pass" if ok else "fail"
+        if not ok:
+            print(f"  ERROR: 1C (compile) failed for {module} — stopping.", file=sys.stderr)
+            return result
+
+        ok = step1d(module)
+        result["steps"]["1D"] = "pass" if ok else "fail"
+
+    return result
+
+
+def show_status():
+    """Print pipeline status for all 9 modules."""
+    print("\n=== AI-AutoTrans Pipeline Status ===\n")
+    header = f"{'Module':<6}  {'signals.json':<14}  {'bind file':<28}  {'TAR log':<12}  {'TAR %'}"
+    print(header)
+    print("-" * len(header))
+
+    for m in ALL_MODULES:
+        sig   = "OK" if (SIGS / f"{m}_signals.json").exists()     else "--"
+        bname = BIND_FILES[m]
+        bind  = "OK" if (ASSERTS / bname).exists()                 else "--"
+        log_p = LOGS / f"{m}_tar_log.json"
+        if log_p.exists():
+            try:
+                data = json.loads(log_p.read_text(encoding="utf-8"))
+                total = data.get("total_ns31a_groups", data.get("total_ns31a_signals", 0))
+                trans = data.get("translated", data.get("auto_accepted", 0))
+                cov   = data.get("translation_coverage", data.get("TAR", 0.0))
+                tar   = f"{cov:.1f}% ({trans}/{total} translated)"
+                log  = "OK"
+            except Exception:
+                tar = "err"
+                log = "err"
+        else:
+            log = "--"
+            tar = "--"
+        print(f"  {m:<6}  {sig:<14}  {bname:<28}  {log:<12}  {tar}")
+
+    print()
+
+
+def main():
+    ap = argparse.ArgumentParser(
+        description="run_step1.py — AI-AutoTrans pipeline orchestrator"
+    )
+    grp = ap.add_mutually_exclusive_group(required=True)
+    grp.add_argument("--module",  choices=ALL_MODULES, metavar="MODULE",
+                     help=f"Single module: {', '.join(ALL_MODULES)}")
+    grp.add_argument("--all-modules", action="store_true",
+                     help="Run all 9 logical modules sequentially")
+    grp.add_argument("--status", action="store_true",
+                     help="Show pipeline status for all modules")
+    ap.add_argument("--mode", choices=["local", "server", "full"], default="local",
+                    help="local=1A+1B only | server=1C+1D only | full=all (default: local)")
+
+    args = ap.parse_args()
+
+    if args.status:
+        show_status()
+        return
+
+    modules = ALL_MODULES if args.all_modules else [args.module]
+    results = []
+
+    for m in modules:
+        res = run_module(m, args.mode)
+        results.append(res)
+
+    # Summary
+    print(f"\n{'='*60}")
+    print("  SUMMARY")
+    print(f"{'='*60}")
+    for r in results:
+        steps_str = "  ".join(f"{k}:{v}" for k, v in r["steps"].items())
+        print(f"  {r['module']:<6}  {steps_str}")
+
+    failed = [r["module"] for r in results if "fail" in r["steps"].values()]
+    if failed:
+        print(f"\n  FAILED: {', '.join(failed)}")
+        sys.exit(1)
+    else:
+        print("\n  All modules completed successfully.")
+        if args.mode == "local":
+            print("  Next: git add assertions/translated/ results/logs/ && git commit && git push")
+            print("        Then on server: python scripts/run_step1.py --all-modules --mode server")
+
+
+if __name__ == "__main__":
+    main()

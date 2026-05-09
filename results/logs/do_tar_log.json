@@ -1,0 +1,63 @@
+{
+  "module": "ibex_controller_do",
+  "total_ns31a_signals": 4,
+  "auto_accepted": 2,
+  "untranslatable": 2,
+  "mappings": [
+    {
+      "id": 1,
+      "ns31a_signal": "EbreakDebug",
+      "ibex_signal": "ebrk_insn_i",
+      "status": "auto"
+    },
+    {
+      "id": 1,
+      "ns31a_signal": "Dpc",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No equivalent debug PC (dpc) output signal in Ibex controller"
+    },
+    {
+      "id": 2,
+      "ns31a_signal": "DebugStepExe",
+      "ibex_signal": "debug_single_step_i",
+      "status": "auto"
+    },
+    {
+      "id": 2,
+      "ns31a_signal": "JmpTarget",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No equivalent jump target output signal in Ibex controller"
+    },
+    {
+      "id": 3,
+      "ns31a_signal": "EnterDebugMode",
+      "ibex_signal": "debug_mode_entering_o",
+      "status": "auto"
+    },
+    {
+      "id": 3,
+      "ns31a_signal": "Dcsr[1:0]",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No dcsr register output in Ibex controller"
+    },
+    {
+      "id": 4,
+      "ns31a_signal": "DebugMode",
+      "ibex_signal": "debug_mode_o",
+      "status": "auto"
+    },
+    {
+      "id": 4,
+      "ns31a_signal": "WriteEn_dcsr",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No dcsr write enable signal in Ibex controller"
+    }
+  ],
+  "timestamp": "2026-05-09T22:06:06.474088+00:00",
+  "human_corrected": 0,
+  "TAR": 50.0
+}

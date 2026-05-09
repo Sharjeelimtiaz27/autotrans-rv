@@ -9,7 +9,7 @@
 """
 Step 1C: QuestaSim Compile Loop (max 3 retries)
 =======================================================
-Input:  assertions/<MODULE>_bind.sv
+Input:  assertions/translated/<MODULE>_bind.sv
 Output: compiled bind file  OR  errors/archive/<MODULE>_compile_<N>.log
 
 On FAIL: log error, build retry prompt (original + error), resend to Claude.

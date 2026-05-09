@@ -1,0 +1,74 @@
+{
+  "module": "ibex_controller_mt",
+  "total_ns31a_signals": 10,
+  "auto_accepted": 8,
+  "untranslatable": 2,
+  "mappings": [
+    {
+      "id": 1,
+      "ns31a_signal": "PrivMode",
+      "ibex_signal": "priv_mode_i",
+      "status": "auto"
+    },
+    {
+      "id": 2,
+      "ns31a_signal": "DebugMode",
+      "ibex_signal": "debug_mode_o",
+      "status": "auto"
+    },
+    {
+      "id": 3,
+      "ns31a_signal": "MstatusMIE",
+      "ibex_signal": "csr_mstatus_mie_i",
+      "status": "auto"
+    },
+    {
+      "id": 4,
+      "ns31a_signal": "MstatusMPP",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No equivalent signal for MPP field in Ibex available signals"
+    },
+    {
+      "id": 5,
+      "ns31a_signal": "exception_happen",
+      "ibex_signal": "id_exception_o",
+      "status": "auto"
+    },
+    {
+      "id": 6,
+      "ns31a_signal": "mret_occured",
+      "ibex_signal": "mret_insn_i",
+      "status": "auto"
+    },
+    {
+      "id": 7,
+      "ns31a_signal": "Mip",
+      "ibex_signal": "irq_pending_i",
+      "status": "auto"
+    },
+    {
+      "id": 8,
+      "ns31a_signal": "Mie",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No equivalent signal for MIE CSR fields in Ibex available signals"
+    },
+    {
+      "id": 9,
+      "ns31a_signal": "halt_request",
+      "ibex_signal": "debug_req_i",
+      "status": "auto"
+    },
+    {
+      "id": 10,
+      "ns31a_signal": "dcsr_previous_mode",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No equivalent signal for dcsr previous mode in Ibex available signals"
+    }
+  ],
+  "timestamp": "2026-05-09T22:12:59.390263+00:00",
+  "human_corrected": 0,
+  "TAR": 80.0
+}

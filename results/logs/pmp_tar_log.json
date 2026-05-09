@@ -1,0 +1,81 @@
+{
+  "module": "ibex_pmp",
+  "total_ns31a_signals": 108,
+  "auto_accepted": 0,
+  "untranslatable": 108,
+  "mappings": [
+    {
+      "id": 1,
+      "ns31a_signal": "RegData_Pmpcfg0.L",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No register write data signals available; combinational module has no write valid signals"
+    },
+    {
+      "id": 2,
+      "ns31a_signal": "RegData_Pmpcfg0.L, hartRst",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No register data or reset signals; combinational module cannot check persistence over time"
+    },
+    {
+      "id": 3,
+      "ns31a_signal": "RegData_Pmpcfg0.L, RegData_PmpcfgRegs0[4:0]",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No register data signals; $stable() requires sequential logic not available in combinational module"
+    },
+    {
+      "id": 4,
+      "ns31a_signal": "RegData_Pmpcfg1.L, RegData_PmpcfgRegs1.A, pmpaddr0_WtVld",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No register data or write valid signals available"
+    },
+    {
+      "id": 5,
+      "ns31a_signal": "RegData_Pmpcfg0.L, RegData_Pmpcfg0.A, RegData_Pmpcfg1.A, CSRWrite, pmpaddr0_WtVld",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No register data, CSR write, or write valid signals available"
+    },
+    {
+      "id": 6,
+      "ns31a_signal": "RegData_Pmp1.L, RegData_Pmpcfg1.A, CSRWrite, pmpaddr0_WtVld, pmpaddr1_WtVld",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No register data, CSR write, or write valid signals available"
+    },
+    {
+      "id": 7,
+      "ns31a_signal": "Multiple PMP signals",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No addressing mode or permission check signals available for prioritization matrix"
+    },
+    {
+      "id": 8,
+      "ns31a_signal": "Opcode, tor_in_region, na4_in_region, napot_in_region, LSPrivMode, DebugMode, LoadAccessFault",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No opcode, region match, privilege mode, debug mode, or fault signals available"
+    },
+    {
+      "id": 9,
+      "ns31a_signal": "Multiple PMP signals",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No region match or privilege mode signals available for S/U mode access checks"
+    },
+    {
+      "id": 10,
+      "ns31a_signal": "PipeRegEn, LoadAccessFault, RegData",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No pipeline enable, fault, or register data signals available; $past() requires sequential logic"
+    }
+  ],
+  "timestamp": "2026-05-09T22:42:46.396341+00:00",
+  "human_corrected": 0,
+  "TAR": 0.0
+}

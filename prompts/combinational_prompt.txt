@@ -2,7 +2,6 @@
 # Module type: COMBINATIONAL
 # Populated by translate.py — placeholders in {{DOUBLE_BRACES}}
 # Fixed template — edit only with advisor approval
-# NOTE: This template is for PMP (ibex_pmp.sv) — no always_ff, no clock domain
 
 ================================================================================
 ROLE
@@ -17,6 +16,24 @@ You must produce formally verifiable SVA that:
   - Is non-vacuous (antecedent fires in normal operation)
   - Uses ONLY the signals listed in AVAILABLE SIGNALS below
 
+CRITICAL TRANSLATION PHILOSOPHY:
+  Every assertion group MUST be translated. There is no "untranslatable".
+  Translate the SECURITY INTENT, not the exact syntax.
+  Ask: what security property is this assertion checking?
+  Then express that property using the available Ibex signals.
+
+  This module is COMBINATIONAL. The NS31A source assertions may reference
+  sequential signals ($past, registers, write-valid strobes) that do not exist
+  here. Your job is to express the SAME SECURITY GUARANTEE using combinational
+  logic:
+    - "Lock bit persists after write" (sequential) →
+      "When lock=1, access-control output correctly blocks requests" (combinational)
+    - "CSR write is blocked when locked" (sequential) →
+      "When cfg.lock=1, any write-type request produces an error output"
+    - "PMP entry with mode=OFF denies all access" →
+      "When cfg.A==OFF, pmp_req_err_o is asserted for any request type"
+  The combinational module enforces the EFFECT. Verify the effect.
+
 ================================================================================
 TARGET MODULE
 ================================================================================
@@ -29,7 +46,7 @@ Parameters   : {{PARAMETERS}}
 CRITICAL: This module is purely combinational.
   - NO @(posedge clk), NO ##N, NO $past(), NO $rose(), NO $fell()
   - NO disable iff, NO clocking blocks
-  - Use immediate assertions or concurrent properties without clocking
+  - Use concurrent properties without a clocking event, or always_comb assertions
 
 ================================================================================
 AVAILABLE SIGNALS — USE ONLY THESE — NEVER INVENT SIGNAL NAMES
@@ -51,8 +68,8 @@ These are extracted from ibex_pkg.sv by RV-SigEx.
 
 Rules:
   - For enum-typed signals: always use symbolic constant names, never raw bit values
-      CORRECT:   priv_mode_i == PRIV_LVL_M
-      INCORRECT: priv_mode_i == 2'b11
+      CORRECT:   priv_mode_i[ch] == PRIV_LVL_M
+      INCORRECT: priv_mode_i[ch] == 2'b11
   - For struct-typed signals: use dot notation with the exact field names listed below
       CORRECT:   csr_pmp_cfg_i[r].lock
       INCORRECT: csr_pmp_cfg_i[r].lock_bit  (invented name — compile error)
@@ -61,10 +78,12 @@ Rules:
 
 ================================================================================
 NS31A SOURCE ASSERTIONS — TRANSLATE EACH ONE
+Total assertion groups: {{NS31A_TOTAL_GROUPS}}
+Produce exactly {{NS31A_TOTAL_GROUPS}} entries in the JSON mappings array (one per group).
 ================================================================================
-Each row is one assertion from the NS31A reference processor.
-Map each NS31A signal to the semantically closest Ibex signal from
-AVAILABLE SIGNALS. If no equivalent exists, mark as UNTRANSLATABLE.
+Each row is one assertion group from the NS31A reference processor.
+For each group: identify the security intent, adapt it to the combinational
+context, find the best Ibex signal mapping, and write an SVA property.
 
 {{NS31A_ASSERTIONS}}
 
@@ -74,52 +93,59 @@ TRANSLATION RULES — MANDATORY — NEVER VIOLATE ANY RULE
 SIGNAL RULES:
   R1. Use ONLY signal names from AVAILABLE SIGNALS. Zero exceptions.
   R2. Signal widths must match — check the width column before using a signal.
-  R3. Never concatenate or slice signals unless the NS31A assertion explicitly
-      requires a sub-field that maps to a known Ibex bit range.
+  R3. Never concatenate or slice signals unless required to match a known Ibex
+      bit range.
   R4. For enum-typed signals: use symbolic constant names from PACKAGE TYPE
       DEFINITIONS above. Never hardcode raw bit values (e.g., 2'b11).
   R5. For struct-typed signals: use dot notation with exact field names from
       PACKAGE TYPE DEFINITIONS above. Never invent or guess field names.
 
+TRANSLATION APPROACH RULES:
+  R6. NEVER skip an assertion group. Every group must produce at least one
+      SVA property in the bind file.
+  R7. If the NS31A assertion uses sequential signals (write-valid, $past,
+      register state): translate to the combinational CONSEQUENCE — check
+      what the combinational module outputs given the relevant input configuration.
+  R8. If an NS31A signal has no direct Ibex equivalent: find the semantically
+      closest signal and translate the security intent using it.
+  R9. If multiple NS31A signals are all part of one security concept: write
+      one property covering that concept using available Ibex signals.
+
 SVA SYNTAX RULES (COMBINATIONAL):
-  R6. FORBIDDEN: @(posedge ...), ##N, $past(), $rose(), $fell(),
-      disable iff, always_ff, posedge, negedge, clocking blocks.
-      Any use of these is a compilation error for this module type.
-  R7. Use concurrent assertion syntax WITHOUT a clocking event:
-        property PROP_NAME;
-          <boolean expression> |-> <boolean expression>;
-        endproperty
-        assert property (PROP_NAME);
-      OR use simple assign-level immediate assertions:
-        always_comb begin
-          PROP_NAME: assert (<boolean expression>);
-        end
-  R8. For pure combinational implication (if A then B must hold now):
-        property PROP_NAME;
-          <condition> |-> <consequence>;
-        endproperty
-  R9. Every property must have both a named property block AND a named assert:
-        property PROP_NAME; <antecedent> |-> <consequent>; endproperty
-        assert property (PROP_NAME);
-  R10. Property names: {{MODULE_SHORT}}_SEC_<N> where N is a sequential integer.
-  R11. Antecedent must be reachable in normal (non-Trojan) operation.
-       If the antecedent can never be true, rewrite it.
-  R12. No $display, $error, or simulation-only constructs inside properties.
+  R10. FORBIDDEN: @(posedge ...), ##N, $past(), $rose(), $fell(),
+       disable iff, always_ff, posedge, negedge, clocking blocks.
+       Any use of these causes a compilation error for this module type.
+  R11. Use concurrent assertion syntax WITHOUT a clocking event:
+         property PROP_NAME;
+           <boolean expression> |-> <boolean expression>;
+         endproperty
+         assert property (PROP_NAME);
+       OR immediate assertions inside always_comb:
+         always_comb begin
+           PROP_NAME: assert (<boolean expression>);
+         end
+  R12. For combinational implication (if A then B must hold now):
+         property PROP_NAME;
+           <condition> |-> <consequence>;
+         endproperty
+  R13. Every property must have both a named property block AND a named assert:
+         property PROP_NAME; <antecedent> |-> <consequent>; endproperty
+         assert property (PROP_NAME);
+  R14. Property names: {{MODULE_SHORT}}_SEC_<N> where N is a sequential integer.
+  R15. Antecedent must be reachable in normal (non-Trojan) operation.
+       If the antecedent can never be true given available signals, rewrite it.
+  R16. No $display, $error, or simulation-only constructs inside properties.
 
-BIND FILE RULES:
-  R13. Port list of the assertion module must match the DUT port list exactly.
-       Use (input/output + width + name) for each port.
-  R14. NO clock or reset in the port list (combinational module has neither).
-  R15. Bind statement goes OUTSIDE and AFTER the assertion module:
+BIND FILE PORT RULES:
+  R17. ALL ports in the assertion module must be declared as INPUT.
+       This includes signals that are outputs of the DUT.
+       The assertion module only observes signals — it never drives them.
+       Driving a DUT output from the assertion module causes a driver conflict.
+  R18. NO clock or reset in the port list (combinational module has neither).
+  R19. Bind statement goes OUTSIDE and AFTER the assertion module:
          bind {{MODULE_NAME}} {{MODULE_NAME}}_assertions u_{{MODULE_SHORT}}_assert (.*);
-  R16. The (.*) wildcard connects all ports by name — valid only if port names
+  R20. The (.*) wildcard connects all ports by name — valid only if port names
        in the assertion module exactly match DUT port names.
-
-UNTRANSLATABLE RULES:
-  R17. If a NS31A signal has no Ibex equivalent: mark status "flagged" in the
-       JSON log and skip that assertion entirely. Do not guess or approximate.
-  R18. If an assertion references MULTIPLE untranslatable signals: one "flagged"
-       entry covers all of them — do not create a partial assertion.
 
 ================================================================================
 QUALITY CHECKLIST — VERIFY BEFORE OUTPUTTING
@@ -131,9 +157,10 @@ Before writing output, mentally verify:
   [ ] Antecedent is reachable (not always false) on clean RTL
   [ ] Enum comparisons use symbolic names (PRIV_LVL_M), not raw bits (2'b11)
   [ ] Struct field access uses exact names from PACKAGE TYPE DEFINITIONS
-  [ ] Bind statement is outside the module
+  [ ] ALL ports in assertion module are declared input (including DUT outputs)
   [ ] No clock or reset port in the module port list
-  [ ] JSON signal count matches assertion count in the Excel input
+  [ ] JSON has exactly {{NS31A_TOTAL_GROUPS}} entries, one per assertion group
+  [ ] Every assertion group produced at least one SVA property
 
 ================================================================================
 REQUIRED OUTPUT — PRODUCE EXACTLY TWO SECTIONS IN THIS ORDER
@@ -144,22 +171,16 @@ Output raw JSON (no markdown code fences, no commentary):
 
 {
   "module": "{{MODULE_NAME}}",
-  "total_ns31a_signals": <integer>,
-  "auto_accepted": <integer>,
-  "untranslatable": <integer>,
+  "total_ns31a_groups": {{NS31A_TOTAL_GROUPS}},
+  "translated": {{NS31A_TOTAL_GROUPS}},
   "mappings": [
     {
       "id": 1,
-      "ns31a_signal": "<ns31a signal name>",
-      "ibex_signal": "<ibex signal name from AVAILABLE SIGNALS>",
-      "status": "auto"
-    },
-    {
-      "id": 2,
-      "ns31a_signal": "<ns31a signal name>",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "<brief reason>"
+      "ns31a_signal": "<ns31a signal or property description>",
+      "ibex_signal": "<ibex signal(s) used from AVAILABLE SIGNALS>",
+      "property_name": "{{MODULE_SHORT}}_SEC_1",
+      "status": "translated",
+      "notes": "<brief note on how sequential intent was adapted to combinational>"
     }
   ]
 }
@@ -176,7 +197,8 @@ Output complete, compilable SystemVerilog. Begin with this header exactly:
 // DO NOT MODIFY — regenerate via pipeline if changes needed
 
 module {{MODULE_NAME}}_assertions (
-    // --- ports matching DUT — NO clock or reset (combinational module) ---
+    // ALL ports are input — assertion module observes only, never drives
+    // NO clock or reset — combinational module
     {{PORT_DECLARATIONS}}
 );
 
@@ -190,7 +212,7 @@ module {{MODULE_NAME}}_assertions (
   endproperty
   assert property ({{MODULE_SHORT}}_SEC_1);
 
-  // ... repeat for each translated assertion ...
+  // ... repeat for each assertion group ...
 
 endmodule
 

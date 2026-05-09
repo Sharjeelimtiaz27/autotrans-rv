@@ -1,0 +1,25 @@
+{
+  "module": "ibex_wb_stage",
+  "total_ns31a_signals": 2,
+  "auto_accepted": 1,
+  "untranslatable": 1,
+  "mappings": [
+    {
+      "id": 1,
+      "ns31a_signal": "WbWriteReg, RegBankWbEn, RegBankWbRd, InstCode[11:7]",
+      "ibex_signal": "rf_we_wb_o, rf_waddr_wb_o, rf_waddr_id_i",
+      "status": "auto",
+      "notes": "Mapped write enable and write address signals. InstCode[11:7] maps to rf_waddr_id_i (target register from ID stage)."
+    },
+    {
+      "id": 2,
+      "ns31a_signal": "RegData1[31:0], InstCode[11:7]",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No register file data output port available in ibex_wb_stage. Register file contents are internal to ibex_register_file, not exposed at this module boundary."
+    }
+  ],
+  "timestamp": "2026-05-09T22:28:15.813815+00:00",
+  "human_corrected": 0,
+  "TAR": 50.0
+}

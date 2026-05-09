@@ -16,6 +16,15 @@ You must produce formally verifiable SVA that:
   - Is non-vacuous (antecedent fires in normal operation)
   - Uses ONLY the signals listed in AVAILABLE SIGNALS below
 
+CRITICAL TRANSLATION PHILOSOPHY:
+  Every assertion group MUST be translated. There is no "untranslatable".
+  Translate the SECURITY INTENT, not the exact syntax.
+  Ask: what security property is this assertion checking?
+  Then express that property using the available Ibex signals.
+  If the exact NS31A signal does not exist in Ibex, find the semantically
+  closest equivalent. If no single signal maps directly, combine signals
+  that together capture the same security guarantee.
+
 ================================================================================
 TARGET MODULE
 ================================================================================
@@ -55,10 +64,12 @@ Rules:
 
 ================================================================================
 NS31A SOURCE ASSERTIONS — TRANSLATE EACH ONE
+Total assertion groups: {{NS31A_TOTAL_GROUPS}}
+Produce exactly {{NS31A_TOTAL_GROUPS}} entries in the JSON mappings array (one per group).
 ================================================================================
-Each row is one assertion from the NS31A reference processor.
-Map each NS31A signal to the semantically closest Ibex signal from
-AVAILABLE SIGNALS. If no equivalent exists, mark as UNTRANSLATABLE.
+Each row is one assertion group from the NS31A reference processor.
+For each group: identify the security intent, find the best Ibex signal mapping,
+and write an SVA property that captures that intent on Ibex.
 
 {{NS31A_ASSERTIONS}}
 
@@ -68,44 +79,57 @@ TRANSLATION RULES — MANDATORY — NEVER VIOLATE ANY RULE
 SIGNAL RULES:
   R1. Use ONLY signal names from AVAILABLE SIGNALS. Zero exceptions.
   R2. Signal widths must match — check the width column before using a signal.
-  R3. Never concatenate or slice signals unless the NS31A assertion explicitly
-      requires a sub-field that maps to a known Ibex bit range.
+  R3. Never concatenate or slice signals unless required to match a known Ibex
+      bit range.
   R4. For enum-typed signals: use symbolic constant names from PACKAGE TYPE
       DEFINITIONS above. Never hardcode raw bit values (e.g., 2'b11).
   R5. For struct-typed signals: use dot notation with exact field names from
       PACKAGE TYPE DEFINITIONS above. Never invent or guess field names.
 
+TRANSLATION APPROACH RULES:
+  R6. NEVER skip an assertion group. Every group must produce at least one
+      SVA property in the bind file.
+  R7. If the NS31A signal name does not exist in AVAILABLE SIGNALS:
+        - Find the semantically closest signal in AVAILABLE SIGNALS
+        - Translate the security intent using that signal
+        - Document the mapping in the JSON log
+  R8. If an assertion checks a property that Ibex expresses differently
+      (e.g., NS31A has an explicit status flag that Ibex derives implicitly):
+        - Use the Ibex signals that together encode the same condition
+        - Write the assertion in terms of those Ibex signals
+  R9. If a NS31A property references architectural state that Ibex handles
+      internally (not observable as a port or internal signal):
+        - Express the OBSERVABLE CONSEQUENCE of that property in Ibex
+        - Example: "CSR write blocked when locked" → check that the relevant
+          output signal is unchanged when the lock condition is active
+
 SVA SYNTAX RULES:
-  R6. Every property block: @(posedge {{CLOCK}}) disable iff (!{{RESET}})
-  R7. Temporal delay: use ##N (N >= 1). Never use #delay.
-  R8. Previous cycle value: use $past(signal) or $past(signal, N).
-  R9. Implication: use |-> (overlapping) or |=> (non-overlapping) correctly.
-      |->  : consequent starts at same clock cycle as antecedent end
-      |=>  : consequent starts one cycle after antecedent end
-  R10. Every property must have both a named property block AND a named assert:
-        property PROP_NAME; @(posedge {{CLOCK}}) disable iff (!{{RESET}})
-          <antecedent> |-> <consequent>;
-        endproperty
-        assert property (PROP_NAME);
-  R11. Property names: {{MODULE_SHORT}}_SEC_<N> where N is a sequential integer.
-  R12. Antecedent must be reachable in normal (non-Trojan) operation.
+  R10. Every property block: @(posedge {{CLOCK}}) disable iff (!{{RESET}})
+  R11. Temporal delay: use ##N (N >= 1). Never use #delay.
+  R12. Previous cycle value: use $past(signal) or $past(signal, N).
+  R13. Implication: use |-> (overlapping) or |=> (non-overlapping) correctly.
+       |->  : consequent starts at same clock cycle as antecedent end
+       |=>  : consequent starts one cycle after antecedent end
+  R14. Every property must have both a named property block AND a named assert:
+         property PROP_NAME; @(posedge {{CLOCK}}) disable iff (!{{RESET}})
+           <antecedent> |-> <consequent>;
+         endproperty
+         assert property (PROP_NAME);
+  R15. Property names: {{MODULE_SHORT}}_SEC_<N> where N is a sequential integer.
+  R16. Antecedent must be reachable in normal (non-Trojan) operation.
        If the antecedent can never fire on clean RTL, rewrite it.
-  R13. No $display, $error, or simulation-only constructs inside properties.
+  R17. No $display, $error, or simulation-only constructs inside properties.
 
-BIND FILE RULES:
-  R14. Port list of the assertion module must match the DUT port list exactly.
-       Use (input/output + width + name) for each port.
-  R15. Clock and reset must be in the port list.
-  R16. Bind statement goes OUTSIDE and AFTER the assertion module:
+BIND FILE PORT RULES:
+  R18. ALL ports in the assertion module must be declared as INPUT.
+       This includes signals that are outputs of the DUT.
+       The assertion module only observes signals — it never drives them.
+       Driving a DUT output from the assertion module causes a driver conflict.
+  R19. Clock and reset must be in the port list as input.
+  R20. Bind statement goes OUTSIDE and AFTER the assertion module:
          bind {{MODULE_NAME}} {{MODULE_NAME}}_assertions u_{{MODULE_SHORT}}_assert (.*);
-  R17. The (.*) wildcard connects all ports by name — valid only if port names
+  R21. The (.*) wildcard connects all ports by name — valid only if port names
        in the assertion module exactly match DUT port names.
-
-UNTRANSLATABLE RULES:
-  R18. If a NS31A signal has no Ibex equivalent: mark status "flagged" in the
-       JSON log and skip that assertion entirely. Do not guess or approximate.
-  R19. If an assertion references MULTIPLE untranslatable signals: one "flagged"
-       entry covers all of them — do not create a partial assertion.
 
 ================================================================================
 QUALITY CHECKLIST — VERIFY BEFORE OUTPUTTING
@@ -114,12 +138,13 @@ Before writing output, mentally verify:
   [ ] Every signal name appears in AVAILABLE SIGNALS
   [ ] Every property has @(posedge {{CLOCK}}) disable iff (!{{RESET}})
   [ ] Every property has both property block and assert statement
-  [ ] No temporal operators on combinational signals without clocking
   [ ] Antecedent is reachable (not always false) on clean RTL
   [ ] Enum comparisons use symbolic names (PRIV_LVL_M), not raw bits (2'b11)
   [ ] Struct field access uses exact names from PACKAGE TYPE DEFINITIONS
+  [ ] ALL ports in assertion module are declared input (including DUT outputs)
   [ ] Bind statement is outside the module
-  [ ] JSON signal count matches assertion count in the Excel input
+  [ ] JSON has exactly {{NS31A_TOTAL_GROUPS}} entries, one per assertion group
+  [ ] Every assertion group produced at least one SVA property
 
 ================================================================================
 REQUIRED OUTPUT — PRODUCE EXACTLY TWO SECTIONS IN THIS ORDER
@@ -130,22 +155,16 @@ Output raw JSON (no markdown code fences, no commentary):
 
 {
   "module": "{{MODULE_NAME}}",
-  "total_ns31a_signals": <integer>,
-  "auto_accepted": <integer>,
-  "untranslatable": <integer>,
+  "total_ns31a_groups": {{NS31A_TOTAL_GROUPS}},
+  "translated": {{NS31A_TOTAL_GROUPS}},
   "mappings": [
     {
       "id": 1,
-      "ns31a_signal": "<ns31a signal name>",
-      "ibex_signal": "<ibex signal name from AVAILABLE SIGNALS>",
-      "status": "auto"
-    },
-    {
-      "id": 2,
-      "ns31a_signal": "<ns31a signal name>",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "<brief reason — e.g. no equivalent control signal in Ibex>"
+      "ns31a_signal": "<ns31a signal or property description>",
+      "ibex_signal": "<ibex signal(s) used from AVAILABLE SIGNALS>",
+      "property_name": "{{MODULE_SHORT}}_SEC_1",
+      "status": "translated",
+      "notes": "<brief note on mapping strategy if indirect>"
     }
   ]
 }
@@ -162,10 +181,9 @@ Output complete, compilable SystemVerilog. Begin with this header exactly:
 // DO NOT MODIFY — regenerate via pipeline if changes needed
 
 module {{MODULE_NAME}}_assertions (
-    // Clock and reset
+    // ALL ports are input — assertion module observes only, never drives
     input logic {{CLOCK}},
     input logic {{RESET}},
-    // --- ports matching DUT (copy from signals.json) ---
     {{PORT_DECLARATIONS}}
 );
 
@@ -180,7 +198,7 @@ module {{MODULE_NAME}}_assertions (
   endproperty
   assert property ({{MODULE_SHORT}}_SEC_1);
 
-  // ... repeat for each translated assertion ...
+  // ... repeat for each assertion group ...
 
 endmodule
 

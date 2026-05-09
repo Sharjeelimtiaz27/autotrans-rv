@@ -1,0 +1,74 @@
+{
+  "module": "ibex_controller_cf",
+  "total_ns31a_signals": 9,
+  "auto_accepted": 0,
+  "untranslatable": 9,
+  "mappings": [
+    {
+      "id": 1,
+      "ns31a_signal": "firstInstruction, write_wb_pipe_reg, interrupt_appeared, wb_InstPC, resetPC",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No equivalent pipeline writeback stage signals (write_wb_pipe_reg, wb_InstPC) or reset PC tracking in Ibex controller. These are pipeline-level signals not present in ibex_controller_cf."
+    },
+    {
+      "id": 2,
+      "ns31a_signal": "firstInstruction, write_wb_pipe_reg, interrupt_appeared, exception_appeared, last_jal, last_jalr, last_mret, last_branch_taken, debug_return, wb_InstPC, lastWbPC",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "Multiple pipeline tracking signals (write_wb_pipe_reg, wb_InstPC, lastWbPC, last_jal, last_jalr, last_mret, last_branch_taken, debug_return) not present in ibex_controller_cf."
+    },
+    {
+      "id": 3,
+      "ns31a_signal": "write_wb_pipe_reg, interrupt_appeared, wb_InstPC, interruptEntry",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No writeback stage signals or interrupt entry PC tracking in ibex_controller_cf."
+    },
+    {
+      "id": 4,
+      "ns31a_signal": "write_wb_pipe_reg, exception_appeared, wb_InstPC, exceptionEntry",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No writeback stage signals or exception entry PC tracking in ibex_controller_cf."
+    },
+    {
+      "id": 5,
+      "ns31a_signal": "write_wb_pipe_reg, debug_return, wb_InstPC, csrDpc",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No writeback stage signals, debug return tracking, or DPC CSR value in ibex_controller_cf."
+    },
+    {
+      "id": 6,
+      "ns31a_signal": "firstInstruction, write_wb_pipe_reg, last_jal, wb_InstPC, jal_nextPC",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No writeback stage signals, JAL tracking, or next PC computation in ibex_controller_cf."
+    },
+    {
+      "id": 7,
+      "ns31a_signal": "firstInstruction, write_wb_pipe_reg, last_jalr, wb_InstPC, jalr_nextPC",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No writeback stage signals, JALR tracking, or next PC computation in ibex_controller_cf."
+    },
+    {
+      "id": 8,
+      "ns31a_signal": "firstInstruction, write_wb_pipe_reg, last_branch, wb_InstPC, branch_nextPC",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No writeback stage signals, branch tracking, or next PC computation in ibex_controller_cf."
+    },
+    {
+      "id": 9,
+      "ns31a_signal": "firstInstruction, write_wb_pipe_reg, last_mret, wb_InstPC, mret_nextPC",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No writeback stage signals, MRET tracking, or next PC computation in ibex_controller_cf."
+    }
+  ],
+  "timestamp": "2026-05-09T22:10:23.180516+00:00",
+  "human_corrected": 0,
+  "TAR": 0.0
+}

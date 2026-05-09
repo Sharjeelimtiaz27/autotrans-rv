@@ -1,0 +1,95 @@
+{
+  "module": "ibex_id_stage",
+  "total_ns31a_signals": 10,
+  "auto_accepted": 10,
+  "untranslatable": 0,
+  "mappings": [
+    {
+      "id": 1,
+      "ns31a_signal": "idInstValid",
+      "ibex_signal": "instr_valid_i",
+      "status": "auto"
+    },
+    {
+      "id": 1,
+      "ns31a_signal": "idPipeReady",
+      "ibex_signal": "id_in_ready_o",
+      "status": "auto"
+    },
+    {
+      "id": 1,
+      "ns31a_signal": "exInstCode",
+      "ibex_signal": "instr_rdata_i",
+      "status": "auto"
+    },
+    {
+      "id": 1,
+      "ns31a_signal": "idInstCode",
+      "ibex_signal": "instr_rdata_i",
+      "status": "auto"
+    },
+    {
+      "id": 2,
+      "ns31a_signal": "wbInstValid",
+      "ibex_signal": "ex_valid_i",
+      "status": "auto"
+    },
+    {
+      "id": 2,
+      "ns31a_signal": "wbPipeReady",
+      "ibex_signal": "ready_wb_i",
+      "status": "auto"
+    },
+    {
+      "id": 2,
+      "ns31a_signal": "wbInstCode",
+      "ibex_signal": "instr_rdata_i",
+      "status": "auto"
+    },
+    {
+      "id": 3,
+      "ns31a_signal": "InstValid",
+      "ibex_signal": "instr_valid_i",
+      "status": "auto"
+    },
+    {
+      "id": 3,
+      "ns31a_signal": "PipeReady",
+      "ibex_signal": "id_in_ready_o",
+      "status": "auto"
+    },
+    {
+      "id": 3,
+      "ns31a_signal": "beqOpcode",
+      "ibex_signal": "instr_rdata_i[6:0]",
+      "status": "auto"
+    },
+    {
+      "id": 3,
+      "ns31a_signal": "beqFunct3",
+      "ibex_signal": "instr_rdata_i[14:12]",
+      "status": "auto"
+    },
+    {
+      "id": 3,
+      "ns31a_signal": "Src1Data",
+      "ibex_signal": "rf_rdata_a_i",
+      "status": "auto"
+    },
+    {
+      "id": 3,
+      "ns31a_signal": "Src2Data",
+      "ibex_signal": "rf_rdata_b_i",
+      "status": "auto"
+    },
+    {
+      "id": 3,
+      "ns31a_signal": "equalFlag",
+      "ibex_signal": "branch_decision_i",
+      "status": "auto"
+    }
+  ],
+  "timestamp": "2026-05-09T22:21:12.699418+00:00",
+  "human_corrected": 0,
+  "TAR": 100.0
+}

@@ -1,0 +1,87 @@
+{
+  "module": "ibex_load_store_unit",
+  "total_ns31a_signals": 12,
+  "auto_accepted": 8,
+  "untranslatable": 4,
+  "mappings": [
+    {
+      "id": 1,
+      "ns31a_signal": "dataoffset_lsuBusReqAddr",
+      "ibex_signal": "data_offset",
+      "status": "auto"
+    },
+    {
+      "id": 2,
+      "ns31a_signal": "InstValid",
+      "ibex_signal": "lsu_req_i",
+      "status": "auto"
+    },
+    {
+      "id": 3,
+      "ns31a_signal": "Opcode",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No opcode decode signal available in ibex_load_store_unit; instruction decode is in ibex_id_stage"
+    },
+    {
+      "id": 4,
+      "ns31a_signal": "BusReqWtData",
+      "ibex_signal": "data_wdata_o",
+      "status": "auto"
+    },
+    {
+      "id": 5,
+      "ns31a_signal": "RegData[InstCode[rs2]]",
+      "ibex_signal": "lsu_wdata_i",
+      "status": "auto"
+    },
+    {
+      "id": 6,
+      "ns31a_signal": "Funct3",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "No Funct3 signal available; lsu_type_i encodes size but not exact Funct3 value"
+    },
+    {
+      "id": 7,
+      "ns31a_signal": "BusReqAddr",
+      "ibex_signal": "data_addr_o",
+      "status": "auto"
+    },
+    {
+      "id": 8,
+      "ns31a_signal": "RegData[rs1]",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "Register file data not available in load-store unit; adder_result_ex_i contains computed address"
+    },
+    {
+      "id": 9,
+      "ns31a_signal": "Immediate",
+      "ibex_signal": "UNTRANSLATABLE",
+      "status": "flagged",
+      "reason": "Immediate value not available as separate signal in load-store unit"
+    },
+    {
+      "id": 10,
+      "ns31a_signal": "SW/SH/SB",
+      "ibex_signal": "lsu_type_i",
+      "status": "auto"
+    },
+    {
+      "id": 11,
+      "ns31a_signal": "LW/LH/LB/LHU/LBU",
+      "ibex_signal": "lsu_type_i",
+      "status": "auto"
+    },
+    {
+      "id": 12,
+      "ns31a_signal": "Store/Load",
+      "ibex_signal": "lsu_we_i",
+      "status": "auto"
+    }
+  ],
+  "timestamp": "2026-05-09T22:16:21.390838+00:00",
+  "human_corrected": 0,
+  "TAR": 66.7
+}
