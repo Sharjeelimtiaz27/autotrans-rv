@@ -112,8 +112,10 @@ compilation and JasperGold FPV.
  Steps 1C + 1D require QuestaSim + JasperGold licences (EDA server).
 
  LLM tier strategy:
-   Flash  → initial translation + QuestaSim syntax retry loops (cheap)
-   Pro    → JasperGold FPV logic fix retries (deeper reasoning)
+   Flash  → initial translation only (cheap first attempt)
+   Pro    → ALL retries: QuestaSim compile failures + JasperGold FPV failures
+            (QuestaSim errors involve enum scope, struct fields, port widths —
+             they need deep RTL reasoning, not just syntax pattern matching)
 
  After 3 failed retries at either step: assertion is DROPPED, error
  logged to errors/archive/ (never delete — paper evidence).
@@ -336,8 +338,8 @@ ai-autotrans-rv/
 
 | Model | ID | Used for |
 |-------|----|---------|
-| DeepSeek V4-Flash | `deepseek-ai/deepseek-v4-flash` | Initial translation + QuestaSim syntax retries |
-| DeepSeek V4-Pro | `deepseek-ai/deepseek-v4-pro` | JasperGold FPV logic fix retries |
+| DeepSeek V4-Flash | `deepseek-ai/deepseek-v4-flash` | Initial translation only (Step 1B) |
+| DeepSeek V4-Pro | `deepseek-ai/deepseek-v4-pro` | All retries: QuestaSim compile (Step 1C) + JasperGold FPV (Step 1D) |
 
 Both called via NVIDIA NIM (OpenAI-compatible API, `https://integrate.api.nvidia.com/v1`).
 `temperature=0.0`, `seed=42` for reproducibility.

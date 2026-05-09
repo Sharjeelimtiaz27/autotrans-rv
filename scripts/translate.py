@@ -18,8 +18,8 @@ Output: assertions/translated/<MODULE>_bind.sv  +  results/logs/<MODULE>_tar_log
 
 API key: set NVIDIA_API_KEY in .env or environment.
 Model tier:
-  Flash  (default) — deepseek-ai/deepseek-v4-flash — fast, initial generation
-  Pro    (--pro)   — deepseek-ai/deepseek-v4-pro   — logic fixes / FPV retries
+  Flash  (default) — deepseek-ai/deepseek-v4-flash — initial generation only
+  Pro    (--pro)   — deepseek-ai/deepseek-v4-pro   — all retries (compile + FPV)
 """
 
 import argparse
@@ -37,9 +37,9 @@ ROOT = Path(__file__).resolve().parent.parent
 # DeepSeek / NVIDIA NIM configuration
 # ---------------------------------------------------------------------------
 NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
-# Flash: fast, cheap — used for initial generation and QuestaSim syntax retries
+# Flash: fast, cheap — used for initial generation ONLY
 DEEPSEEK_FLASH  = "deepseek-ai/deepseek-v4-flash"
-# Pro: deeper reasoning — used for FPV logic error retries
+# Pro: deeper reasoning — used for ALL retries (QuestaSim compile + JasperGold FPV)
 DEEPSEEK_PRO    = "deepseek-ai/deepseek-v4-pro"
 TEMPERATURE     = 0.0   # greedy decoding — reduces output variance
 SEED            = 42    # fixed seed — further anchors determinism where supported
