@@ -4,11 +4,6 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Venue: BEC 2026](https://img.shields.io/badge/venue-BEC%202026-orange.svg)]()
-
-> **Venue:** Baltic Electronic Conference (BEC) 2026 — 6-page paper
-> **Submission deadline:** 27 May 2026
-> **Authors:** S. Imtiaz, U. Reinsalu, T. Ghasempouri — TalTech, Grant PSG837
 
 ---
 
