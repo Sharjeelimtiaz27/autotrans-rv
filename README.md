@@ -125,23 +125,28 @@ compilation and JasperGold FPV.
 
 ## Three Contributions
 
-1. **LLM-assisted assertion translation pipeline (RV-SigEx-grounded, fixed-template,
-   reproducible).** RV-SigEx deterministically extracts RTL signals into a structured
-   JSON that grounds every prompt. A fixed template constrains the LLM's output format.
-   `temperature=0.0` and a fixed seed anchor the decoding. Together: same RTL + same
-   source assertion = same translated SVA, every run — no GPU, no fine-tuning.
+1. **RV-SigEx — regex-based SystemVerilog signal extractor for LLM prompt grounding.**
+   RV-SigEx extracts ports, internal signals, package types (typedef enums, structs), and
+   parameterized widths from real-world SV into a structured JSON injected into every
+   prompt. Unlike PyVerilog, which builds a full parse tree and struggles with advanced
+   Ibex constructs (package-scoped enums in separate files, struct-typed ports,
+   parameterized arrays), RV-SigEx uses targeted regex patterns tuned to real RISC-V SV
+   style. The LLM sees only signals that actually exist in the RTL — it cannot hallucinate
+   non-existent signal names.
 
-2. **TAR (Translation Acceptance Rate) metric.** Per-module measure of what fraction of
-   NS31A source assertion groups were automatically translated AND formally validated —
-   QuestaSim compile (syntax) + JasperGold FPV (Proven + non-vacuous) — without any
-   manual fixing. Assertions that fail after 3 retries are logged as dropped; only
-   mechanically verified assertions count toward TAR.
+2. **Hallucination-free, reproducible SVA translation with a two-tier LLM cost strategy.**
+   RV-SigEx grounding + fixed template + `temperature=0.0` + `seed=42` together eliminate
+   the two failure modes of raw-LLM translation: hallucinated signals and non-reproducible
+   outputs. A two-tier model strategy — Flash for initial generation (cheap, fast), Pro for
+   all retries (deeper RTL reasoning for type-scope and struct-field errors) — bounds cost
+   while maximising fix quality. No GPU, no fine-tuning; only NVIDIA NIM free-tier credits.
 
-3. **Cross-architecture translation case study: NS31A → Ibex.** NS31A security assertions
-   from MEMOCODE 2023 (Chuah et al.) translated to Ibex RISC-V RTL across 9 security
-   modules, covering PMP, CSR, controller, load/store unit, ID/EX stage, and writeback
-   stage. Demonstrates the pipeline on a real open-source processor without manual
-   porting of any assertion.
+3. **Two-step industry-grade validation gate and TAR metric.** Every translated assertion
+   must pass two gates before it counts: QuestaSim SVA compile (syntax) then JasperGold
+   FPV Proven + non-vacuous on clean RTL (semantics). TAR (Translation Acceptance Rate =
+   proven\_non\_vacuous / total\_ns31a\_groups) measures mechanically verified translation
+   quality — not LLM self-report or BLEU/ROUGE. Applied to NS31A → Ibex across 9 security
+   modules without manual porting of any assertion.
 
 ---
 
