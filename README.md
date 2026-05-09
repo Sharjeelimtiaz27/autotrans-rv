@@ -124,15 +124,22 @@ compilation and JasperGold FPV.
 ## Three Contributions
 
 1. **LLM-assisted assertion translation pipeline (RV-SigEx-grounded, fixed-template,
-   reproducible).** Fixed prompt template + RV-SigEx deterministic parser output +
-   temperature=0.0 + fixed seed = same translated SVA for the same inputs every run.
+   reproducible).** RV-SigEx deterministically extracts RTL signals into a structured
+   JSON that grounds every prompt. A fixed template constrains the LLM's output format.
+   `temperature=0.0` and a fixed seed anchor the decoding. Together: same RTL + same
+   source assertion = same translated SVA, every run — no GPU, no fine-tuning.
 
 2. **TAR (Translation Acceptance Rate) metric.** Per-module measure of what fraction of
-   source assertions were auto-translated AND validated by QuestaSim compile + JasperGold
-   FPV (Proven + non-vacuous), without manual fixing.
+   NS31A source assertion groups were automatically translated AND formally validated —
+   QuestaSim compile (syntax) + JasperGold FPV (Proven + non-vacuous) — without any
+   manual fixing. Assertions that fail after 3 retries are logged as dropped; only
+   mechanically verified assertions count toward TAR.
 
 3. **Cross-architecture translation case study: NS31A → Ibex.** NS31A security assertions
-   from MEMOCODE 2023 translated to Ibex RTL across 9 security modules.
+   from MEMOCODE 2023 (Chuah et al.) translated to Ibex RISC-V RTL across 9 security
+   modules, covering PMP, CSR, controller, load/store unit, ID/EX stage, and writeback
+   stage. Demonstrates the pipeline on a real open-source processor without manual
+   porting of any assertion.
 
 ---
 
