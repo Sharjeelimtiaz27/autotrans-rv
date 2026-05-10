@@ -1,95 +1,33 @@
 {
   "module": "ibex_id_stage",
-  "total_ns31a_signals": 10,
-  "auto_accepted": 10,
-  "untranslatable": 0,
+  "total_ns31a_groups": 3,
+  "translated": 3,
   "mappings": [
     {
       "id": 1,
-      "ns31a_signal": "idInstValid",
-      "ibex_signal": "instr_valid_i",
-      "status": "auto"
-    },
-    {
-      "id": 1,
-      "ns31a_signal": "idPipeReady",
-      "ibex_signal": "id_in_ready_o",
-      "status": "auto"
-    },
-    {
-      "id": 1,
-      "ns31a_signal": "exInstCode",
-      "ibex_signal": "instr_rdata_i",
-      "status": "auto"
-    },
-    {
-      "id": 1,
-      "ns31a_signal": "idInstCode",
-      "ibex_signal": "instr_rdata_i",
-      "status": "auto"
+      "ns31a_signal": "idInstValid, idPipeReady, idInstCode, exInstCode",
+      "ibex_signal": "instr_valid_i, id_in_ready_o, instr_rdata_i, alu_operand_a_ex_o, alu_operand_b_ex_o, alu_operator_ex_o",
+      "property_name": "ie_SEC_1",
+      "status": "translated",
+      "notes": "NS31A checks instruction integrity ID->EX. Ibex uses instr_valid_i and id_in_ready_o for pipeline advance. The instruction opcode and operands are captured at ID and compared to EX stage outputs."
     },
     {
       "id": 2,
-      "ns31a_signal": "wbInstValid",
-      "ibex_signal": "ex_valid_i",
-      "status": "auto"
-    },
-    {
-      "id": 2,
-      "ns31a_signal": "wbPipeReady",
-      "ibex_signal": "ready_wb_i",
-      "status": "auto"
-    },
-    {
-      "id": 2,
-      "ns31a_signal": "wbInstCode",
-      "ibex_signal": "instr_rdata_i",
-      "status": "auto"
+      "ns31a_signal": "wbInstValid, wbPipeReady, wbInstCode",
+      "ibex_signal": "en_wb_o, ready_wb_i, instr_type_wb_o, result_ex_o",
+      "property_name": "ie_SEC_2",
+      "status": "translated",
+      "notes": "NS31A checks instruction integrity during WB stall. Ibex uses en_wb_o (WB valid) and ready_wb_i (WB ready). The instruction type and result are compared across stall cycles."
     },
     {
       "id": 3,
-      "ns31a_signal": "InstValid",
-      "ibex_signal": "instr_valid_i",
-      "status": "auto"
-    },
-    {
-      "id": 3,
-      "ns31a_signal": "PipeReady",
-      "ibex_signal": "id_in_ready_o",
-      "status": "auto"
-    },
-    {
-      "id": 3,
-      "ns31a_signal": "beqOpcode",
-      "ibex_signal": "instr_rdata_i[6:0]",
-      "status": "auto"
-    },
-    {
-      "id": 3,
-      "ns31a_signal": "beqFunct3",
-      "ibex_signal": "instr_rdata_i[14:12]",
-      "status": "auto"
-    },
-    {
-      "id": 3,
-      "ns31a_signal": "Src1Data",
-      "ibex_signal": "rf_rdata_a_i",
-      "status": "auto"
-    },
-    {
-      "id": 3,
-      "ns31a_signal": "Src2Data",
-      "ibex_signal": "rf_rdata_b_i",
-      "status": "auto"
-    },
-    {
-      "id": 3,
-      "ns31a_signal": "equalFlag",
-      "ibex_signal": "branch_decision_i",
-      "status": "auto"
+      "ns31a_signal": "beqOpcode, beqFunct3, Src1Data, Src2Data, equalFlag",
+      "ibex_signal": "instr_rdata_i, alu_operand_a_i, alu_operand_b_i, branch_decision_o, alu_operator_i",
+      "property_name": "ie_SEC_3",
+      "status": "translated",
+      "notes": "NS31A checks branch condition flags. Ibex computes branch decisions in the ALU. The assertion checks that when a branch instruction is decoded with matching operands, the branch_decision_o matches the expected condition."
     }
   ],
-  "timestamp": "2026-05-09T22:21:12.699418+00:00",
-  "human_corrected": 0,
-  "TAR": 100.0
+  "timestamp": "2026-05-10T18:07:37.088927+00:00",
+  "translation_coverage": 100.0
 }

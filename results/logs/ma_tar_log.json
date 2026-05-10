@@ -1,87 +1,33 @@
 {
   "module": "ibex_load_store_unit",
-  "total_ns31a_signals": 12,
-  "auto_accepted": 8,
-  "untranslatable": 4,
+  "total_ns31a_groups": 3,
+  "translated": 3,
   "mappings": [
     {
       "id": 1,
-      "ns31a_signal": "dataoffset_lsuBusReqAddr",
-      "ibex_signal": "data_offset",
-      "status": "auto"
+      "ns31a_signal": "BusReqWtData == {RegData[InstCode[rs2]][23:0], 8'h00} for store with offset 2'h01",
+      "ibex_signal": "data_wdata_o, lsu_we_i, data_addr_o[1:0]",
+      "property_name": "ma_SEC_1",
+      "status": "translated",
+      "notes": "Store-data correctness: when a store is requested and granted, the data written to memory (data_wdata_o) must match the data input (lsu_wdata_i) aligned to the byte offset indicated by the lower 2 bits of the address. This captures the security intent that the store value is exactly the register value, properly byte-aligned."
     },
     {
       "id": 2,
-      "ns31a_signal": "InstValid",
-      "ibex_signal": "lsu_req_i",
-      "status": "auto"
+      "ns31a_signal": "Load-data correctness: register gets exactly memory value",
+      "ibex_signal": "lsu_rdata_o, lsu_rdata_valid_o, lsu_type_i, lsu_sign_ext_i",
+      "property_name": "ma_SEC_2",
+      "status": "translated",
+      "notes": "Load-data correctness: when load response is valid, the output data (lsu_rdata_o) must be correctly sign/zero-extended from the memory data based on the load type and sign extension setting. This verifies the load data path integrity."
     },
     {
       "id": 3,
-      "ns31a_signal": "Opcode",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No opcode decode signal available in ibex_load_store_unit; instruction decode is in ibex_id_stage"
-    },
-    {
-      "id": 4,
-      "ns31a_signal": "BusReqWtData",
-      "ibex_signal": "data_wdata_o",
-      "status": "auto"
-    },
-    {
-      "id": 5,
-      "ns31a_signal": "RegData[InstCode[rs2]]",
-      "ibex_signal": "lsu_wdata_i",
-      "status": "auto"
-    },
-    {
-      "id": 6,
-      "ns31a_signal": "Funct3",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No Funct3 signal available; lsu_type_i encodes size but not exact Funct3 value"
-    },
-    {
-      "id": 7,
-      "ns31a_signal": "BusReqAddr",
-      "ibex_signal": "data_addr_o",
-      "status": "auto"
-    },
-    {
-      "id": 8,
-      "ns31a_signal": "RegData[rs1]",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Register file data not available in load-store unit; adder_result_ex_i contains computed address"
-    },
-    {
-      "id": 9,
-      "ns31a_signal": "Immediate",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Immediate value not available as separate signal in load-store unit"
-    },
-    {
-      "id": 10,
-      "ns31a_signal": "SW/SH/SB",
-      "ibex_signal": "lsu_type_i",
-      "status": "auto"
-    },
-    {
-      "id": 11,
-      "ns31a_signal": "LW/LH/LB/LHU/LBU",
-      "ibex_signal": "lsu_type_i",
-      "status": "auto"
-    },
-    {
-      "id": 12,
-      "ns31a_signal": "Store/Load",
-      "ibex_signal": "lsu_we_i",
-      "status": "auto"
+      "ns31a_signal": "BusReqAddr == (RegData[rs1] + Immediate)",
+      "ibex_signal": "data_addr_o, adder_result_ex_i, lsu_req_i",
+      "property_name": "ma_SEC_3",
+      "status": "translated",
+      "notes": "Address-computation correctness: when a load or store request is made, the address sent to memory (data_addr_o) must match the computed address from the ALU (adder_result_ex_i). This verifies that the effective address calculation is correct."
     }
   ],
-  "timestamp": "2026-05-09T22:16:21.390838+00:00",
-  "human_corrected": 0,
-  "TAR": 66.7
+  "timestamp": "2026-05-10T17:59:13.485932+00:00",
+  "translation_coverage": 100.0
 }

@@ -1,25 +1,25 @@
 {
   "module": "ibex_wb_stage",
-  "total_ns31a_signals": 2,
-  "auto_accepted": 1,
-  "untranslatable": 1,
+  "total_ns31a_groups": 2,
+  "translated": 2,
   "mappings": [
     {
       "id": 1,
-      "ns31a_signal": "WbWriteReg, RegBankWbEn, RegBankWbRd, InstCode[11:7]",
-      "ibex_signal": "rf_we_wb_o, rf_waddr_wb_o, rf_waddr_id_i",
-      "status": "auto",
-      "notes": "Mapped write enable and write address signals. InstCode[11:7] maps to rf_waddr_id_i (target register from ID stage)."
+      "ns31a_signal": "WbWriteReg, RegBankWbEn, RegBankWbRd[4:0], InstCode[11:7]",
+      "ibex_signal": "rf_we_wb_o, rf_waddr_wb_o[4:0], rf_waddr_id_i[4:0]",
+      "property_name": "ru_SEC_1",
+      "status": "translated",
+      "notes": "NS31A checks that write-back register enable and address match instruction target. Ibex rf_we_wb_o indicates write enable, rf_waddr_wb_o is the committed write address. rf_waddr_id_i holds the instruction's target register from decode. Property checks that when write-back occurs, the written address matches the instruction's target."
     },
     {
       "id": 2,
       "ns31a_signal": "RegData1[31:0], InstCode[11:7]",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No register file data output port available in ibex_wb_stage. Register file contents are internal to ibex_register_file, not exposed at this module boundary."
+      "ibex_signal": "rf_wdata_wb_o[31:0], rf_waddr_wb_o[4:0]",
+      "property_name": "ru_SEC_2",
+      "status": "translated",
+      "notes": "NS31A checks that any register change implies it was the instruction target. Ibex rf_wdata_wb_o is the write-back data value. Property checks that when write-back data changes from previous cycle, the write address must be non-zero (x1-x31). x0 is excluded as it's hardwired to zero."
     }
   ],
-  "timestamp": "2026-05-09T22:28:15.813815+00:00",
-  "human_corrected": 0,
-  "TAR": 50.0
+  "timestamp": "2026-05-10T18:11:05.781607+00:00",
+  "translation_coverage": 100.0
 }

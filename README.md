@@ -69,7 +69,7 @@ compilation and JasperGold FPV.
                              ▼
                   ┌───────────────────────┐        ┌──────────────────────────┐
                   │   STEP 1C             │  FAIL  │  Retry (max 3)           │
-                  │   validate_compile.py ├───────►│  DeepSeek V4-Flash       │
+                  │   validate_compile.py ├───────►│  DeepSeek V4-Pro         │
                   │   QuestaSim           │        │  prompt + error log      │
                   │   SVA syntax check    │        │  fix syntax only         │
                   └──────────┬────────────┘        └──────────────────────────┘
@@ -135,6 +135,9 @@ compilation and JasperGold FPV.
    outputs. A two-tier model strategy — Flash for initial generation (cheap, fast), Pro for
    all retries (deeper RTL reasoning for type-scope and struct-field errors) — bounds cost
    while maximising fix quality. No GPU, no fine-tuning; only NVIDIA NIM free-tier credits.
+   The pipeline covers the complete NS31A corpus: **46 security SVA** (formal NS31A
+   assertions, adapted to Ibex signals) and **22 security properties** (English descriptions
+   only, from which the framework generates formal SVA directly).
 
 3. **Two-step industry-grade validation gate and TAR metric.** Every translated assertion
    must pass two gates before it counts: QuestaSim SVA compile (syntax) then JasperGold
@@ -258,15 +261,15 @@ python scripts/run_step1.py --status
 
 | Module | RTL File | Type | Bind File |
 |--------|----------|------|-----------|
-| PMP | `ibex_pmp.sv` | Combinational | `ibex_pmp_bind.sv` |
-| CSR | `ibex_cs_registers.sv` | Sequential | `ibex_csr_bind.sv` |
-| DO | `ibex_controller.sv` | Sequential | `ibex_controller_do_bind.sv` |
-| ETI | `ibex_controller.sv` | Sequential | `ibex_controller_eti_bind.sv` |
-| CF | `ibex_controller.sv` | Sequential | `ibex_controller_cf_bind.sv` |
-| MT | `ibex_controller.sv` | Sequential | `ibex_controller_mt_bind.sv` |
-| MA | `ibex_load_store_unit.sv` | Sequential | `ibex_lsu_bind.sv` |
-| IE | `ibex_id_stage.sv` + `ibex_ex_block.sv` | Sequential | `ibex_id_bind.sv` |
-| RU | `ibex_wb_stage.sv` | Sequential | `ibex_wb_bind.sv` |
+| PMP | `ibex_pmp.sv` | Combinational | `pmp_bind.sv` |
+| CSR | `ibex_cs_registers.sv` | Sequential | `csr_bind.sv` |
+| DO | `ibex_controller.sv` | Sequential | `do_bind.sv` |
+| ETI | `ibex_controller.sv` | Sequential | `eti_bind.sv` |
+| CF | `ibex_controller.sv` | Sequential | `cf_bind.sv` |
+| MT | `ibex_controller.sv` | Sequential | `mt_bind.sv` |
+| MA | `ibex_load_store_unit.sv` | Sequential | `ma_bind.sv` |
+| IE | `ibex_id_stage.sv` + `ibex_ex_block.sv` | Sequential | `ie_bind.sv` |
+| RU | `ibex_wb_stage.sv` | Sequential | `ru_bind.sv` |
 
 `ibex_controller.sv` serves 4 logical modules (DO, ETI, CF, MT).
 PMP is combinational — no `@(posedge)`, `##N`, or `$past()`.

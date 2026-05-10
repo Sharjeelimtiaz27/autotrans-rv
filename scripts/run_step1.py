@@ -45,15 +45,15 @@ ASSERTS = ROOT / "assertions" / "translated"
 ALL_MODULES = ["pmp", "csr", "do", "eti", "cf", "mt", "ma", "ie", "ru"]
 
 BIND_FILES = {
-    "pmp": "ibex_pmp_bind.sv",
-    "csr": "ibex_csr_bind.sv",
-    "do":  "ibex_controller_do_bind.sv",
-    "eti": "ibex_controller_eti_bind.sv",
-    "cf":  "ibex_controller_cf_bind.sv",
-    "mt":  "ibex_controller_mt_bind.sv",
-    "ma":  "ibex_lsu_bind.sv",
-    "ie":  "ibex_id_bind.sv",
-    "ru":  "ibex_wb_bind.sv",
+    "pmp": "pmp_bind.sv",
+    "csr": "csr_bind.sv",
+    "do":  "do_bind.sv",
+    "eti": "eti_bind.sv",
+    "cf":  "cf_bind.sv",
+    "mt":  "mt_bind.sv",
+    "ma":  "ma_bind.sv",
+    "ie":  "ie_bind.sv",
+    "ru":  "ru_bind.sv",
 }
 
 

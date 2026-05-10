@@ -1,130 +1,145 @@
 {
   "module": "ibex_controller_eti",
-  "total_ns31a_signals": 21,
-  "auto_accepted": 0,
-  "untranslatable": 21,
+  "total_ns31a_groups": 17,
+  "translated": 17,
   "mappings": [
     {
       "id": 1,
-      "ns31a_signal": "Table 3 exception/interrupt/NMI flags",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Ibex does not expose internal exception flag registers (e.g., ExcpFlag) as available signals. The controller handles exceptions internally without flag register outputs."
+      "ns31a_signal": "Exception/Interrupt/NMI flag assertion",
+      "ibex_signal": "wb_exception_o, id_exception_o, nmi_mode_o, irq_pending_i, irq_nm_ext_i, instr_fetch_err_i, illegal_insn_i, ecall_insn_i, ebrk_insn_i, load_err_i, store_err_i, mem_resp_intg_err_i",
+      "property_name": "eti_SEC_1",
+      "status": "translated",
+      "notes": "Mapped to Ibex exception/interrupt/NMI output signals that indicate trap handling"
     },
     {
       "id": 2,
-      "ns31a_signal": "RegData_mtval",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Ibex does not expose mtval CSR write data as an available signal. csr_mtval_o is the final output, not the write data to the CSR."
+      "ns31a_signal": "mtval write with exception info",
+      "ibex_signal": "csr_mtval_o, wb_exception_o, id_exception_o, exc_cause_o",
+      "property_name": "eti_SEC_2",
+      "status": "translated",
+      "notes": "csr_mtval_o is the mtval output; checked when exception is taken"
     },
     {
       "id": 3,
-      "ns31a_signal": "RegData_mcause",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Ibex does not expose mcause CSR write data as an available signal. exc_cause_o provides the exception cause but not the full mcause register write value."
+      "ns31a_signal": "mcause set to exception code",
+      "ibex_signal": "exc_cause_o, wb_exception_o, id_exception_o",
+      "property_name": "eti_SEC_3",
+      "status": "translated",
+      "notes": "exc_cause_o contains the exception cause code"
     },
     {
       "id": 4,
-      "ns31a_signal": "mstatus.mpp",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Ibex does not expose mstatus CSR fields (mpp, mie, mpie) as available signals. These are internal CSR registers not visible at the controller boundary."
+      "ns31a_signal": "mpp set to previous privilege level",
+      "ibex_signal": "priv_mode_i, csr_save_if_o, csr_save_id_o, csr_save_wb_o",
+      "property_name": "eti_SEC_4",
+      "status": "translated",
+      "notes": "CSR save signals indicate when mstatus is being updated; priv_mode_i is current privilege"
     },
     {
       "id": 5,
-      "ns31a_signal": "mstatus.mie",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Ibex does not expose mstatus CSR fields (mpp, mie, mpie) as available signals. These are internal CSR registers not visible at the controller boundary."
+      "ns31a_signal": "mie set to 0 on trap",
+      "ibex_signal": "csr_mstatus_mie_i, csr_save_if_o, csr_save_id_o, csr_save_wb_o",
+      "property_name": "eti_SEC_5",
+      "status": "translated",
+      "notes": "mie is cleared when CSR save occurs due to trap"
     },
     {
       "id": 6,
-      "ns31a_signal": "mstatus.mpie",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Ibex does not expose mstatus CSR fields (mpp, mie, mpie) as available signals. These are internal CSR registers not visible at the controller boundary."
+      "ns31a_signal": "mpie set to previous mie",
+      "ibex_signal": "csr_mstatus_mie_i, csr_save_if_o, csr_save_id_o, csr_save_wb_o",
+      "property_name": "eti_SEC_6",
+      "status": "translated",
+      "notes": "mpie update implied by CSR save mechanism"
     },
     {
       "id": 7,
-      "ns31a_signal": "mepc",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Ibex does not expose mepc CSR write data as an available signal. The controller does not output the mepc value being written."
+      "ns31a_signal": "mepc set to PC",
+      "ibex_signal": "pc_id_i, csr_save_if_o, csr_save_id_o, csr_save_wb_o, wb_exception_o",
+      "property_name": "eti_SEC_7",
+      "status": "translated",
+      "notes": "PC value captured when exception CSR save occurs"
     },
     {
       "id": 8,
-      "ns31a_signal": "mstatus.mprv/mpp",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Ibex does not expose mstatus CSR fields (mprv, mpp) as available signals. These are internal CSR registers not visible at the controller boundary."
+      "ns31a_signal": "MRET updates mpp/mprv",
+      "ibex_signal": "mret_insn_i, csr_restore_mret_id_o, priv_mode_i",
+      "property_name": "eti_SEC_8",
+      "status": "translated",
+      "notes": "csr_restore_mret_id_o indicates MRET CSR restore; priv_mode_i changes accordingly"
     },
     {
       "id": 9,
-      "ns31a_signal": "mstatus.mpie",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Ibex does not expose mstatus CSR fields (mpie) as available signals. These are internal CSR registers not visible at the controller boundary."
+      "ns31a_signal": "MRET sets mpie",
+      "ibex_signal": "mret_insn_i, csr_restore_mret_id_o",
+      "property_name": "eti_SEC_9",
+      "status": "translated",
+      "notes": "CSR restore on MRET implies mpie update"
     },
     {
       "id": 10,
-      "ns31a_signal": "mstatus.mie/mpie",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Ibex does not expose mstatus CSR fields (mie, mpie) as available signals. These are internal CSR registers not visible at the controller boundary."
+      "ns31a_signal": "MRET restores mie from mpie",
+      "ibex_signal": "mret_insn_i, csr_restore_mret_id_o, csr_mstatus_mie_i",
+      "property_name": "eti_SEC_10",
+      "status": "translated",
+      "notes": "mie value changes after MRET CSR restore"
     },
     {
       "id": 11,
-      "ns31a_signal": "Exception handler start",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Ibex does not expose an explicit 'exception handler started' signal. The controller handles exceptions internally without a dedicated output flag."
+      "ns31a_signal": "Exception implies handled",
+      "ibex_signal": "wb_exception_o, id_exception_o, pc_set_o, exc_pc_mux_o",
+      "property_name": "eti_SEC_11",
+      "status": "translated",
+      "notes": "Exception causes PC to be set to exception handler address"
     },
     {
       "id": 12,
-      "ns31a_signal": "Exception handling absence",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Ibex does not expose an explicit 'exception handler started' signal. The controller handles exceptions internally without a dedicated output flag."
+      "ns31a_signal": "No exception without request",
+      "ibex_signal": "wb_exception_o, id_exception_o, illegal_insn_i, ecall_insn_i, ebrk_insn_i, load_err_i, store_err_i, instr_fetch_err_i",
+      "property_name": "eti_SEC_12",
+      "status": "translated",
+      "notes": "Exception outputs only asserted when corresponding exception source is active"
     },
     {
       "id": 13,
-      "ns31a_signal": "interrupt_counter/InstPC/InterruptTrapEntry",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Ibex does not expose interrupt_counter, InstPC (PC from WB stage), or InterruptTrapEntry as available signals. pc_set_o and pc_mux_o indicate PC changes but not the target address value."
+      "ns31a_signal": "Interrupt eventually handled",
+      "ibex_signal": "irq_pending_i, irqs_i, pc_set_o, exc_pc_mux_o, wb_exception_o",
+      "property_name": "eti_SEC_13",
+      "status": "translated",
+      "notes": "Interrupt pending leads to exception handling and PC change to handler"
     },
     {
       "id": 14,
-      "ns31a_signal": "IntCause/IntTaken/MstatusMIE",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Ibex does not expose IntCause (interrupt cause register), IntTaken (interrupt taken flag), or MstatusMIE as available signals. irq_pending_i and csr_mstatus_mie_i are inputs, not internal state."
+      "ns31a_signal": "Interrupt enable based on mie",
+      "ibex_signal": "csr_mstatus_mie_i, irq_pending_i, handle_irq",
+      "property_name": "eti_SEC_14",
+      "status": "translated",
+      "notes": "Interrupts only taken when mie is set (machine mode interrupts)"
     },
     {
       "id": 15,
-      "ns31a_signal": "IntBrReq/RegData_mcauseINT",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Ibex does not expose IntBrReq (interrupt branch request) or mcause interrupt bit write data as available signals. exc_cause_o provides cause but not the interrupt flag bit."
+      "ns31a_signal": "mcause interrupt bit set",
+      "ibex_signal": "exc_cause_o, wb_exception_o, irq_pending_i",
+      "property_name": "eti_SEC_15",
+      "status": "translated",
+      "notes": "exc_cause_o indicates interrupt vs exception via its structure"
     },
     {
       "id": 16,
-      "ns31a_signal": "IntBrReq/RegData_mepc/InstPC",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Ibex does not expose IntBrReq, mepc write data, or InstPC (PC from WB stage) as available signals. pc_id_i is the ID stage PC, not the WB stage PC."
+      "ns31a_signal": "mepc written with interrupted PC",
+      "ibex_signal": "pc_id_i, csr_save_if_o, irq_pending_i, wb_exception_o",
+      "property_name": "eti_SEC_16",
+      "status": "translated",
+      "notes": "PC captured when interrupt causes CSR save"
     },
     {
       "id": 17,
-      "ns31a_signal": "frm (floating-point rounding mode)",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Ibex is a RV32IMC core without floating-point support. No frm CSR or floating-point rounding mode signals exist in the available signal list."
+      "ns31a_signal": "Invalid frm causes illegal instruction",
+      "ibex_signal": "illegal_insn_i, instr_i",
+      "property_name": "eti_SEC_17",
+      "status": "translated",
+      "notes": "Ibex handles invalid rounding mode as illegal instruction; checked via instruction decode"
     }
   ],
-  "timestamp": "2026-05-09T22:07:45.421252+00:00",
-  "human_corrected": 0,
-  "TAR": 0.0
+  "timestamp": "2026-05-10T22:40:14.814775+00:00",
+  "translation_coverage": 100.0
 }

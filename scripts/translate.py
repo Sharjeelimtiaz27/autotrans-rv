@@ -51,47 +51,47 @@ MODULE_CONFIG = {
     "pmp": {
         "rtl_name":  "ibex_pmp",
         "short":     "pmp",
-        "bind_file": "ibex_pmp_bind.sv",
+        "bind_file": "pmp_bind.sv",
     },
     "csr": {
         "rtl_name":  "ibex_cs_registers",
         "short":     "csr",
-        "bind_file": "ibex_csr_bind.sv",
+        "bind_file": "csr_bind.sv",
     },
     "do": {
         "rtl_name":  "ibex_controller",
         "short":     "do",
-        "bind_file": "ibex_controller_do_bind.sv",
+        "bind_file": "do_bind.sv",
     },
     "eti": {
         "rtl_name":  "ibex_controller",
         "short":     "eti",
-        "bind_file": "ibex_controller_eti_bind.sv",
+        "bind_file": "eti_bind.sv",
     },
     "cf": {
         "rtl_name":  "ibex_controller",
         "short":     "cf",
-        "bind_file": "ibex_controller_cf_bind.sv",
+        "bind_file": "cf_bind.sv",
     },
     "mt": {
         "rtl_name":  "ibex_controller",
         "short":     "mt",
-        "bind_file": "ibex_controller_mt_bind.sv",
+        "bind_file": "mt_bind.sv",
     },
     "ma": {
         "rtl_name":  "ibex_load_store_unit",
         "short":     "ma",
-        "bind_file": "ibex_lsu_bind.sv",
+        "bind_file": "ma_bind.sv",
     },
     "ie": {
         "rtl_name":  "ibex_id_stage",
         "short":     "ie",
-        "bind_file": "ibex_id_bind.sv",
+        "bind_file": "ie_bind.sv",
     },
     "ru": {
         "rtl_name":  "ibex_wb_stage",
         "short":     "ru",
-        "bind_file": "ibex_wb_bind.sv",
+        "bind_file": "ru_bind.sv",
     },
 }
 
@@ -522,8 +522,8 @@ def main():
         help=f"Use Pro model ({DEEPSEEK_PRO}) instead of Flash",
     )
     ap.add_argument(
-        "--timeout", type=int, default=300,
-        help="API call timeout in seconds (default: 300)",
+        "--timeout", type=int, default=600,
+        help="API call timeout in seconds (default: 600)",
     )
     args = ap.parse_args()
 
@@ -565,7 +565,7 @@ def main():
 
     # 5. Call DeepSeek via NVIDIA NIM
     tier = "Pro" if args.pro else "Flash"
-    print(f"  Calling DeepSeek {tier} (temperature={TEMPERATURE}, timeout={args.timeout}s) ...")
+    print(f"  Calling DeepSeek {tier} (temp={TEMPERATURE}, seed={SEED}, timeout={args.timeout}s) ...")
     print(f"  Model: {model}")
     raw = run_deepseek(prompt, model=model, timeout=args.timeout)
 

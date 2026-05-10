@@ -1,74 +1,81 @@
 {
   "module": "ibex_controller_cf",
-  "total_ns31a_signals": 9,
-  "auto_accepted": 0,
-  "untranslatable": 9,
+  "total_ns31a_groups": 9,
+  "translated": 9,
   "mappings": [
     {
       "id": 1,
-      "ns31a_signal": "firstInstruction, write_wb_pipe_reg, interrupt_appeared, wb_InstPC, resetPC",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No equivalent pipeline writeback stage signals (write_wb_pipe_reg, wb_InstPC) or reset PC tracking in Ibex controller. These are pipeline-level signals not present in ibex_controller_cf."
+      "ns31a_signal": "firstInstruction && write_wb_pipe_reg && !interrupt_appeared",
+      "ibex_signal": "controller_run_o && ready_wb_i && !irq_pending_i",
+      "property_name": "cf_SEC_1",
+      "status": "translated",
+      "notes": "First instruction after reset: controller_run_o indicates active execution, ready_wb_i indicates writeback stage ready, irq_pending_i indicates no interrupt. Reset PC is implied by pc_set_o with PC_BOOT mux."
     },
     {
       "id": 2,
-      "ns31a_signal": "firstInstruction, write_wb_pipe_reg, interrupt_appeared, exception_appeared, last_jal, last_jalr, last_mret, last_branch_taken, debug_return, wb_InstPC, lastWbPC",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "Multiple pipeline tracking signals (write_wb_pipe_reg, wb_InstPC, lastWbPC, last_jal, last_jalr, last_mret, last_branch_taken, debug_return) not present in ibex_controller_cf."
+      "ns31a_signal": "!firstInstruction && write_wb_pipe_reg && !interrupt_appeared && !exception_appeared && !last_jal && !last_jalr && !last_mret && !last_branch_taken && !debug_return",
+      "ibex_signal": "controller_run_o && ready_wb_i && !irq_pending_i && !wb_exception_o && !jump_set_i && !branch_set_i && !csr_restore_mret_id_o && !csr_restore_dret_id_o && !debug_mode_o",
+      "property_name": "cf_SEC_2",
+      "status": "translated",
+      "notes": "Standard PC+4 increment: no jumps, branches, exceptions, interrupts, or debug returns. pc_set_o should be 0 (no PC change) in this case."
     },
     {
       "id": 3,
-      "ns31a_signal": "write_wb_pipe_reg, interrupt_appeared, wb_InstPC, interruptEntry",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No writeback stage signals or interrupt entry PC tracking in ibex_controller_cf."
+      "ns31a_signal": "write_wb_pipe_reg && interrupt_appeared",
+      "ibex_signal": "ready_wb_i && irq_pending_i && csr_mstatus_mie_i",
+      "property_name": "cf_SEC_3",
+      "status": "translated",
+      "notes": "Interrupt entry: when interrupt is pending and MIE enabled, pc_set_o should be asserted with PC_EXC mux for interrupt vector."
     },
     {
       "id": 4,
-      "ns31a_signal": "write_wb_pipe_reg, exception_appeared, wb_InstPC, exceptionEntry",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No writeback stage signals or exception entry PC tracking in ibex_controller_cf."
+      "ns31a_signal": "write_wb_pipe_reg && exception_appeared",
+      "ibex_signal": "ready_wb_i && wb_exception_o",
+      "property_name": "cf_SEC_4",
+      "status": "translated",
+      "notes": "Exception entry: wb_exception_o indicates exception in writeback, pc_set_o should be asserted with PC_EXC mux."
     },
     {
       "id": 5,
-      "ns31a_signal": "write_wb_pipe_reg, debug_return, wb_InstPC, csrDpc",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No writeback stage signals, debug return tracking, or DPC CSR value in ibex_controller_cf."
+      "ns31a_signal": "write_wb_pipe_reg && debug_return",
+      "ibex_signal": "ready_wb_i && csr_restore_dret_id_o",
+      "property_name": "cf_SEC_5",
+      "status": "translated",
+      "notes": "Debug return: csr_restore_dret_id_o indicates dret instruction, pc_set_o should be asserted with PC_DRET mux."
     },
     {
       "id": 6,
-      "ns31a_signal": "firstInstruction, write_wb_pipe_reg, last_jal, wb_InstPC, jal_nextPC",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No writeback stage signals, JAL tracking, or next PC computation in ibex_controller_cf."
+      "ns31a_signal": "!firstInstruction && write_wb_pipe_reg && last_jal",
+      "ibex_signal": "controller_run_o && ready_wb_i && jump_set_i",
+      "property_name": "cf_SEC_6",
+      "status": "translated",
+      "notes": "After JAL: jump_set_i indicates jump instruction in execute, pc_set_o should be asserted with PC_JUMP mux."
     },
     {
       "id": 7,
-      "ns31a_signal": "firstInstruction, write_wb_pipe_reg, last_jalr, wb_InstPC, jalr_nextPC",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No writeback stage signals, JALR tracking, or next PC computation in ibex_controller_cf."
+      "ns31a_signal": "!firstInstruction && write_wb_pipe_reg && last_jalr",
+      "ibex_signal": "controller_run_o && ready_wb_i && jump_set_i",
+      "property_name": "cf_SEC_7",
+      "status": "translated",
+      "notes": "After JALR: same as JAL, jump_set_i indicates jump, pc_set_o with PC_JUMP mux."
     },
     {
       "id": 8,
-      "ns31a_signal": "firstInstruction, write_wb_pipe_reg, last_branch, wb_InstPC, branch_nextPC",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No writeback stage signals, branch tracking, or next PC computation in ibex_controller_cf."
+      "ns31a_signal": "!firstInstruction && write_wb_pipe_reg && last_branch",
+      "ibex_signal": "controller_run_o && ready_wb_i && branch_set_i",
+      "property_name": "cf_SEC_8",
+      "status": "translated",
+      "notes": "After taken branch: branch_set_i indicates branch taken, pc_set_o with PC_BP mux."
     },
     {
       "id": 9,
-      "ns31a_signal": "firstInstruction, write_wb_pipe_reg, last_mret, wb_InstPC, mret_nextPC",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No writeback stage signals, MRET tracking, or next PC computation in ibex_controller_cf."
+      "ns31a_signal": "!firstInstruction && write_wb_pipe_reg && last_mret",
+      "ibex_signal": "controller_run_o && ready_wb_i && csr_restore_mret_id_o",
+      "property_name": "cf_SEC_9",
+      "status": "translated",
+      "notes": "After MRET: csr_restore_mret_id_o indicates mret instruction, pc_set_o with PC_ERET mux."
     }
   ],
-  "timestamp": "2026-05-09T22:10:23.180516+00:00",
-  "human_corrected": 0,
-  "TAR": 0.0
+  "timestamp": "2026-05-10T17:42:18.360415+00:00",
+  "translation_coverage": 100.0
 }

@@ -1,72 +1,89 @@
 {
   "module": "ibex_cs_registers",
-  "total_ns31a_signals": 10,
-  "auto_accepted": 8,
-  "untranslatable": 2,
+  "total_ns31a_groups": 10,
+  "translated": 10,
   "mappings": [
     {
       "id": 1,
-      "ns31a_signal": "UserMode",
-      "ibex_signal": "priv_mode_id_o == PRIV_LVL_U",
-      "status": "auto"
+      "ns31a_signal": "UserMode && CsrWriteOp",
+      "ibex_signal": "priv_mode_id_o == PRIV_LVL_U && csr_op_en_i && (csr_op_i == CSR_OP_WRITE || csr_op_i == CSR_OP_SET || csr_op_i == CSR_OP_CLEAR)",
+      "property_name": "csr_SEC_1",
+      "status": "translated",
+      "notes": "Mapped NS31A UserMode to Ibex priv_mode_id_o == PRIV_LVL_U. Mapped CsrWriteOp to csr_op_en_i with write-type operations. Uses illegal_csr_insn_o as observable consequence of privilege violation."
     },
     {
       "id": 2,
-      "ns31a_signal": "CsrWriteOp",
-      "ibex_signal": "csr_op_i inside {CSR_OP_WRITE, CSR_OP_SET, CSR_OP_CLEAR}",
-      "status": "auto"
+      "ns31a_signal": "CsrWtAddr != MstatusAddr",
+      "ibex_signal": "csr_addr_i != CSR_MSTATUS && csr_op_en_i && (csr_op_i == CSR_OP_WRITE || csr_op_i == CSR_OP_SET || csr_op_i == CSR_OP_CLEAR)",
+      "property_name": "csr_SEC_2",
+      "status": "translated",
+      "notes": "Mapped to check that writes to CSR_MSTATUS only occur when csr_addr_i matches. Uses csr_rdata_o stability as observable consequence."
     },
     {
       "id": 3,
-      "ns31a_signal": "WriteEn_mstatus",
-      "ibex_signal": "csr_we_int && csr_addr_i == CSR_MSTATUS",
-      "status": "auto"
+      "ns31a_signal": "CsrRdAddr != MstatusAddr",
+      "ibex_signal": "csr_addr_i != CSR_MSTATUS && csr_op_en_i && csr_op_i == CSR_OP_READ",
+      "property_name": "csr_SEC_3",
+      "status": "translated",
+      "notes": "Checks that reads from CSR_MSTATUS only occur when csr_addr_i matches. Uses csr_rdata_o as observable read data."
     },
     {
       "id": 4,
-      "ns31a_signal": "CsrWtAddr",
-      "ibex_signal": "csr_addr_i",
-      "status": "auto"
+      "ns31a_signal": "CSRRW, CSRRS, CSRRC, CSRRWI, CSRRSI, CSRRCI",
+      "ibex_signal": "csr_op_en_i && (csr_op_i == CSR_OP_READ || csr_op_i == CSR_OP_WRITE || csr_op_i == CSR_OP_SET || csr_op_i == CSR_OP_CLEAR)",
+      "property_name": "csr_SEC_4",
+      "status": "translated",
+      "notes": "Mapped NS31A CSR instruction types to Ibex csr_op_e enum values. Checks that CSR reads only occur during valid CSR operations."
     },
     {
       "id": 5,
-      "ns31a_signal": "CsrRdAddr",
-      "ibex_signal": "csr_addr_i",
-      "status": "auto"
+      "ns31a_signal": "CSRRW, CSRRS, CSRRC, CSRRWI, CSRRSI, CSRRCI",
+      "ibex_signal": "csr_op_en_i && (csr_op_i == CSR_OP_WRITE || csr_op_i == CSR_OP_SET || csr_op_i == CSR_OP_CLEAR)",
+      "property_name": "csr_SEC_5",
+      "status": "translated",
+      "notes": "Mapped NS31A CSR instruction types to Ibex csr_op_e enum values. Checks that CSR writes only occur during valid CSR operations."
     },
     {
       "id": 6,
-      "ns31a_signal": "RdData_mstatus",
-      "ibex_signal": "csr_rdata_o",
-      "status": "auto"
+      "ns31a_signal": "mvendoridAddr, marchidAddr, mimpidAddr, mhartidAddr",
+      "ibex_signal": "csr_addr_i == CSR_MVENDORID || csr_addr_i == CSR_MARCHID || csr_addr_i == CSR_MIMPID || csr_addr_i == CSR_MHARTID",
+      "property_name": "csr_SEC_6",
+      "status": "translated",
+      "notes": "Mapped NS31A read-only CSR addresses to Ibex csr_num_e enum values. Checks that read-only CSRs return constant values."
     },
     {
       "id": 7,
-      "ns31a_signal": "CSRRW/CSRRS/CSRRC/CSRRWI/CSRRSI/CSRRCI",
-      "ibex_signal": "csr_op_i",
-      "status": "auto"
+      "ns31a_signal": "MieRegOut[31:20], MieRegOut[18:12], MieRegOut[10:8], MieRegOut[6:4], MieRegOut[2:0]",
+      "ibex_signal": "csr_rdata_o (for CSR_MIE)",
+      "property_name": "csr_SEC_7",
+      "status": "translated",
+      "notes": "Mapped NS31A mie register fields to Ibex csr_rdata_o when reading CSR_MIE. Checks reserved bits are zero."
     },
     {
       "id": 8,
-      "ns31a_signal": "MieRegOut",
-      "ibex_signal": "mie",
-      "status": "auto"
+      "ns31a_signal": "Write to read-only CSR",
+      "ibex_signal": "illegal_csr_insn_o",
+      "property_name": "csr_SEC_8",
+      "status": "translated",
+      "notes": "Mapped NS31A exception flag for write to read-only CSR to Ibex illegal_csr_insn_o output signal."
     },
     {
       "id": 9,
-      "ns31a_signal": "VendorID",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No equivalent constant signal for vendor ID in available signals; CsrMvendorId is a parameter, not a runtime signal"
+      "ns31a_signal": "Access to non-existent CSR",
+      "ibex_signal": "illegal_csr_insn_o",
+      "property_name": "csr_SEC_9",
+      "status": "translated",
+      "notes": "Mapped NS31A exception flag for non-existent CSR access to Ibex illegal_csr_insn_o output signal."
     },
     {
       "id": 10,
-      "ns31a_signal": "ExceptionFlag",
+      "ns31a_signal": "CSR access without appropriate privilege",
       "ibex_signal": "illegal_csr_insn_o",
-      "status": "auto"
+      "property_name": "csr_SEC_10",
+      "status": "translated",
+      "notes": "Mapped NS31A exception flag for privilege violation to Ibex illegal_csr_insn_o output signal."
     }
   ],
-  "timestamp": "2026-05-09T22:01:19.943994+00:00",
-  "human_corrected": 0,
-  "TAR": 80.0
+  "timestamp": "2026-05-10T21:38:31.457197+00:00",
+  "translation_coverage": 100.0
 }

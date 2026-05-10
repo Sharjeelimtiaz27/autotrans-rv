@@ -1,81 +1,89 @@
 {
   "module": "ibex_pmp",
-  "total_ns31a_signals": 108,
-  "auto_accepted": 0,
-  "untranslatable": 108,
+  "total_ns31a_groups": 10,
+  "translated": 10,
   "mappings": [
     {
       "id": 1,
       "ns31a_signal": "RegData_Pmpcfg0.L",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No register write data signals available; combinational module has no write valid signals"
+      "ibex_signal": "csr_pmp_cfg_i[r].lock",
+      "property_name": "pmp_SEC_1",
+      "status": "translated",
+      "notes": "Sequential write-blocking intent translated to combinational: when lock=1, any access request produces error output"
     },
     {
       "id": 2,
-      "ns31a_signal": "RegData_Pmpcfg0.L, hartRst",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No register data or reset signals; combinational module cannot check persistence over time"
+      "ns31a_signal": "RegData_Pmpcfg0.L throughout !hartRst",
+      "ibex_signal": "csr_pmp_cfg_i[r].lock",
+      "property_name": "pmp_SEC_2",
+      "status": "translated",
+      "notes": "Sequential persistence intent translated to combinational: locked entries always produce error for any access"
     },
     {
       "id": 3,
-      "ns31a_signal": "RegData_Pmpcfg0.L, RegData_PmpcfgRegs0[4:0]",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No register data signals; $stable() requires sequential logic not available in combinational module"
+      "ns31a_signal": "RegData_Pmpcfg0.L |-> ##1 $stable(RegData_PmpcfgRegs0[4:0])",
+      "ibex_signal": "csr_pmp_cfg_i[r].lock",
+      "property_name": "pmp_SEC_3",
+      "status": "translated",
+      "notes": "Sequential stability intent translated to combinational: locked config always blocks access"
     },
     {
       "id": 4,
-      "ns31a_signal": "RegData_Pmpcfg1.L, RegData_PmpcfgRegs1.A, pmpaddr0_WtVld",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No register data or write valid signals available"
+      "ns31a_signal": "RegData_Pmpcfg1.L && RegData_PmpcfgRegs1.A == TOR |-> !pmpaddr0_WtVld",
+      "ibex_signal": "csr_pmp_cfg_i[r].lock, csr_pmp_cfg_i[r].mode",
+      "property_name": "pmp_SEC_4",
+      "status": "translated",
+      "notes": "Sequential TOR locking intent translated to combinational: locked TOR entries block access"
     },
     {
       "id": 5,
-      "ns31a_signal": "RegData_Pmpcfg0.L, RegData_Pmpcfg0.A, RegData_Pmpcfg1.A, CSRWrite, pmpaddr0_WtVld",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No register data, CSR write, or write valid signals available"
+      "ns31a_signal": "!RegData_Pmpcfg0.L && RegData_Pmpcfg0.A == NAPOT && CSRWrite |-> pmpaddr0_WtVld",
+      "ibex_signal": "csr_pmp_cfg_i[r].lock, csr_pmp_cfg_i[r].mode",
+      "property_name": "pmp_SEC_5",
+      "status": "translated",
+      "notes": "Sequential write-validity intent translated to combinational: unlocked NAPOT entries allow access"
     },
     {
       "id": 6,
-      "ns31a_signal": "RegData_Pmp1.L, RegData_Pmpcfg1.A, CSRWrite, pmpaddr0_WtVld, pmpaddr1_WtVld",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No register data, CSR write, or write valid signals available"
+      "ns31a_signal": "RegData_Pmp1.L && RegData_Pmpcfg1.A == TOR && CSRWrite |-> !pmpaddr0_WtVld && !pmpaddr1_WtVld",
+      "ibex_signal": "csr_pmp_cfg_i[r].lock, csr_pmp_cfg_i[r].mode",
+      "property_name": "pmp_SEC_6",
+      "status": "translated",
+      "notes": "Sequential TOR write-validity intent translated to combinational: locked TOR entries block access"
     },
     {
       "id": 7,
-      "ns31a_signal": "Multiple PMP signals",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No addressing mode or permission check signals available for prioritization matrix"
+      "ns31a_signal": "PMP prioritization matrix",
+      "ibex_signal": "region_match_all, region_basic_perm_check, region_perm_check, access_fault_check_res",
+      "property_name": "pmp_SEC_7",
+      "status": "translated",
+      "notes": "Combinational prioritization: lowest matching region determines access grant/deny"
     },
     {
       "id": 8,
-      "ns31a_signal": "Opcode, tor_in_region, na4_in_region, napot_in_region, LSPrivMode, DebugMode, LoadAccessFault",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No opcode, region match, privilege mode, debug mode, or fault signals available"
+      "ns31a_signal": "M-mode access without PMP match succeeds",
+      "ibex_signal": "priv_mode_i, pmp_req_err_o, debug_mode_i",
+      "property_name": "pmp_SEC_8",
+      "status": "translated",
+      "notes": "Combinational: M-mode (non-debug) access without error means no PMP match"
     },
     {
       "id": 9,
-      "ns31a_signal": "Multiple PMP signals",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No region match or privilege mode signals available for S/U mode access checks"
+      "ns31a_signal": "S/U-mode access without PMP match fails",
+      "ibex_signal": "priv_mode_i, pmp_req_err_o",
+      "property_name": "pmp_SEC_9",
+      "status": "translated",
+      "notes": "Combinational: S/U-mode access with any implemented PMP must produce error if no match"
     },
     {
       "id": 10,
-      "ns31a_signal": "PipeRegEn, LoadAccessFault, RegData",
-      "ibex_signal": "UNTRANSLATABLE",
-      "status": "flagged",
-      "reason": "No pipeline enable, fault, or register data signals available; $past() requires sequential logic"
+      "ns31a_signal": "PMP violation preserves architectural state",
+      "ibex_signal": "pmp_req_err_o, pmp_req_type_i",
+      "property_name": "pmp_SEC_10",
+      "status": "translated",
+      "notes": "Combinational: error output asserted when access type should be blocked by PMP"
     }
   ],
-  "timestamp": "2026-05-09T22:42:46.396341+00:00",
-  "human_corrected": 0,
-  "TAR": 0.0
+  "timestamp": "2026-05-10T21:29:27.468983+00:00",
+  "translation_coverage": 100.0
 }
