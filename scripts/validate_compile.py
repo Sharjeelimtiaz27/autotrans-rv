@@ -48,23 +48,50 @@ from translate import (
 
 MAX_RETRIES = 3
 RTL_ORIG    = ROOT / "rtl" / "ibex" / "original"
+RTL_STUBS   = ROOT / "rtl" / "stubs"
 ASSERTS_DIR = ROOT / "assertions" / "translated"
 ERRORS_DIR  = ROOT / "errors" / "archive"
 RESULTS_DIR = ROOT / "results" / "step1"
 ALL_MODULES = list(MODULE_CONFIG.keys())
 
+# Per-module RTL files (ibex_pkg.sv always first, then module-specific files).
+# Excludes ibex_tracer*.sv (tracing/debug only) and unrelated design files.
+_MODULE_RTL = {
+    "pmp": ["ibex_pkg.sv", "ibex_pmp.sv"],
+    "csr": ["ibex_pkg.sv", "ibex_csr.sv", "ibex_cs_registers.sv"],
+    "do":  ["ibex_pkg.sv", "ibex_controller.sv"],
+    "eti": ["ibex_pkg.sv", "ibex_controller.sv"],
+    "cf":  ["ibex_pkg.sv", "ibex_controller.sv"],
+    "mt":  ["ibex_pkg.sv", "ibex_controller.sv"],
+    "ma":  ["ibex_pkg.sv", "ibex_load_store_unit.sv"],
+    "ie":  ["ibex_pkg.sv", "ibex_alu.sv", "ibex_multdiv_fast.sv",
+            "ibex_multdiv_slow.sv", "ibex_ex_block.sv",
+            "ibex_decoder.sv", "ibex_id_stage.sv"],
+    "ru":  ["ibex_pkg.sv", "ibex_wb_stage.sv"],
+}
+
 
 # ---------------------------------------------------------------------------
-# RTL file list (pkg first -- dependency order)
+# RTL file list (pkg first -- dependency order, module-specific)
 # ---------------------------------------------------------------------------
 
 def _rtl_files(module_key: str) -> list:
-    pkg    = RTL_ORIG / "ibex_pkg.sv"
-    all_sv = sorted(RTL_ORIG.glob("*.sv"))
+    names = _MODULE_RTL.get(module_key, [])
     result = []
-    if pkg.exists():
-        result.append(pkg)
-    result.extend(f for f in all_sv if f.name != "ibex_pkg.sv")
+    for name in names:
+        p = RTL_ORIG / name
+        if p.exists():
+            result.append(p)
+    if not result:
+        # fallback: pkg + all non-tracer files
+        pkg = RTL_ORIG / "ibex_pkg.sv"
+        skip = {"ibex_tracer.sv", "ibex_tracer_pkg.sv"}
+        if pkg.exists():
+            result.append(pkg)
+        result.extend(
+            f for f in sorted(RTL_ORIG.glob("*.sv"))
+            if f.name != "ibex_pkg.sv" and f.name not in skip
+        )
     return result
 
 
@@ -101,9 +128,12 @@ def _run_vlog(vlog_bin: str, bind_path: Path, module_key: str,
     work_lib = work_dir / "work"
     subprocess.run(["vlib", str(work_lib)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=ROOT)
 
+    incdir_flags = [f"+incdir+{RTL_ORIG}"]
+    if RTL_STUBS.exists():
+        incdir_flags.append(f"+incdir+{RTL_STUBS}")
     cmd = (
-        [vlog_bin, "-sv12compat", "-work", str(work_lib),
-         f"+incdir+{RTL_ORIG}"]
+        [vlog_bin, "-sv12compat", "-work", str(work_lib)]
+        + incdir_flags
         + [str(f) for f in _rtl_files(module_key)]
         + [str(bind_path)]
     )

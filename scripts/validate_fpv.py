@@ -53,6 +53,7 @@ from translate import (
 
 MAX_RETRIES = 3
 RTL_ORIG    = ROOT / "rtl" / "ibex" / "original"
+RTL_STUBS   = ROOT / "rtl" / "stubs"
 ASSERTS_DIR = ROOT / "assertions" / "translated"
 ERRORS_DIR  = ROOT / "errors" / "archive"
 RESULTS_DIR = ROOT / "results" / "step1"
@@ -62,18 +63,42 @@ ALL_MODULES = list(MODULE_CONFIG.keys())
 # Top module for elaboration (the RTL module, not the assertion module)
 MODULE_TOP = {k: v["rtl_name"] for k, v in MODULE_CONFIG.items()}
 
+# Per-module RTL files -- excludes tracer/DV-only files not part of the design
+_MODULE_RTL = {
+    "pmp": ["ibex_pkg.sv", "ibex_pmp.sv"],
+    "csr": ["ibex_pkg.sv", "ibex_csr.sv", "ibex_cs_registers.sv"],
+    "do":  ["ibex_pkg.sv", "ibex_controller.sv"],
+    "eti": ["ibex_pkg.sv", "ibex_controller.sv"],
+    "cf":  ["ibex_pkg.sv", "ibex_controller.sv"],
+    "mt":  ["ibex_pkg.sv", "ibex_controller.sv"],
+    "ma":  ["ibex_pkg.sv", "ibex_load_store_unit.sv"],
+    "ie":  ["ibex_pkg.sv", "ibex_alu.sv", "ibex_multdiv_fast.sv",
+            "ibex_multdiv_slow.sv", "ibex_ex_block.sv",
+            "ibex_decoder.sv", "ibex_id_stage.sv"],
+    "ru":  ["ibex_pkg.sv", "ibex_wb_stage.sv"],
+}
+
 
 # ---------------------------------------------------------------------------
-# RTL file list (pkg first)
+# RTL file list (pkg first, module-specific)
 # ---------------------------------------------------------------------------
 
 def _rtl_files(module_key: str) -> list:
-    pkg    = RTL_ORIG / "ibex_pkg.sv"
-    all_sv = sorted(RTL_ORIG.glob("*.sv"))
+    names = _MODULE_RTL.get(module_key, [])
     result = []
-    if pkg.exists():
-        result.append(pkg)
-    result.extend(f for f in all_sv if f.name != "ibex_pkg.sv")
+    for name in names:
+        p = RTL_ORIG / name
+        if p.exists():
+            result.append(p)
+    if not result:
+        skip = {"ibex_tracer.sv", "ibex_tracer_pkg.sv"}
+        pkg = RTL_ORIG / "ibex_pkg.sv"
+        if pkg.exists():
+            result.append(pkg)
+        result.extend(
+            f for f in sorted(RTL_ORIG.glob("*.sv"))
+            if f.name != "ibex_pkg.sv" and f.name not in skip
+        )
     return result
 
 
@@ -91,9 +116,15 @@ def _gen_tcl(module_key: str, bind_path: Path,
     rst     = signals.get("reset", "rst_ni")
     top     = MODULE_TOP[module_key]
 
+    # incdir flags: rtl/original first, then stubs for prim_assert.sv no-ops
+    incdir_flags = f"+incdir+{RTL_ORIG}"
+    if RTL_STUBS.exists():
+        incdir_flags += f" +incdir+{RTL_STUBS}"
+
     analyze_lines = "\n".join(
-        f"analyze -sv12 {{{f}}}" for f in _rtl_files(module_key)
+        f"analyze -sv12 {incdir_flags} {{{f}}}" for f in _rtl_files(module_key)
     )
+
     clock_reset = (
         f"clock {clk}\nreset -expression {{!{rst}}}"
         if is_seq else
@@ -103,7 +134,7 @@ def _gen_tcl(module_key: str, bind_path: Path,
     return f"""clear -all
 
 {analyze_lines}
-analyze -sv12 {{{bind_path}}}
+analyze -sv12 {incdir_flags} {{{bind_path}}}
 
 elaborate -top {top}
 {clock_reset}
