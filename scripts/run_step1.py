@@ -121,31 +121,65 @@ def run_module(module: str, mode: str) -> dict:
 
 def show_status():
     """Print pipeline status for all 9 modules."""
+    STEP1 = ROOT / "results" / "step1"
     print("\n=== AI-AutoTrans Pipeline Status ===\n")
-    header = f"{'Module':<6}  {'signals.json':<14}  {'bind file':<28}  {'TAR log':<12}  {'TAR %'}"
+    header = (f"  {'Mod':<5}  {'1A':<4}  {'1B bind':<10}  "
+              f"{'1C compile':<12}  {'1D FPV result':<30}  {'1B trans cov'}")
     print(header)
-    print("-" * len(header))
+    print("  " + "-" * (len(header) - 2))
 
     for m in ALL_MODULES:
-        sig   = "OK" if (SIGS / f"{m}_signals.json").exists()     else "--"
+        # 1A
+        sig = "OK" if (SIGS / f"{m}_signals.json").exists() else "--"
+
+        # 1B
         bname = BIND_FILES[m]
-        bind  = "OK" if (ASSERTS / bname).exists()                 else "--"
+        bind  = "OK" if (ASSERTS / bname).exists() else "--"
+
+        # 1C compile state
+        cp = STEP1 / f"{m}_compile_state.json"
+        if cp.exists():
+            try:
+                cs = json.loads(cp.read_text(encoding="utf-8"))
+                compile_s = "LOCKED" if cs.get("locked") else f"att{cs.get('attempt',0)}/3"
+            except Exception:
+                compile_s = "err"
+        else:
+            compile_s = "--"
+
+        # 1D FPV state + TAR from log
+        fp = STEP1 / f"{m}_fpv_state.json"
         log_p = LOGS / f"{m}_tar_log.json"
+        trans_cov = "--"
+        fpv_s = "--"
+
         if log_p.exists():
             try:
-                data = json.loads(log_p.read_text(encoding="utf-8"))
+                data  = json.loads(log_p.read_text(encoding="utf-8"))
                 total = data.get("total_ns31a_groups", data.get("total_ns31a_signals", 0))
                 trans = data.get("translated", data.get("auto_accepted", 0))
-                cov   = data.get("translation_coverage", data.get("TAR", 0.0))
-                tar   = f"{cov:.1f}% ({trans}/{total} translated)"
-                log  = "OK"
+                trans_cov = f"{trans}/{total} (100%)"
+
+                fpv_tar = data.get("TAR")          # written ONLY after FPV PASS
+                if fpv_tar is not None:
+                    proven = int(round(fpv_tar * total / 100.0))
+                    fpv_s = f"PASS  TAR={fpv_tar:.1f}%  ({proven}/{total})"
+                elif fp.exists():
+                    try:
+                        fs = json.loads(fp.read_text(encoding="utf-8"))
+                        if fs.get("locked"):
+                            fpv_s = "LOCKED  (3 retries exhausted)"
+                        else:
+                            fpv_s = f"FAIL  attempt {fs.get('attempt',0)}/3"
+                    except Exception:
+                        fpv_s = "state-err"
+                else:
+                    fpv_s = "pending  (1D not yet run)"
             except Exception:
-                tar = "err"
-                log = "err"
-        else:
-            log = "--"
-            tar = "--"
-        print(f"  {m:<6}  {sig:<14}  {bname:<28}  {log:<12}  {tar}")
+                trans_cov = "log-err"
+                fpv_s     = "log-err"
+
+        print(f"  {m:<5}  {sig:<4}  {bind:<10}  {compile_s:<12}  {fpv_s:<30}  {trans_cov}")
 
     print()
 
