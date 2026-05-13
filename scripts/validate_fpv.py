@@ -75,7 +75,7 @@ _FPV_WRAPPER = {
 # Per-module RTL files -- excludes tracer/DV-only files not part of the design
 _MODULE_RTL = {
     "pmp": ["ibex_pkg.sv", "ibex_pmp.sv"],
-    "csr": ["ibex_pkg.sv", "ibex_csr.sv", "ibex_cs_registers.sv"],
+    "csr": ["ibex_pkg.sv", "ibex_csr.sv", "ibex_counter.sv", "ibex_cs_registers.sv"],
     "do":  ["ibex_pkg.sv", "ibex_controller.sv"],
     "eti": ["ibex_pkg.sv", "ibex_controller.sv"],
     "cf":  ["ibex_pkg.sv", "ibex_controller.sv"],
@@ -83,8 +83,14 @@ _MODULE_RTL = {
     "ma":  ["ibex_pkg.sv", "ibex_load_store_unit.sv"],
     "ie":  ["ibex_pkg.sv", "ibex_alu.sv", "ibex_multdiv_fast.sv",
             "ibex_multdiv_slow.sv", "ibex_ex_block.sv",
-            "ibex_decoder.sv", "ibex_id_stage.sv"],
+            "ibex_decoder.sv", "ibex_controller.sv", "ibex_id_stage.sv"],
     "ru":  ["ibex_pkg.sv", "ibex_wb_stage.sv"],
+}
+
+# Modules to black-box during elaboration (missing OpenTitan primitives).
+# Format: module_key -> list of module names to pass as -bbox_m to elaborate.
+_MODULE_BBOX = {
+    "ma": ["prim_buf", "prim_secded_inv_39_32_dec", "prim_secded_inv_39_32_enc"],
 }
 
 
@@ -149,12 +155,19 @@ def _gen_tcl(module_key: str, sv_path: Path,
         "clock -none\nreset -none"
     )
 
+    bbox_flags = " ".join(
+        f"-bbox_m {m}" for m in _MODULE_BBOX.get(module_key, [])
+    )
+    elaborate_cmd = f"elaborate -top {top}"
+    if bbox_flags:
+        elaborate_cmd += f" {bbox_flags}"
+
     return f"""clear -all
 
 {analyze_lines}
 analyze -sv12 {incdir_flags} {{{sv_path}}}
 
-elaborate -top {top}
+{elaborate_cmd}
 {clock_reset}
 
 prove -all
