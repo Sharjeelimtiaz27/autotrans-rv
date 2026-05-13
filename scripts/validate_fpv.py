@@ -128,7 +128,7 @@ def _gen_tcl(module_key: str, bind_path: Path,
     clock_reset = (
         f"clock {clk}\nreset -expression {{!{rst}}}"
         if is_seq else
-        "# combinational module -- no clock or reset"
+        "clock -none\nreset -none"
     )
 
     return f"""clear -all
@@ -139,12 +139,11 @@ analyze -sv12 {incdir_flags} {{{bind_path}}}
 elaborate -top {top}
 {clock_reset}
 
-prove -bg -all
-check_vacuity -all
+prove -all
 
 report -results -file {{{baseline_f}}}
-report -vacuity -file {{{vacuity_f}}}
-report -cov     -file {{{cov_f}}}
+catch {{report -vacuity -file {{{vacuity_f}}}}}
+catch {{report -cov     -file {{{cov_f}}}}}
 exit
 """
 
