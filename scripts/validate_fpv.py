@@ -238,7 +238,7 @@ def _parse_vacuity(report_path: Path) -> dict:
 
 def _run_jg(jg_bin: str, tcl_path: Path) -> tuple:
     """Run JasperGold in batch mode. Returns (exit_code, stdout+stderr)."""
-    cmd = [jg_bin, "-no_gui", "-batch", "-tcl", str(tcl_path)]
+    cmd = [jg_bin, "-batch", "-tcl", str(tcl_path)]
     try:
         res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                              cwd=ROOT, timeout=600)
