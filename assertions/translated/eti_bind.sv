@@ -275,22 +275,19 @@ module ibex_controller_eti_assertions
   endproperty
   assert property (eti_SEC_16);
 
-  // eti_SEC_17: Non-debug sync exception cause is one of Ibex's five standard codes.
-  // Security: every non-debug, non-IRQ, non-WB trap carries a valid RISC-V exception code.
-  // RTL: FLUSH unique-case covers exactly {InstrAccessFault, IllegalInsn, EcallMMode/UMode,
-  //      Breakpoint}; exc_cause_o cannot be set to any other value in this path.
-  // Note: replaces csr_save_id_o antecedent (always 0 in FLUSH with WritebackStage=0).
-  //       !csr_save_wb_o && !irq_int && !irq_ext selects sync FLUSH exceptions.
+  // eti_SEC_17: Every non-debug exception save redirects via the exception PC mux (PC_EXC).
+  // Security: traps never jump to an arbitrary address — the target is always mtvec-derived
+  //           (PC_EXC), not a branch, boot, debug, or return target.
+  // RTL: All FSM states that assert csr_save_cause_o && !debug_csr_save_o also assert
+  //      pc_mux_o = PC_EXC:
+  //        IRQ_TAKEN  (line ~632): pc_mux_o = PC_EXC
+  //        FLUSH exception path (line ~740): pc_mux_o = PC_EXC
+  //      Debug-entry states set debug_csr_save_o=1 → excluded by antecedent.
+  //      Debug override in FLUSH also clears csr_save_cause_o=0 → antecedent never fires.
   property eti_SEC_17;
     @(posedge clk_i) disable iff (!rst_ni)
-    (csr_save_cause_o && !debug_csr_save_o &&
-     !csr_save_wb_o &&
-     !exc_cause_o.irq_int && !exc_cause_o.irq_ext) |->
-    (exc_cause_o == ibex_pkg::ExcCauseIllegalInsn ||
-     exc_cause_o == ibex_pkg::ExcCauseEcallMMode ||
-     exc_cause_o == ibex_pkg::ExcCauseEcallUMode ||
-     exc_cause_o == ibex_pkg::ExcCauseBreakpoint ||
-     exc_cause_o == ibex_pkg::ExcCauseInstrAccessFault);
+    (csr_save_cause_o && !debug_csr_save_o) |->
+    (pc_mux_o == ibex_pkg::PC_EXC);
   endproperty
   assert property (eti_SEC_17);
 
