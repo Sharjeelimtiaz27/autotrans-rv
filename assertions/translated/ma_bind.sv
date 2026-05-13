@@ -8,7 +8,9 @@
 
 module ibex_load_store_unit_assertions
     import ibex_pkg::*;
-(
+#(
+    parameter int unsigned MemDataWidth = 32
+) (
     // ALL ports are input — assertion module observes only, never drives
     input logic clk_i,
     input logic rst_ni,
@@ -87,4 +89,6 @@ module ibex_load_store_unit_assertions
 
 endmodule
 
-bind ibex_load_store_unit ibex_load_store_unit_assertions u_ma_assert (.*);
+bind ibex_load_store_unit ibex_load_store_unit_assertions #(
+    .MemDataWidth (MemDataWidth)
+) u_ma_assert (.*);

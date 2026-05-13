@@ -163,7 +163,7 @@ module ibex_id_stage_assertions
   property ie_SEC_1;
     @(posedge clk_i) disable iff (!rst_ni)
     // When instruction is valid in ID and ID is ready to pass to EX
-    (instr_valid_i && id_in_ready_o) |>
+    (instr_valid_i && id_in_ready_o) |=>
     // Next cycle, the EX stage outputs must match what was decoded in ID
     (alu_operator_ex_o == $past(alu_operator_i) &&
      alu_operand_a_ex_o == $past(alu_operand_a_i) &&
@@ -177,7 +177,7 @@ module ibex_id_stage_assertions
   property ie_SEC_2;
     @(posedge clk_i) disable iff (!rst_ni)
     // When WB stage is valid but not ready (stalled)
-    (en_wb_o && !ready_wb_i) |>
+    (en_wb_o && !ready_wb_i) |=>
     // The instruction type and result must remain stable
     ($past(instr_type_wb_o) == instr_type_wb_o &&
      $past(result_ex_o) == result_ex_o);
@@ -198,7 +198,7 @@ module ibex_id_stage_assertions
     @(posedge clk_i) disable iff (!rst_ni)
     (instr_valid_i && id_in_ready_o && is_branch && 
      (instr_rdata_i[14:12] == 3'b000) &&
-     (alu_operand_a_i == alu_operand_b_i)) |>
+     (alu_operand_a_i == alu_operand_b_i)) |=>
     // Branch should be taken (branch_decision_o asserted)
     branch_decision_o;
   endproperty
@@ -209,7 +209,7 @@ module ibex_id_stage_assertions
     @(posedge clk_i) disable iff (!rst_ni)
     (instr_valid_i && id_in_ready_o && is_branch && 
      (instr_rdata_i[14:12] == 3'b001) &&
-     (alu_operand_a_i != alu_operand_b_i)) |>
+     (alu_operand_a_i != alu_operand_b_i)) |=>
     branch_decision_o;
   endproperty
   assert property (ie_SEC_3_bne);
@@ -219,7 +219,7 @@ module ibex_id_stage_assertions
     @(posedge clk_i) disable iff (!rst_ni)
     (instr_valid_i && id_in_ready_o && is_branch && 
      (instr_rdata_i[14:12] == 3'b100) &&
-     ($signed(alu_operand_a_i) < $signed(alu_operand_b_i))) |>
+     ($signed(alu_operand_a_i) < $signed(alu_operand_b_i))) |=>
     branch_decision_o;
   endproperty
   assert property (ie_SEC_3_blt);
@@ -229,7 +229,7 @@ module ibex_id_stage_assertions
     @(posedge clk_i) disable iff (!rst_ni)
     (instr_valid_i && id_in_ready_o && is_branch && 
      (instr_rdata_i[14:12] == 3'b101) &&
-     ($signed(alu_operand_a_i) >= $signed(alu_operand_b_i))) |>
+     ($signed(alu_operand_a_i) >= $signed(alu_operand_b_i))) |=>
     branch_decision_o;
   endproperty
   assert property (ie_SEC_3_bge);
@@ -239,7 +239,7 @@ module ibex_id_stage_assertions
     @(posedge clk_i) disable iff (!rst_ni)
     (instr_valid_i && id_in_ready_o && is_branch && 
      (instr_rdata_i[14:12] == 3'b110) &&
-     (alu_operand_a_i < alu_operand_b_i)) |>
+     (alu_operand_a_i < alu_operand_b_i)) |=>
     branch_decision_o;
   endproperty
   assert property (ie_SEC_3_bltu);
@@ -249,7 +249,7 @@ module ibex_id_stage_assertions
     @(posedge clk_i) disable iff (!rst_ni)
     (instr_valid_i && id_in_ready_o && is_branch && 
      (instr_rdata_i[14:12] == 3'b111) &&
-     (alu_operand_a_i >= alu_operand_b_i)) |>
+     (alu_operand_a_i >= alu_operand_b_i)) |=>
     branch_decision_o;
   endproperty
   assert property (ie_SEC_3_bgeu);
