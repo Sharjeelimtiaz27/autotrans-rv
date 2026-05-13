@@ -141,7 +141,16 @@ def show_status():
         if cp.exists():
             try:
                 cs = json.loads(cp.read_text(encoding="utf-8"))
-                compile_s = "LOCKED" if cs.get("locked") else f"att{cs.get('attempt',0)}/3"
+                if cs.get("locked"):
+                    compile_s = "LOCKED"
+                elif cs.get("status") == "pass":
+                    r = cs.get("retries_used", 0)
+                    compile_s = f"PASS ({r} retr)" if r > 0 else "PASS"
+                elif cs.get("status") == "fail":
+                    r = cs.get("retries_used", 0)
+                    compile_s = f"FAIL ({r}/3 retr)"
+                else:
+                    compile_s = "running"
             except Exception:
                 compile_s = "err"
         else:
