@@ -64,8 +64,6 @@ module ibex_cs_registers_assertions
     input  logic csr_mstatus_mie_o,
     input  logic [31:0] csr_mepc_o,
     input  logic [31:0] csr_mtval_o,
-    input  ibex_pkg::pmp_cfg_t[15:0] csr_pmp_cfg_o,
-    input  logic [31:0] csr_pmp_addr_o,
     input  ibex_pkg::pmp_mseccfg_t csr_pmp_mseccfg_o,
     input  logic [31:0] csr_depc_o,
     input  logic debug_single_step_o,
