@@ -355,8 +355,9 @@ def _update_tar(module_key: str, baseline: dict, vacuity: dict, vac_base: set, t
         and not vacuity.get(name, False)
         and name not in vac_base
     )
-    total = log.get("total_ns31a_groups", 0)
-    tar   = round(proven_non_vac / total * 100, 1) if total > 0 else 0.0
+    total      = log.get("total_ns31a_groups", 0)
+    tar_groups = min(proven_non_vac, total)  # cap: one NS31A group may expand to multiple JasperGold assertions
+    tar        = round(tar_groups / total * 100, 1) if total > 0 else 0.0
 
     log["TAR"]                      = tar
     log["proven_non_vacuous"]       = proven_non_vac

@@ -130,14 +130,21 @@ JasperGold FPV RULES — CRITICAL — VIOLATIONS CAUSE FALSE COUNTER-EXAMPLES:
 
   R12. BIND SCOPE — PORT OWNERSHIP:
        The bind file targets exactly ONE DUT module ({{MODULE_NAME}}).
-       Input ports of a sub-module instantiated INSIDE {{MODULE_NAME}} are
-       NOT ports of {{MODULE_NAME}} itself. They appear in AVAILABLE SIGNALS
-       as inputs but are unconnected in the bind → they become free variables.
-       Example: if {{MODULE_NAME}} instantiates ibex_ex_block, then
-       alu_operator_i, alu_operand_a_i, alu_operand_b_i are ibex_ex_block
-       INPUTS — they are NOT ports of {{MODULE_NAME}}.
-       Rule: only use signals that appear in the OUTPUT PORTS section as
-       antecedent triggers. Inputs from sub-modules are free variables.
+       ONLY ports declared in {{MODULE_NAME}}'s own RTL module header are
+       accessible via (.*) bind — nothing from outside that boundary.
+
+       Two mistakes that cause JasperGold VERI-2367 (hard elaboration failure):
+       a) Sub-module inputs: ports of a module instantiated INSIDE {{MODULE_NAME}}
+          are not {{MODULE_NAME}} ports — unconnected in the bind → free variables.
+       b) Sibling module ports: ports of modules instantiated by the PARENT of
+          {{MODULE_NAME}} (same hierarchy level, not inside {{MODULE_NAME}}) are
+          completely invisible in {{MODULE_NAME}}'s bind scope.
+          Example: ibex_id_stage and ibex_ex_block are siblings inside ibex_core.
+          ibex_ex_block ports (alu_operator_ex_o, mult_en_ex_o, imd_val_d_ex_i,
+          imd_val_q_ex_o, etc.) do NOT exist in ibex_id_stage's bind scope —
+          declaring them in the assertion module causes VERI-2367.
+       Rule: declare ONLY signals from {{MODULE_NAME}}'s own INPUT PORTS and
+       OUTPUT PORTS lists. Never declare ports from sibling or child modules.
 
   R13. BOOT VECTOR TIMING:
        When checking the post-reset boot sequence:
@@ -147,34 +154,59 @@ JasperGold FPV RULES — CRITICAL — VIOLATIONS CAUSE FALSE COUNTER-EXAMPLES:
        register values (BOOT_SET FSM state). Adding ##1 checks FIRST_FETCH
        where pc_set_o = 0, causing a false counter-example.
 
+  R14. REGISTERED OUTPUT TIMING:
+       Some DUT outputs are registered versions of combinational decode signals
+       and lag them by exactly one clock cycle. Example (ibex_id_stage):
+         perf_branch_o   — combinational, set in the same always_comb as
+                           branch_set_raw_d (decode cycle N)
+         perf_tbranch_o  — registered (branch_set_raw_q), reflects cycle N-1 decode
+       When asserting that a registered output implies a same-decode-cycle condition,
+       use $past() to look back one cycle:
+         WRONG:   perf_tbranch_o |-> perf_branch_o       (cycle mismatch → CEX)
+         CORRECT: perf_tbranch_o |-> $past(perf_branch_o) (one-cycle lag matched)
+       General rule: if output_X is a registered version of signal_Y, write
+       (output_X |-> $past(signal_Y)), not (output_X |-> signal_Y).
+
+  R15. IBEX FENCE.I IMPLEMENTS AS JUMP:
+       ibex_decoder.sv implements FENCE.I (opcode 7'b0001111, funct3=3'b001) as a
+       jump-to-next-PC (prefetch buffer flush), setting jump_in_dec_o=1 and
+       jump_set_o=1 — exactly like JAL and JALR.
+       Any assertion on perf_jump_o or opcode-based jump detection MUST include
+       the FENCE.I opcode alongside JAL (7'b1101111) and JALR (7'b1100111):
+         WRONG:   perf_jump_o |-> (instr_rdata_i[6:0] == 7'b1101111 ||
+                                    instr_rdata_i[6:0] == 7'b1100111 || compressed)
+         CORRECT: perf_jump_o |-> (instr_rdata_i[6:0] == 7'b1101111 ||
+                                    instr_rdata_i[6:0] == 7'b1100111 ||
+                                    instr_rdata_i[6:0] == 7'b0001111 || compressed)
+
 SVA SYNTAX RULES:
-  R14. Every property block: @(posedge {{CLOCK}}) disable iff (!{{RESET}})
-  R15. Temporal delay: use ##N (N >= 1). Never use #delay.
-  R16. Previous cycle value: use $past(signal) or $past(signal, N).
-  R17. Implication: use |-> (overlapping) or |=> (non-overlapping) correctly.
+  R16. Every property block: @(posedge {{CLOCK}}) disable iff (!{{RESET}})
+  R17. Temporal delay: use ##N (N >= 1). Never use #delay.
+  R18. Previous cycle value: use $past(signal) or $past(signal, N).
+  R19. Implication: use |-> (overlapping) or |=> (non-overlapping) correctly.
        |->  : consequent starts at same clock cycle as antecedent end
        |=>  : consequent starts one cycle after antecedent end
-  R18. Every property must have both a named property block AND a named assert:
+  R20. Every property must have both a named property block AND a named assert:
          property PROP_NAME; @(posedge {{CLOCK}}) disable iff (!{{RESET}})
            <antecedent> |-> <consequent>;
          endproperty
          assert property (PROP_NAME);
-  R19. Property names: {{MODULE_SHORT}}_SEC_<N> where N is a sequential integer.
-  R20. Antecedent must be reachable in normal (non-Trojan) operation.
+  R21. Property names: {{MODULE_SHORT}}_SEC_<N> where N is a sequential integer.
+  R22. Antecedent must be reachable in normal (non-Trojan) operation.
        If the antecedent can never fire on clean RTL, rewrite it.
-  R21. No $display, $error, or simulation-only constructs inside properties.
+  R23. No $display, $error, or simulation-only constructs inside properties.
 
 BIND FILE PORT RULES:
-  R22. ALL ports in the assertion module must be declared as INPUT.
+  R24. ALL ports in the assertion module must be declared as INPUT.
        This includes signals that are outputs of the DUT.
        The assertion module only observes signals — it never drives them.
        Driving a DUT output from the assertion module causes a driver conflict.
-  R23. Clock and reset must be in the port list as input.
-  R24. Bind statement goes OUTSIDE and AFTER the assertion module:
+  R25. Clock and reset must be in the port list as input.
+  R26. Bind statement goes OUTSIDE and AFTER the assertion module:
          bind {{MODULE_NAME}} {{MODULE_NAME}}_assertions u_{{MODULE_SHORT}}_assert (.*);
-  R25. The (.*) wildcard connects all ports by name — valid only if port names
+  R27. The (.*) wildcard connects all ports by name — valid only if port names
        in the assertion module exactly match DUT port names.
-  R26. The assertion module declaration MUST include 'import ibex_pkg::*;' so that
+  R28. The assertion module declaration MUST include 'import ibex_pkg::*;' so that
        enum constants (PRIV_LVL_M, CSR_OP_WRITE, etc.) and types are in scope
        without requiring the ibex_pkg:: prefix in every assertion:
          module {{MODULE_NAME}}_assertions
@@ -197,14 +229,18 @@ Before writing output, mentally verify:
   [ ] Bind statement is outside the module
   [ ] JSON has exactly {{NS31A_TOTAL_GROUPS}} entries, one per assertion group
   [ ] Every assertion group produced at least one SVA property
-  FPV-SPECIFIC CHECKS (R10-R13):
+  FPV-SPECIFIC CHECKS (R10-R15):
   [ ] Every property antecedent uses only DUT OUTPUT signals (from OUTPUT PORTS)
-      — NOT DUT input signals which are free variables in JasperGold bind FPV
+      — NOT DUT input signals which are free variables in JasperGold bind FPV (R10)
   [ ] No property antecedent uses: csr_save_id_o, csr_save_wb_o, wb_exception_o
-      (these are always 0 in Ibex WritebackStage=0 — antecedent would never fire)
-  [ ] No property checks signals from sub-modules of {{MODULE_NAME}} as antecedents
-      (sub-module inputs are not connected through the bind — they are free variables)
-  [ ] Boot-vector post-reset check uses same-cycle (no ##1 after $rose(rst_ni))
+      (always 0 in WritebackStage=0 — antecedent never fires) (R11)
+  [ ] No port in the assertion module comes from a sibling or sub-module of
+      {{MODULE_NAME}} — only {{MODULE_NAME}}'s own INPUT/OUTPUT PORTS listed
+      in AVAILABLE SIGNALS above (R12 — violating this causes VERI-2367)
+  [ ] Boot-vector post-reset check uses same-cycle (no ##1 after $rose(rst_ni)) (R13)
+  [ ] Registered outputs correlated with combinational signals use $past()
+      e.g. perf_tbranch_o |-> $past(perf_branch_o), not |-> perf_branch_o (R14)
+  [ ] Jump opcode assertions include FENCE.I (7'b0001111) alongside JAL/JALR (R15)
 
 ================================================================================
 REQUIRED OUTPUT — PRODUCE EXACTLY TWO SECTIONS IN THIS ORDER
