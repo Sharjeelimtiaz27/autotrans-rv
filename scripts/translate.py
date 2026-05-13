@@ -338,25 +338,19 @@ def run_deepseek(prompt: str, model: str = DEEPSEEK_FLASH, timeout: int = 600) -
     """
     Call DeepSeek via NVIDIA NIM (OpenAI-compatible) and return the text response.
 
-    Supports both openai>=1.0 (new client API) and openai<1.0 (old ChatCompletion API)
-    so the same script runs on Python 3.10+ laptops and Python 3.6 EDA servers.
+    Three-tier fallback so the same script works on any Python/openai combination:
+      1. openai >= 1.0 -- new client API (laptops)
+      2. openai 0.27-0.x with ChatCompletion attribute (some servers)
+      3. requests HTTP directly -- works with any Python 3.x, no openai needed
     temperature=0.0 ensures deterministic output for reproducibility.
     """
-    try:
-        import openai as _openai
-    except ImportError:
-        print("ERROR: openai package not installed.", file=sys.stderr)
-        print("  Run: python3 -m pip install --user openai python-dotenv", file=sys.stderr)
-        sys.exit(1)
-
     api_key = _load_api_key()
 
-    # Detect API version: 1.x uses OpenAI client; 0.x uses module-level calls
-    # openai 0.8.x on Python 3.6 servers has no __version__ attribute
-    _version_str = getattr(_openai, '__version__', '0.0')
-    _ver = tuple(int(x) for x in _version_str.split(".")[:2])
-
+    # --- tier 1: openai >= 1.0 ---
     try:
+        import openai as _openai
+        _version_str = getattr(_openai, '__version__', '0.0')
+        _ver = tuple(int(x) for x in _version_str.split(".")[:2])
         if _ver >= (1, 0):
             from openai import OpenAI
             client = OpenAI(base_url=NVIDIA_BASE_URL, api_key=api_key)
@@ -368,9 +362,10 @@ def run_deepseek(prompt: str, model: str = DEEPSEEK_FLASH, timeout: int = 600) -
                 max_tokens=MAX_TOKENS,
                 timeout=timeout,
             )
-            raw = response.choices[0].message.content or ""
-        else:
-            # openai < 1.0 (e.g. 0.8.x on Python 3.6 EDA servers)
+            return _strip_think_tags(response.choices[0].message.content or "")
+
+        # --- tier 2: openai 0.27+ with ChatCompletion ---
+        if hasattr(_openai, 'ChatCompletion'):
             _openai.api_key  = api_key
             _openai.api_base = NVIDIA_BASE_URL
             response = _openai.ChatCompletion.create(
@@ -380,12 +375,48 @@ def run_deepseek(prompt: str, model: str = DEEPSEEK_FLASH, timeout: int = 600) -
                 max_tokens=MAX_TOKENS,
                 request_timeout=timeout,
             )
-            raw = response["choices"][0]["message"]["content"] or ""
+            return _strip_think_tags(
+                response["choices"][0]["message"]["content"] or ""
+            )
+    except Exception as exc:
+        print("  WARNING: openai call failed (%s), falling back to requests" % exc,
+              file=sys.stderr)
+
+    # --- tier 3: direct HTTP via requests (works on Python 3.6 + old openai) ---
+    try:
+        import json as _json
+        try:
+            from urllib.request import urlopen, Request
+            from urllib.error import URLError, HTTPError
+        except ImportError:
+            import urllib2 as _u2  # Python 2 safety net, should never hit
+            raise ImportError("Python 2 not supported")
+
+        url     = NVIDIA_BASE_URL + "/chat/completions"
+        payload = _json.dumps({
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": TEMPERATURE,
+            "max_tokens": MAX_TOKENS,
+        }).encode("utf-8")
+        req = Request(url, data=payload, headers={
+            "Authorization": "Bearer %s" % api_key,
+            "Content-Type": "application/json",
+        })
+        import socket
+        old_timeout = socket.getdefaulttimeout()
+        socket.setdefaulttimeout(timeout)
+        try:
+            with urlopen(req) as resp:
+                body = _json.loads(resp.read().decode("utf-8"))
+        finally:
+            socket.setdefaulttimeout(old_timeout)
+        return _strip_think_tags(
+            body["choices"][0]["message"]["content"] or ""
+        )
     except Exception as exc:
         print("ERROR: DeepSeek API call failed: %s" % exc, file=sys.stderr)
         sys.exit(1)
-
-    return _strip_think_tags(raw)
 
 
 # ---------------------------------------------------------------------------
