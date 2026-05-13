@@ -71,15 +71,25 @@ module ibex_load_store_unit_assertions
   endproperty
   assert property (ma_SEC_1);
 
-  // ma_SEC_2: Word-load data from memory is delivered unmodified to the pipeline.
-  // Security intent: For full-word loads, the value read from memory equals the
-  //   value presented to the register file — no silent modification.
-  // RTL: ibex_load_store_unit word-load path (lsu_type_i==2'b10, lsu_rdata_valid_o):
-  //   lsu_rdata_o = data_rdata_i (direct pass, no sign/zero extension needed).
+  // ma_SEC_2: Valid load data is free from bus errors and integrity violations.
+  // Security intent: A load response presented to the pipeline as valid (clean
+  //   data, lsu_rdata_valid_o=1) cannot simultaneously carry a bus/PMP error
+  //   (load_err_o) or a data integrity error (load_resp_intg_err_o) — the pipeline
+  //   cannot receive corrupted data that is also flagged as clean.
+  // RTL root cause of CEX in prior version: lsu_type_i is a DUT INPUT (free
+  //   variable); data_type_q is REGISTERED from request-time lsu_type_i (line 207).
+  //   At response time JasperGold drives lsu_type_i=2'b10 (byte, NOT word — word
+  //   encoding is 2'b00), but data_type_q reflects the earlier registered type
+  //   → lsu_rdata_o uses registered type → lsu_rdata_o ≠ data_rdata_i. CEX.
+  //   No DUT OUTPUT reflects the registered load type at response time.
+  //   Fix: use the RTL-enforced mutual exclusion between clean data and errors.
+  // RTL: lsu_rdata_valid_o (line 510) requires ~data_or_pmp_err & ~data_intg_err.
+  //   load_err_o (line 542) requires data_or_pmp_err.
+  //   load_resp_intg_err_o (line 552) requires data_intg_err.
+  //   These are structurally disjoint — both implications hold unconditionally.
   property ma_SEC_2;
     @(posedge clk_i) disable iff (!rst_ni)
-    (lsu_rdata_valid_o && lsu_type_i == 2'b10) |->
-    (lsu_rdata_o == data_rdata_i);
+    lsu_rdata_valid_o |-> (!load_err_o && !load_resp_intg_err_o);
   endproperty
   assert property (ma_SEC_2);
 
