@@ -79,17 +79,18 @@ module ibex_controller_cf_assertions
 
   // -----------------------------------------------------------------------
   // Security assertions — translated from NS31A by ai-autotrans-rv ATS
-  // Manually corrected after FPV CEX analysis:
-  //   Root cause: antecedents used DUT INPUTS (free variables from JasperGold's
-  //   perspective): ready_wb_i, irq_pending_i, csr_mstatus_mie_i, branch_set_i,
-  //   jump_set_i, wb_exception_o (fires in DECODE, pc_set in FLUSH — timing mismatch).
+  // Manually corrected after FPV CEX analysis (two rounds):
+  //   Round 1: antecedents used DUT INPUTS (free vars): ready_wb_i, irq_pending_i,
+  //   branch_set_i, jump_set_i. Fix: use DUT OUTPUT signals only.
+  //   Round 2 (RTL inspection required):
+  //   cf_SEC_7 CEX: ibex_controller.sv line 573 sets pc_mux_o=PC_JUMP
+  //   unconditionally for the entire DECODE state (timing optimization).
+  //   A taken branch (branch_set_i=1, jump_set_i=0) sets pc_set_o=1 and
+  //   perf_tbranch_o=1, but perf_jump_o=0 and nt_branch_mispredict_o=0.
+  //   Fix: add perf_tbranch_o to the PC_JUMP consequent disjunction.
+  //   cf_SEC_8 CEX: PC_BP is NEVER assigned in ibex_controller.sv. Ibex uses
+  //   PC_JUMP (not PC_BP) for taken branch redirects. Fix: PC_BP → PC_JUMP.
   //   WritebackStage=0: csr_save_id_o=0 in FLUSH, csr_save_wb_o=0 always.
-  //   Fix: replace free-input antecedents with DUT OUTPUT signals that fire in
-  //   the same cycle as pc_set_o (perf_jump_o, perf_tbranch_o, csr_save_cause_o,
-  //   csr_restore_mret_id_o, csr_restore_dret_id_o, debug_csr_save_o).
-  //   cf_SEC_1: $rose(controller_run_o) fires in FIRST_FETCH, PC_BOOT set in
-  //   previous BOOT_SET cycle — fix: $rose(rst_ni) |-> ##1 (pc_set_o && PC_BOOT).
-  //   cf_SEC_2: invert to "every pc_set_o has a legitimate DUT-output reason".
   // -----------------------------------------------------------------------
 
   // cf_SEC_1: First instruction after reset must set PC to boot vector.
@@ -164,25 +165,30 @@ module ibex_controller_cf_assertions
   endproperty
   assert property (cf_SEC_6);
 
-  // cf_SEC_7: PC_JUMP redirects occur only on jumps or mispredict corrections.
-  // Security intent: No spurious PC_JUMP redirect — only JAL/JALR (perf_jump_o)
-  //   or a branch-predictor mispredict correction (nt_branch_mispredict_o) may
-  //   use the PC_JUMP mux, preventing covert control flow changes.
-  // RTL: pc_mux_o=PC_JUMP in DECODE when jump_set_i=1 (→perf_jump_o=1) OR when
-  //   nt_branch_mispredict_o=1 (fall-through redirect after mispredicted branch).
+  // cf_SEC_7: PC_JUMP redirects occur only on jumps, taken branches, or mispredicts.
+  // Security intent: No spurious PC_JUMP redirect — only JAL/JALR (perf_jump_o),
+  //   a taken conditional branch (perf_tbranch_o), or a branch-predictor mispredict
+  //   correction (nt_branch_mispredict_o) may use the PC_JUMP mux.
+  // RTL: ibex_controller.sv line 573 sets pc_mux_o=PC_JUMP unconditionally for the
+  //   entire DECODE state (timing optimization). pc_set_o=1 only fires when
+  //   branch_set_i||jump_set_i (lines 594-600), at which point perf_tbranch_o=branch_set_i
+  //   and perf_jump_o=jump_set_i — at least one is always 1.
   property cf_SEC_7;
     @(posedge clk_i) disable iff (!rst_ni)
     (pc_set_o && pc_mux_o == ibex_pkg::PC_JUMP) |->
-    (perf_jump_o || nt_branch_mispredict_o);
+    (perf_jump_o || perf_tbranch_o || nt_branch_mispredict_o);
   endproperty
   assert property (cf_SEC_7);
 
-  // cf_SEC_8: Taken branch always redirects to the branch target (PC_BP).
-  // Security intent: A taken branch reaches its target — no branch target bypass.
-  // RTL: DECODE state branch_set_i=1: pc_set_o=1, pc_mux_o=PC_BP, perf_tbranch_o=1.
+  // cf_SEC_8: Taken branch always redirects using the PC_JUMP mux.
+  // Security intent: A taken conditional branch always causes a PC redirect to the
+  //   branch target — the branch cannot be silently suppressed.
+  // RTL: PC_BP is not used by ibex_controller. Ibex uses PC_JUMP for both jump and
+  //   taken-branch targets (ibex_controller.sv line 573: pc_mux_o=PC_JUMP in DECODE).
+  //   When branch_set_i=1: pc_set_o=1 and perf_tbranch_o=1 together (lines 596-598).
   property cf_SEC_8;
     @(posedge clk_i) disable iff (!rst_ni)
-    perf_tbranch_o |-> (pc_set_o && pc_mux_o == ibex_pkg::PC_BP);
+    perf_tbranch_o |-> (pc_set_o && pc_mux_o == ibex_pkg::PC_JUMP);
   endproperty
   assert property (cf_SEC_8);
 
