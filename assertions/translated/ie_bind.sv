@@ -27,7 +27,6 @@ module ibex_id_stage_assertions
     input  logic ex_valid_i,
     input  logic lsu_resp_valid_i,
     input  logic [1:0] imd_val_we_ex_i,
-    input  logic [33:0] imd_val_d_ex_i,
     input  ibex_pkg::priv_lvl_e priv_mode_i,
     input  logic csr_mstatus_tw_i,
     input  logic illegal_csr_insn_i,
@@ -73,7 +72,6 @@ module ibex_id_stage_assertions
     input  logic [31:0] multdiv_operand_a_i,
     input  logic [31:0] multdiv_operand_b_i,
     input  logic multdiv_ready_id_i,
-    input  logic [33:0] imd_val_q_i,
     input  logic ctrl_busy_o,
     input  logic illegal_insn_o,
     input  logic instr_req_o,
@@ -90,7 +88,6 @@ module ibex_id_stage_assertions
     input  ibex_pkg::alu_op_e alu_operator_ex_o,
     input  logic [31:0] alu_operand_a_ex_o,
     input  logic [31:0] alu_operand_b_ex_o,
-    input  logic [33:0] imd_val_q_ex_o,
     input  logic [31:0] bt_a_operand_o,
     input  logic [31:0] bt_b_operand_o,
     input  logic mult_en_ex_o,
@@ -168,6 +165,11 @@ module ibex_id_stage_assertions
   //   Fix: use only ibex_id_stage OUTPUT signals (perf_branch_o, perf_tbranch_o,
   //   perf_jump_o, branch_decision_o, instr_rdata_i) for structural invariants
   //   that ibex_id_stage actually enforces.
+  //   Elaboration fix: imd_val_d_ex_i and imd_val_q_ex_o are unpacked arrays
+  //   [33:0][2] in ibex_id_stage.sv (lines 77-78). Declaring them as flat [33:0]
+  //   in the assertion module causes a JasperGold type-mismatch elaboration error.
+  //   imd_val_q_i has no matching ibex_id_stage port at all (only an internal wire).
+  //   Fix: remove all three from port list — none are used in any assertion.
   // -----------------------------------------------------------------------
 
   // Group 1: EX operand stability during ID stall (NS31A properties 1-2)

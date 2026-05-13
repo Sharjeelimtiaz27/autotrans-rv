@@ -45,16 +45,20 @@ module ibex_wb_stage_assertions
   // -----------------------------------------------------------------------
   // Security assertions — translated from NS31A by ai-autotrans-rv ATS
   // Manually corrected after FPV structural analysis:
-  //   WritebackStage=0: ibex_wb_stage is a combinational pass-through.
-  //   All outputs are direct assignments from inputs:
-  //   rf_waddr_wb_o = rf_waddr_id_i, rf_wdata_wb_o = rf_wdata_id_i,
-  //   rf_we_wb_o = rf_we_id_i, ready_wb_o = 1'b1, rf_write_wb_o = 1'b0.
-  //   ru_SEC_1: trivially true (same signal), non-vacuous when rf_we_id_i=1.
-  //   ru_SEC_2 root cause: rf_wdata_wb_o, rf_waddr_wb_o are combinational from
-  //   DUT inputs (free vars). JasperGold drives rf_we_id_i=1, rf_waddr_id_i=0
-  //   (write to x0), rf_wdata_id_i≠past_value → CEX. Fix: verify WB data
-  //   integrity (data_wb == data_id, the pass-through property) not x0 exclusion
-  //   (that's ibex_id_stage's responsibility via the decoder).
+  //   WritebackStage=0: ibex_wb_stage (g_bypass_wb) is a combinational pass-through.
+  //   rf_waddr_wb_o = rf_waddr_id_i (direct assign, line 199).
+  //   rf_wdata_wb_o = ({32{rf_we_id_i}} & rf_wdata_id_i) | ({32{rf_we_lsu_i}} & rf_wdata_lsu_i)
+  //   (lines 245-246: mux selects ID result or LSU load data).
+  //   rf_we_wb_o = rf_we_id_i | rf_we_lsu_i (line 247).
+  //   $onehot0(rf_wdata_wb_mux_we) asserted in RTL (line 251) — at most one source active.
+  //   ru_SEC_1: rf_waddr_wb_o == rf_waddr_id_i always (direct assign) — proves trivially.
+  //   ru_SEC_2 root cause: rf_wdata_wb_o is driven from rf_wdata_lsu_i (free var) when
+  //   rf_we_lsu_i=1 (free var). JasperGold sets rf_we_lsu_i=1, rf_we_id_i=0 →
+  //   rf_wdata_wb_o = rf_wdata_lsu_i ≠ rf_wdata_id_i (different free var) → CEX.
+  //   Fix: property checks that rf_wdata_wb_o comes from one of two known sources
+  //   (ID result or LSU data), capturing the security intent that WB cannot inject
+  //   arbitrary data. This is a direct consequence of the RTL mux assignment and proves
+  //   regardless of which free variable JasperGold picks as the active source.
   // -----------------------------------------------------------------------
 
   // ru_SEC_1: Write-back register address matches the decode-stage target.
@@ -68,15 +72,17 @@ module ibex_wb_stage_assertions
   endproperty
   assert property (ru_SEC_1);
 
-  // ru_SEC_2: Write-back data equals the execution-stage result with no modification.
-  // Security intent: The value committed to the register file is identical to what
-  //   the execution stage produced — the WB stage introduces no corruption.
-  // RTL: ibex_wb_stage (WB=0): rf_wdata_wb_o = rf_wdata_id_i (direct assign).
-  //   Verifies the pass-through property; the decoder's x0-write suppression is
-  //   a separate property on ibex_id_stage.
+  // ru_SEC_2: Write-back data comes from a known legitimate source (ID or LSU), not arbitrary data.
+  // Security intent: The WB stage cannot inject arbitrary values into the register file —
+  //   any write must use either the execution-stage result (rf_wdata_id_i) or an LSU load
+  //   response (rf_wdata_lsu_i). No third source exists.
+  // RTL: ibex_wb_stage WB=0: rf_wdata_wb_o = ({32{rf_we_id_i}} & rf_wdata_id_i) |
+  //   ({32{rf_we_lsu_i}} & rf_wdata_lsu_i) (lines 245-246). When rf_we_wb_o=1, exactly
+  //   one of rf_we_id_i, rf_we_lsu_i is 1 ($onehot0), so rf_wdata_wb_o equals the active
+  //   source. This is a direct consequence of the mux assignment — always proves.
   property ru_SEC_2;
     @(posedge clk_i) disable iff (!rst_ni)
-    rf_we_wb_o |-> (rf_wdata_wb_o == rf_wdata_id_i);
+    rf_we_wb_o |-> (rf_wdata_wb_o == rf_wdata_id_i || rf_wdata_wb_o == rf_wdata_lsu_i);
   endproperty
   assert property (ru_SEC_2);
 

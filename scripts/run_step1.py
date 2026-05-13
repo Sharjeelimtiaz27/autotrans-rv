@@ -178,8 +178,16 @@ def show_status():
                         fs = json.loads(fp.read_text(encoding="utf-8"))
                         if fs.get("locked"):
                             fpv_s = "LOCKED  (3 retries exhausted)"
+                        elif fs.get("status") == "pass":
+                            tar_fs = fs.get("TAR")
+                            if tar_fs is not None:
+                                proven = int(round(tar_fs * total / 100.0))
+                                fpv_s = f"PASS  TAR={tar_fs:.1f}%  ({proven}/{total})"
+                            else:
+                                fpv_s = "PASS  (TAR not recorded)"
                         else:
-                            fpv_s = f"FAIL  attempt {fs.get('attempt',0)}/3"
+                            r = fs.get("retries_used", fs.get("attempt", 0))
+                            fpv_s = f"FAIL  ({r}/3 retries)"
                     except Exception:
                         fpv_s = "state-err"
                 else:
