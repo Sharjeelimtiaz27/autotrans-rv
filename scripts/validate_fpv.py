@@ -159,9 +159,9 @@ elaborate -top {top}
 
 prove -all
 
-report -results -file {{{baseline_f}}}
-catch {{report -vacuity -file {{{vacuity_f}}}}}
-catch {{report -cov     -file {{{cov_f}}}}}
+report -results -force -file {{{baseline_f}}}
+catch {{report -vacuity -force -file {{{vacuity_f}}}}}
+catch {{report -cov     -force -file {{{cov_f}}}}}
 exit
 """
 
@@ -437,6 +437,11 @@ def run_module(module_key: str) -> bool:
 
     for attempt in range(1, MAX_RETRIES + 2):
         ts = datetime.now(timezone.utc).isoformat()
+
+        # Remove stale result files so JasperGold always writes fresh ones
+        for stale in (baseline_f, vacuity_f, cov_f):
+            if stale.exists():
+                stale.unlink()
 
         # Generate TCL using active_path (wrapper or bind file)
         tcl_content = _gen_tcl(module_key, active_path,
