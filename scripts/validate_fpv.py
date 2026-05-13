@@ -55,6 +55,7 @@ MAX_RETRIES = 3
 RTL_ORIG    = ROOT / "rtl" / "ibex" / "original"
 RTL_STUBS   = ROOT / "rtl" / "stubs"
 ASSERTS_DIR = ROOT / "assertions" / "translated"
+FPV_DIR     = ROOT / "assertions" / "fpv"
 ERRORS_DIR  = ROOT / "errors" / "archive"
 RESULTS_DIR = ROOT / "results" / "step1"
 LOGS_DIR    = ROOT / "results" / "logs"
@@ -62,6 +63,14 @@ ALL_MODULES = list(MODULE_CONFIG.keys())
 
 # Top module for elaboration (the RTL module, not the assertion module)
 MODULE_TOP = {k: v["rtl_name"] for k, v in MODULE_CONFIG.items()}
+
+# Combinational modules with a standalone FPV wrapper instead of a bind file.
+# Wrapper instantiates the DUT directly so JasperGold constrains outputs via
+# DUT logic rather than treating them as free variables (PRE-engine issue).
+# Format: module_key -> (wrapper_filename, wrapper_top_name)
+_FPV_WRAPPER = {
+    "pmp": ("pmp_fpv.sv", "ibex_pmp_fpv"),
+}
 
 # Per-module RTL files -- excludes tracer/DV-only files not part of the design
 _MODULE_RTL = {
@@ -106,21 +115,30 @@ def _rtl_files(module_key: str) -> list:
 # JasperGold TCL generator
 # ---------------------------------------------------------------------------
 
-def _gen_tcl(module_key: str, bind_path: Path,
-             baseline_f: Path, vacuity_f: Path, cov_f: Path) -> str:
-    """Generate JasperGold batch TCL for the given module."""
+def _gen_tcl(module_key: str, sv_path: Path,
+             baseline_f: Path, vacuity_f: Path, cov_f: Path,
+             top_override: str = None) -> str:
+    """
+    Generate JasperGold batch TCL for the given module.
+
+    sv_path      -- the SV file containing assertions (bind file OR FPV wrapper)
+    top_override -- elaboration top when using an FPV wrapper (overrides MODULE_TOP)
+    """
     from translate import load_signals
     signals = load_signals(module_key)
     is_seq  = signals.get("type", "sequential") == "sequential"
     clk     = signals.get("clock", "clk_i")
     rst     = signals.get("reset", "rst_ni")
-    top     = MODULE_TOP[module_key]
+    top     = top_override if top_override else MODULE_TOP[module_key]
 
     # incdir flags: rtl/original first, then stubs for prim_assert.sv no-ops
     incdir_flags = f"+incdir+{RTL_ORIG}"
     if RTL_STUBS.exists():
         incdir_flags += f" +incdir+{RTL_STUBS}"
 
+    # For FPV wrappers (combinational with DUT instantiation), RTL files are
+    # needed so JasperGold can elaborate the DUT inside the wrapper.
+    # For bind-based flow, RTL files are the DUT; bind file adds assertions.
     analyze_lines = "\n".join(
         f"analyze -sv12 {incdir_flags} {{{f}}}" for f in _rtl_files(module_key)
     )
@@ -134,7 +152,7 @@ def _gen_tcl(module_key: str, bind_path: Path,
     return f"""clear -all
 
 {analyze_lines}
-analyze -sv12 {incdir_flags} {{{bind_path}}}
+analyze -sv12 {incdir_flags} {{{sv_path}}}
 
 elaborate -top {top}
 {clock_reset}
@@ -372,17 +390,34 @@ def run_module(module_key: str) -> bool:
     cfg       = MODULE_CONFIG[module_key]
     bind_path = ASSERTS_DIR / cfg["bind_file"]
 
-    print(f"\n  [1D] {module_key}: {cfg['bind_file']}")
+    # Prefer a standalone FPV wrapper over the bind file when one exists.
+    # Wrappers instantiate the DUT directly so JasperGold properly constrains
+    # output signals through DUT logic (bind-based PRE engine treats inputs as
+    # free variables, causing false CEX on all combinational assertions).
+    wrapper_info = _FPV_WRAPPER.get(module_key)
+    if wrapper_info:
+        fpv_file, fpv_top = wrapper_info
+        active_path   = FPV_DIR / fpv_file
+        top_override  = fpv_top
+        file_label    = f"fpv/{fpv_file} (wrapper)"
+    else:
+        active_path   = bind_path
+        top_override  = None
+        file_label    = cfg["bind_file"]
 
-    if not bind_path.exists():
-        print(f"  ERROR: bind file missing -- run steps 1A→1C first.",
+    print(f"\n  [1D] {module_key}: {file_label}")
+
+    if not active_path.exists():
+        print(f"  ERROR: assertion file missing -- {active_path}",
               file=sys.stderr)
+        if not wrapper_info:
+            print(f"  Run steps 1A→1C first.", file=sys.stderr)
         return False
 
     state = _load_state(module_key)
     if state.get("locked"):
         print(f"  LOCKED: exhausted FPV retries.")
-        print(f"  ESCALATE: manual fix required for {bind_path.name}")
+        print(f"  ESCALATE: manual fix required for {active_path.name}")
         return False
 
     jg_bin = shutil.which("jg")
@@ -403,8 +438,10 @@ def run_module(module_key: str) -> bool:
     for attempt in range(1, MAX_RETRIES + 2):
         ts = datetime.now(timezone.utc).isoformat()
 
-        # Generate TCL
-        tcl_content = _gen_tcl(module_key, bind_path, baseline_f, vacuity_f, cov_f)
+        # Generate TCL using active_path (wrapper or bind file)
+        tcl_content = _gen_tcl(module_key, active_path,
+                               baseline_f, vacuity_f, cov_f,
+                               top_override=top_override)
         tcl_path.write_text(tcl_content, encoding="utf-8")
 
         print(f"  [1D] Attempt {attempt} -- running JasperGold ...")
@@ -442,9 +479,10 @@ def run_module(module_key: str) -> bool:
         print(f"  [1D] Logged: errors/archive/{err_path.name}")
         print(f"  [1D] DeepSeek Pro retry {attempt}/{MAX_RETRIES} ...")
 
-        bind_content = bind_path.read_text(encoding="utf-8")
-        prompt       = _retry_prompt(module_key, bind_content, issues, attempt)
-        raw          = run_deepseek(prompt, model=DEEPSEEK_PRO, timeout=300)
+        # Retry rewrites the active assertion file (wrapper or bind file)
+        active_content = active_path.read_text(encoding="utf-8")
+        prompt         = _retry_prompt(module_key, active_content, issues, attempt)
+        raw            = run_deepseek(prompt, model=DEEPSEEK_PRO, timeout=300)
 
         raw_dir = ROOT / "results" / "raw"
         raw_dir.mkdir(parents=True, exist_ok=True)
@@ -457,13 +495,16 @@ def run_module(module_key: str) -> bool:
             new_sv = raw
 
         if new_sv:
-            rtl_name    = cfg["rtl_name"]
-            assert_name = (f"{rtl_name}_{cfg['short']}"
-                           if module_key in ("do", "eti", "cf", "mt")
-                           else rtl_name)
-            new_sv = fix_bind_target(new_sv, rtl_name, assert_name)
-            bind_path.write_text(new_sv, encoding="utf-8")
-            print(f"  [1D] Bind file updated by Pro.")
+            if not wrapper_info:
+                # Bind-file flow: fix the bind target annotation
+                rtl_name    = cfg["rtl_name"]
+                assert_name = (f"{rtl_name}_{cfg['short']}"
+                               if module_key in ("do", "eti", "cf", "mt")
+                               else rtl_name)
+                new_sv = fix_bind_target(new_sv, rtl_name, assert_name)
+            active_path.write_text(new_sv, encoding="utf-8")
+            label = "Wrapper" if wrapper_info else "Bind file"
+            print(f"  [1D] {label} updated by Pro.")
         else:
             print(f"  [1D] WARNING: could not parse Pro output, retrying unchanged.")
 
