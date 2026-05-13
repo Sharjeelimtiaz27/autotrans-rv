@@ -206,15 +206,19 @@ def _save_state(module_key: str, state: dict):
 # Report parsing
 # ---------------------------------------------------------------------------
 
-def _parse_baseline(report_path: Path) -> dict:
+def _parse_baseline(report_path: Path) -> tuple:
     """
     Parse JasperGold baseline report.
-    Returns {property_name: "proven" | "cex" | "unknown"}.
+    Returns (results, vacuous_from_baseline) where:
+      results               = {short_name: "proven"|"cex"|"unknown"}
+      vacuous_from_baseline = set of short_names whose precondition1 is unreachable
+                              (JasperGold marks these as trivially-true vacuous proofs)
     """
     if not report_path.exists():
-        return {}
+        return {}, set()
 
-    results = {}
+    results  = {}
+    vac_base = set()
     text = report_path.read_text(encoding="utf-8", errors="replace")
 
     for line in text.splitlines():
@@ -225,11 +229,18 @@ def _parse_baseline(report_path: Path) -> dict:
             if len(parts) >= 3:
                 prop_full = parts[1]
                 status    = parts[2].lower()
+                short     = prop_full.split(".")[-1]
+
+                # Detect unreachable precondition → vacuous assertion
+                # e.g.  _assert_4:precondition1   unreachable
+                if ":precondition" in short and "unreachable" in status:
+                    base = short.split(":")[0]
+                    vac_base.add(base)
+                    continue
+
                 if any(kw in status for kw in ("proven", "cex", "unknown", "undetermined")):
                     key = "proven" if "proven" in status else (
                           "cex"    if "cex"    in status else "unknown")
-                    # Use the short assertion name (last dot-component)
-                    short = prop_full.split(".")[-1]
                     results[short] = key
             continue
         # Legacy pipe-delimited format
@@ -246,7 +257,7 @@ def _parse_baseline(report_path: Path) -> dict:
                   "cex"    if "cex"    in status else "unknown")
             results[name] = key
 
-    return results
+    return results, vac_base
 
 
 def _parse_vacuity(report_path: Path) -> dict:
@@ -298,10 +309,11 @@ def _run_jg(jg_bin: str, tcl_path: Path) -> tuple:
         _shutil.rmtree(proj_dir, ignore_errors=True)
 
 
-def _fpv_passed(baseline: dict, vacuity: dict) -> tuple:
+def _fpv_passed(baseline: dict, vacuity: dict, vac_base: set) -> tuple:
     """
     Determine if all assertions pass (Proven + non-vacuous).
     Returns (all_pass: bool, issues: list[str]).
+    vac_base: set of assertion names flagged vacuous from baseline precondition1 unreachable.
     """
     issues = []
     for name, status in baseline.items():
@@ -314,6 +326,12 @@ def _fpv_passed(baseline: dict, vacuity: dict) -> tuple:
         if is_vac:
             issues.append(f"Vacuous: {name}")
 
+    # Also catch vacuous proofs detected from baseline (precondition1 unreachable)
+    for name in vac_base:
+        tag = f"Vacuous: {name}"
+        if tag not in issues:
+            issues.append(tag)
+
     return len(issues) == 0, issues
 
 
@@ -321,7 +339,7 @@ def _fpv_passed(baseline: dict, vacuity: dict) -> tuple:
 # TAR update
 # ---------------------------------------------------------------------------
 
-def _update_tar(module_key: str, baseline: dict, vacuity: dict, ts: str):
+def _update_tar(module_key: str, baseline: dict, vacuity: dict, vac_base: set, ts: str):
     """Compute TAR from FPV results and update results/logs/<MODULE>_tar_log.json."""
     log_path = LOGS_DIR / f"{module_key}_tar_log.json"
     log = {}
@@ -333,7 +351,9 @@ def _update_tar(module_key: str, baseline: dict, vacuity: dict, ts: str):
 
     proven_non_vac = sum(
         1 for name, status in baseline.items()
-        if status == "proven" and not vacuity.get(name, False)
+        if status == "proven"
+        and not vacuity.get(name, False)
+        and name not in vac_base
     )
     total = log.get("total_ns31a_groups", 0)
     tar   = round(proven_non_vac / total * 100, 1) if total > 0 else 0.0
@@ -466,16 +486,16 @@ def run_module(module_key: str) -> bool:
         retcode, jg_out = _run_jg(jg_bin, tcl_path)
 
         # Parse report files
-        baseline = _parse_baseline(baseline_f)
-        vacuity  = _parse_vacuity(vacuity_f)
+        baseline, vac_base = _parse_baseline(baseline_f)
+        vacuity             = _parse_vacuity(vacuity_f)
 
         if not baseline:
             # JasperGold failed to produce a report -- treat as fail
             issues = [f"JasperGold did not produce results (exit {retcode})"]
         else:
-            all_pass, issues = _fpv_passed(baseline, vacuity)
+            all_pass, issues = _fpv_passed(baseline, vacuity, vac_base)
             if all_pass:
-                tar, pnv, total = _update_tar(module_key, baseline, vacuity, ts)
+                tar, pnv, total = _update_tar(module_key, baseline, vacuity, vac_base, ts)
                 print(f"  [1D] PASS -- all assertions Proven + non-vacuous.")
                 print(f"  [1D] TAR = {pnv}/{total} = {tar}%")
                 _save_state(module_key, {"locked": False, "status": "pass",
