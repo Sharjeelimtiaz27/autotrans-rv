@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 #
 # Author  : Sharjeel Imtiaz
 #           Tallinn University of Technology (TalTech)
 #
 # Contact : sharjeel.imtiaz@taltech.ee
-# Project : ai-autotrans-rv — BEC 2026
+# Project : ai-autotrans-rv -- BEC 2026
 #
 """
 Step 1D: JasperGold FPV Baseline (Proven + non-vacuous)
@@ -22,7 +22,7 @@ LLM tier:
   Pro (deepseek-ai/deepseek-v4-pro) for ALL retries.
   - CEX on clean RTL = assertion logic wrong (not a Trojan finding here).
   - Vacuous assertion = antecedent never fires in normal operation.
-  Both require understanding RTL semantics — Pro handles this correctly.
+  Both require understanding RTL semantics -- Pro handles this correctly.
 
 After 3 failed retries: set locked=True, print ESCALATE.
 TAR is updated in results/logs/<MODULE>_tar_log.json after successful FPV.
@@ -97,7 +97,7 @@ def _gen_tcl(module_key: str, bind_path: Path,
     clock_reset = (
         f"clock {clk}\nreset -expression {{!{rst}}}"
         if is_seq else
-        "# combinational module — no clock or reset"
+        "# combinational module -- no clock or reset"
     )
 
     return f"""clear -all
@@ -289,7 +289,7 @@ def _retry_prompt(module_key: str, bind_content: str,
     vac_note = ""
     if any("CEX" in i for i in issues):
         cex_note = ("  For CEX assertions: the property does NOT hold on clean Ibex RTL.\n"
-                    "  This means the assertion logic is wrong — rewrite to correctly\n"
+                    "  This means the assertion logic is wrong -- rewrite to correctly\n"
                     "  capture the security property using available Ibex signals.\n")
     if any("Vacuous" in i for i in issues):
         vac_note = ("  For Vacuous assertions: the antecedent NEVER fires in simulation.\n"
@@ -328,7 +328,7 @@ def run_module(module_key: str) -> bool:
     print(f"\n  [1D] {module_key}: {cfg['bind_file']}")
 
     if not bind_path.exists():
-        print(f"  ERROR: bind file missing — run steps 1A→1C first.",
+        print(f"  ERROR: bind file missing -- run steps 1A→1C first.",
               file=sys.stderr)
         return False
 
@@ -340,7 +340,7 @@ def run_module(module_key: str) -> bool:
 
     jg_bin = shutil.which("jg")
     if not jg_bin:
-        print("  ERROR: 'jg' not on PATH — run this step on the EDA server.",
+        print("  ERROR: 'jg' not on PATH -- run this step on the EDA server.",
               file=sys.stderr)
         sys.exit(2)
 
@@ -360,7 +360,7 @@ def run_module(module_key: str) -> bool:
         tcl_content = _gen_tcl(module_key, bind_path, baseline_f, vacuity_f, cov_f)
         tcl_path.write_text(tcl_content, encoding="utf-8")
 
-        print(f"  [1D] Attempt {attempt} — running JasperGold ...")
+        print(f"  [1D] Attempt {attempt} -- running JasperGold ...")
         retcode, jg_out = _run_jg(jg_bin, tcl_path)
 
         # Parse report files
@@ -368,13 +368,13 @@ def run_module(module_key: str) -> bool:
         vacuity  = _parse_vacuity(vacuity_f)
 
         if not baseline:
-            # JasperGold failed to produce a report — treat as fail
+            # JasperGold failed to produce a report -- treat as fail
             issues = [f"JasperGold did not produce results (exit {retcode})"]
         else:
             all_pass, issues = _fpv_passed(baseline, vacuity)
             if all_pass:
                 tar, pnv, total = _update_tar(module_key, baseline, vacuity, ts)
-                print(f"  [1D] PASS — all assertions Proven + non-vacuous.")
+                print(f"  [1D] PASS -- all assertions Proven + non-vacuous.")
                 print(f"  [1D] TAR = {pnv}/{total} = {tar}%")
                 _save_state(module_key, {"locked": False, "status": "pass",
                                          "retries_used": attempt - 1,
@@ -391,7 +391,7 @@ def run_module(module_key: str) -> bool:
             f"Issues:\n" + "\n".join(f"  {i}" for i in issues) + f"\n\n{jg_out}",
             encoding="utf-8"
         )
-        print(f"  [1D] FAIL  — {len(issues)} issue(s): {', '.join(issues[:3])}")
+        print(f"  [1D] FAIL  -- {len(issues)} issue(s): {', '.join(issues[:3])}")
         print(f"  [1D] Logged: errors/archive/{err_path.name}")
         print(f"  [1D] DeepSeek Pro retry {attempt}/{MAX_RETRIES} ...")
 
@@ -436,7 +436,7 @@ def run_module(module_key: str) -> bool:
 
 def main():
     ap = argparse.ArgumentParser(
-        description="validate_fpv.py — Step 1D JasperGold FPV baseline"
+        description="validate_fpv.py -- Step 1D JasperGold FPV baseline"
     )
     grp = ap.add_mutually_exclusive_group(required=True)
     grp.add_argument("--module", choices=ALL_MODULES, metavar="MODULE",

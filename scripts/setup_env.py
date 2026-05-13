@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 #
 # Author  : Sharjeel Imtiaz
 #           Tallinn University of Technology (TalTech)
 #
 # Contact : sharjeel.imtiaz@taltech.ee
-# Project : ai-autotrans-rv — BEC 2026
+# Project : ai-autotrans-rv -- BEC 2026
 #
 """
 Environment setup checker for ai-autotrans-rv.
@@ -24,7 +24,7 @@ Prints exact commands to run if anything is missing.
 Note on API keys
 ----------------
 The Claude Code CLI uses your Claude.ai subscription (Claude Pro or Max plan)
-via OAuth login — NOT a paid Anthropic API key. After installing the CLI, run:
+via OAuth login -- NOT a paid Anthropic API key. After installing the CLI, run:
   claude login
 and sign in with your Claude.ai account in the browser. No extra cost.
 """
@@ -58,7 +58,7 @@ def run_silent(*cmd) -> tuple:
 
 
 def main():
-    print("\n=== ai-autotrans-rv — environment check ===\n")
+    print("\n=== ai-autotrans-rv -- environment check ===\n")
     all_ok = True
 
     # 1. Python version
@@ -86,7 +86,7 @@ def main():
     out, rc = run_silent("npm", "--version")
     ok = rc == 0
     all_ok &= check(f"npm" + (f" ({out})" if ok else ""), ok,
-                    "Installed with Node.js — see above")
+                    "Installed with Node.js -- see above")
 
     # 5. Claude Code CLI
     claude_exe = _find_claude()
@@ -100,8 +100,8 @@ def main():
         out2, rc2 = run_silent(claude_exe, "--allowedTools", "", "-p", "reply: AUTH_OK")
         auth_ok = rc2 == 0 and "AUTH_OK" in out2
         all_ok &= check("Claude Code CLI authenticated", auth_ok,
-                        "Run: claude login   (opens browser — use your Claude.ai account)\n"
-                        "             No API key needed — uses your Claude.ai subscription.")
+                        "Run: claude login   (opens browser -- use your Claude.ai account)\n"
+                        "             No API key needed -- uses your Claude.ai subscription.")
 
     print()
     if all_ok:

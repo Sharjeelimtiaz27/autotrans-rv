@@ -1,13 +1,13 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 #
 # Author  : Sharjeel Imtiaz
 #           Tallinn University of Technology (TalTech)
 #
 # Contact : sharjeel.imtiaz@taltech.ee
-# Project : ai-autotrans-rv — BEC 2026
+# Project : ai-autotrans-rv -- BEC 2026
 #
 """
-Master Orchestrator — Stage 1 (Assertion Translation Stage)
+Master Orchestrator -- Stage 1 (Assertion Translation Stage)
 =======================================================
 Usage:
   python scripts/run_step1.py --module pmp               # single module, all steps
@@ -96,7 +96,7 @@ def run_module(module: str, mode: str) -> dict:
         ok = step1a(module)
         result["steps"]["1A"] = "pass" if ok else "fail"
         if not ok:
-            print(f"  ERROR: 1A (parse_rtl) failed for {module} — stopping.", file=sys.stderr)
+            print(f"  ERROR: 1A (parse_rtl) failed for {module} -- stopping.", file=sys.stderr)
             return result
 
         ok = step1b(module)
@@ -110,7 +110,7 @@ def run_module(module: str, mode: str) -> dict:
         ok = step1c(module)
         result["steps"]["1C"] = "pass" if ok else "fail"
         if not ok:
-            print(f"  ERROR: 1C (compile) failed for {module} — stopping.", file=sys.stderr)
+            print(f"  ERROR: 1C (compile) failed for {module} -- stopping.", file=sys.stderr)
             return result
 
         ok = step1d(module)
@@ -152,7 +152,7 @@ def show_status():
 
 def main():
     ap = argparse.ArgumentParser(
-        description="run_step1.py — AI-AutoTrans pipeline orchestrator"
+        description="run_step1.py -- AI-AutoTrans pipeline orchestrator"
     )
     grp = ap.add_mutually_exclusive_group(required=True)
     grp.add_argument("--module",  choices=ALL_MODULES, metavar="MODULE",

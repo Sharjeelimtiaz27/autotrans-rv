@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 #
 # Author  : Sharjeel Imtiaz
 #           Tallinn University of Technology (TalTech)
 #
 # Contact : sharjeel.imtiaz@taltech.ee
-# Project : ai-autotrans-rv — BEC 2026
+# Project : ai-autotrans-rv -- BEC 2026
 #
 """
 Step 1B: DeepSeek (NVIDIA NIM) SVA Translation
@@ -18,8 +18,8 @@ Output: assertions/translated/<MODULE>_bind.sv  +  results/logs/<MODULE>_tar_log
 
 API key: set NVIDIA_API_KEY in .env or environment.
 Model tier:
-  Flash  (default) — deepseek-ai/deepseek-v4-flash — initial generation only
-  Pro    (--pro)   — deepseek-ai/deepseek-v4-pro   — all retries (compile + FPV)
+  Flash  (default) -- deepseek-ai/deepseek-v4-flash -- initial generation only
+  Pro    (--pro)   -- deepseek-ai/deepseek-v4-pro   -- all retries (compile + FPV)
 """
 
 import argparse
@@ -37,16 +37,16 @@ ROOT = Path(__file__).resolve().parent.parent
 # DeepSeek / NVIDIA NIM configuration
 # ---------------------------------------------------------------------------
 NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
-# Flash: fast, cheap — used for initial generation ONLY
+# Flash: fast, cheap -- used for initial generation ONLY
 DEEPSEEK_FLASH  = "deepseek-ai/deepseek-v4-flash"
-# Pro: deeper reasoning — used for ALL retries (QuestaSim compile + JasperGold FPV)
+# Pro: deeper reasoning -- used for ALL retries (QuestaSim compile + JasperGold FPV)
 DEEPSEEK_PRO    = "deepseek-ai/deepseek-v4-pro"
-TEMPERATURE     = 0.0   # greedy decoding — reduces output variance
-SEED            = 42    # fixed seed — further anchors determinism where supported
+TEMPERATURE     = 0.0   # greedy decoding -- reduces output variance
+SEED            = 42    # fixed seed -- further anchors determinism where supported
 MAX_TOKENS      = 16384
 
 # Maps logical module key -> RTL file name, short id, output bind file name.
-# ibex_controller serves DO / ETI / CF / MT — each gets its own bind file.
+# ibex_controller serves DO / ETI / CF / MT -- each gets its own bind file.
 MODULE_CONFIG = {
     "pmp": {
         "rtl_name":  "ibex_pmp",
@@ -157,10 +157,10 @@ def _sv_type(width) -> str:
     if w.isdigit():
         n = int(w)
         return "logic" if n == 1 else f"logic [{n - 1}:0]"
-    # Package type — e.g. "ibex_pkg::priv_lvl_e" or "ibex_pkg::pmp_cfg_t[PMPNumRegions]"
+    # Package type -- e.g. "ibex_pkg::priv_lvl_e" or "ibex_pkg::pmp_cfg_t[PMPNumRegions]"
     if "::" in w:
         return w
-    # Parameterised range — e.g. "PMP_ADDR_MSB:0" or "31:0"
+    # Parameterised range -- e.g. "PMP_ADDR_MSB:0" or "31:0"
     if re.match(r'^[A-Za-z0-9_]+:[A-Za-z0-9_]+$', w):
         return f"logic [{w}]"
     # "1[PMPNumChan]" → 1-bit vector of depth PMPNumChan
@@ -185,7 +185,7 @@ def _fmt_signals_table(signals_list: list, skip: set = None) -> str:
 def _fmt_pkg_types(pkg_types: dict) -> str:
     """Format pkg_types as SV typedef text."""
     if not pkg_types:
-        return "  (none — no package types used by this module)"
+        return "  (none -- no package types used by this module)"
     out = []
     for tname, info in pkg_types.items():
         if info.get("kind") == "enum":
@@ -216,7 +216,7 @@ def _fmt_port_declarations(signals: dict, is_sequential: bool) -> str:
     skip = {clk, rst} if is_sequential else set()
 
     lines = []
-    # ALL ports are input — assertion module observes only, never drives signals.
+    # ALL ports are input -- assertion module observes only, never drives signals.
     # DUT outputs are monitored as inputs here; driving them would conflict with the DUT.
     for p in signals["ports"]["inputs"]:
         if p["name"] in skip:
@@ -253,7 +253,7 @@ def _fmt_ns31a(rows: list) -> str:
         lines.append(f"  category       : {cat}")
         lines.append(f"  description    : {desc}")
         lines.append(
-            f"  ns31a_sva      : {sva if sva else '(none — translate from description)'}"
+            f"  ns31a_sva      : {sva if sva else '(none -- translate from description)'}"
         )
         if ex:
             lines.append(f"  example_target : {ex}")
@@ -523,7 +523,7 @@ def save_tar_log(module_key: str, assert_name: str, tar_data: dict, ts: str,
 
 def main():
     ap = argparse.ArgumentParser(
-        description="translate.py  Step 1B — NS31A to Ibex SVA via DeepSeek (NVIDIA NIM)"
+        description="translate.py  Step 1B -- NS31A to Ibex SVA via DeepSeek (NVIDIA NIM)"
     )
     ap.add_argument(
         "--module", required=True,
@@ -533,7 +533,7 @@ def main():
     )
     ap.add_argument(
         "--dry-run", action="store_true",
-        help="Assemble and save prompt only — do not call DeepSeek",
+        help="Assemble and save prompt only -- do not call DeepSeek",
     )
     ap.add_argument(
         "--pro", action="store_true",
@@ -578,7 +578,7 @@ def main():
     print(f"  Prompt: {len(prompt):,} chars -> prompts/final/{module_key}_final_prompt.txt")
 
     if args.dry_run:
-        print("  [dry-run] Prompt saved — DeepSeek not called.")
+        print("  [dry-run] Prompt saved -- DeepSeek not called.")
         return
 
     # 5. Call DeepSeek via NVIDIA NIM
@@ -611,7 +611,7 @@ def main():
     bind_path = bind_dir / cfg["bind_file"]
     bind_path.write_text(bind_sv, encoding="utf-8")
 
-    # 9. Save TAR log — csv_rows length is the authoritative denominator
+    # 9. Save TAR log -- csv_rows length is the authoritative denominator
     tar_data, log_path = save_tar_log(module_key, assert_name, tar_data, ts,
                                       csv_total=len(csv_rows))
 
@@ -623,7 +623,7 @@ def main():
     print(f"\n  Bind file  : assertions/translated/{cfg['bind_file']}")
     print(f"  Trans. log : {log_path.relative_to(ROOT)}")
     print(f"\n  Translation coverage = {translated}/{total} groups = {coverage}%")
-    print(f"  (TAR computed after JasperGold FPV — run validate_fpv.py)")
+    print(f"  (TAR computed after JasperGold FPV -- run validate_fpv.py)")
     print(f"\n  Next: python scripts/validate_compile.py --module {module_key}")
 
 

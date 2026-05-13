@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 #
 # Author  : Sharjeel Imtiaz
 #           Tallinn University of Technology (TalTech)
 #
 # Contact : sharjeel.imtiaz@taltech.ee
-# Project : ai-autotrans-rv — BEC 2026
+# Project : ai-autotrans-rv -- BEC 2026
 #
 """
 Step 1A: SystemVerilog RTL Parser  ->  signals.json
@@ -156,7 +156,7 @@ def bracket_to_width(inner: str):
     Convert bracket content to a width value.
     '31:0'  ->  32   (integer)
     '7:0'   ->  8    (integer)
-    'N-1:0' ->  'N-1:0'  (string — parametric)
+    'N-1:0' ->  'N-1:0'  (string -- parametric)
     """
     inner = inner.strip()
     m = re.match(r'^(\d+)\s*:\s*(\d+)$', inner)
@@ -323,7 +323,7 @@ def extract_internals(body: str, port_names: set) -> list:
       logic [W1][W2]  name ;     (plain logic, multi-dim packed)
       wire  [W]       name ;
       reg   [W]       name ;
-      some_type_e     name ;     (typedef'd enum/struct variable — no width keyword)
+      some_type_e     name ;     (typedef'd enum/struct variable -- no width keyword)
 
     Skips port names, SV keywords, and names starting with uppercase
     (those are typically package constants, not signals).
@@ -641,7 +641,7 @@ def validate(out: dict, module_key: str) -> list:
     no = len(out['ports']['outputs'])
 
     if ni == 0:
-        warnings.append("No input ports found — port list parsing may have failed")
+        warnings.append("No input ports found -- port list parsing may have failed")
     if no == 0:
         warnings.append("No output ports found")
     if out['type'] == 'sequential':
@@ -666,7 +666,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Ibex pipeline — all 9 modules
+  # Ibex pipeline -- all 9 modules
   python scripts/parse_rtl.py --all-modules
 
   # Single Ibex module

@@ -1,21 +1,21 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 #
 # Author  : Sharjeel Imtiaz
 #           Tallinn University of Technology (TalTech)
 #
 # Contact : sharjeel.imtiaz@taltech.ee
-# Project : ai-autotrans-rv — BEC 2026
+# Project : ai-autotrans-rv -- BEC 2026
 #
 """
 Step 1C: QuestaSim Compile Loop (max 3 retries with DeepSeek Pro)
 =======================================================
 Input:  assertions/translated/<MODULE>_bind.sv
-Output: errors/archive/<MODULE>_compile_<N>.log  (on failure — NEVER DELETE)
+Output: errors/archive/<MODULE>_compile_<N>.log  (on failure -- NEVER DELETE)
 
 LLM tier:
   Pro (deepseek-ai/deepseek-v4-pro) for ALL retries.
   QuestaSim errors involve type mismatches, enum scope, struct field names,
-  and port width issues — they require deep RTL context to fix correctly.
+  and port width issues -- they require deep RTL context to fix correctly.
   Flash is fast but shallow; Pro handles the semantic complexity here.
 
 On FAIL (per attempt):
@@ -55,7 +55,7 @@ ALL_MODULES = list(MODULE_CONFIG.keys())
 
 
 # ---------------------------------------------------------------------------
-# RTL file list (pkg first — dependency order)
+# RTL file list (pkg first -- dependency order)
 # ---------------------------------------------------------------------------
 
 def _rtl_files(module_key: str) -> list:
@@ -142,7 +142,7 @@ PREVIOUS COMPILATION FAILED (attempt {attempt}/{MAX_RETRIES}):
 
 Fix the SVA bind file to resolve this QuestaSim compilation error.
 Use ONLY signals from the AVAILABLE SIGNALS list above.
-Do NOT change assertion logic — fix syntax and port declarations only.
+Do NOT change assertion logic -- fix syntax and port declarations only.
 Return ONLY the corrected SystemVerilog bind file (no JSON mapping section).
 ================================================================================
 """
@@ -160,7 +160,7 @@ def run_module(module_key: str) -> bool:
     print(f"\n  [1C] {module_key}: {cfg['bind_file']}")
 
     if not bind_path.exists():
-        print(f"  ERROR: bind file missing — run translate.py first.",
+        print(f"  ERROR: bind file missing -- run translate.py first.",
               file=sys.stderr)
         return False
 
@@ -172,7 +172,7 @@ def run_module(module_key: str) -> bool:
 
     vlog_bin = shutil.which("vlog")
     if not vlog_bin:
-        print("  ERROR: 'vlog' not on PATH — run this step on the EDA server.",
+        print("  ERROR: 'vlog' not on PATH -- run this step on the EDA server.",
               file=sys.stderr)
         sys.exit(2)
 
@@ -185,7 +185,7 @@ def run_module(module_key: str) -> bool:
         # Initial compile
         ok, out = _run_vlog(vlog_bin, bind_path, module_key, work_dir)
         if ok:
-            print(f"  [1C] PASS — compiles clean.")
+            print(f"  [1C] PASS -- compiles clean.")
             _save_state(module_key, {"locked": False, "status": "pass",
                                      "retries_used": 0, "timestamp": ts})
             return True
@@ -197,7 +197,7 @@ def run_module(module_key: str) -> bool:
                 f"Module: {module_key}\nAttempt: {retry}\nTimestamp: {ts}\n\n{out}",
                 encoding="utf-8"
             )
-            print(f"  [1C] FAIL  — logged: errors/archive/{err_path.name}")
+            print(f"  [1C] FAIL  -- logged: errors/archive/{err_path.name}")
             print(f"  [1C] DeepSeek Pro retry {retry}/{MAX_RETRIES} ...")
 
             bind_content = bind_path.read_text(encoding="utf-8")
@@ -228,7 +228,7 @@ def run_module(module_key: str) -> bool:
             ts = datetime.now(timezone.utc).isoformat()
             ok, out = _run_vlog(vlog_bin, bind_path, module_key, work_dir)
             if ok:
-                print(f"  [1C] PASS — compiles clean after {retry} retry/retries.")
+                print(f"  [1C] PASS -- compiles clean after {retry} retry/retries.")
                 _save_state(module_key, {"locked": False, "status": "pass",
                                          "retries_used": retry, "timestamp": ts})
                 return True
@@ -249,7 +249,7 @@ def run_module(module_key: str) -> bool:
 
 def main():
     ap = argparse.ArgumentParser(
-        description="validate_compile.py — Step 1C QuestaSim compile loop"
+        description="validate_compile.py -- Step 1C QuestaSim compile loop"
     )
     grp = ap.add_mutually_exclusive_group(required=True)
     grp.add_argument("--module", choices=ALL_MODULES, metavar="MODULE",
