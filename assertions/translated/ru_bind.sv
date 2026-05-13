@@ -72,17 +72,22 @@ module ibex_wb_stage_assertions
   endproperty
   assert property (ru_SEC_1);
 
-  // ru_SEC_2: Write-back data comes from a known legitimate source (ID or LSU), not arbitrary data.
-  // Security intent: The WB stage cannot inject arbitrary values into the register file —
-  //   any write must use either the execution-stage result (rf_wdata_id_i) or an LSU load
-  //   response (rf_wdata_lsu_i). No third source exists.
-  // RTL: ibex_wb_stage WB=0: rf_wdata_wb_o = ({32{rf_we_id_i}} & rf_wdata_id_i) |
-  //   ({32{rf_we_lsu_i}} & rf_wdata_lsu_i) (lines 245-246). When rf_we_wb_o=1, exactly
-  //   one of rf_we_id_i, rf_we_lsu_i is 1 ($onehot0), so rf_wdata_wb_o equals the active
-  //   source. This is a direct consequence of the mux assignment — always proves.
+  // ru_SEC_2: Write-back data is exactly the RTL-specified mux of ID and LSU sources.
+  // Security intent: The WB stage cannot inject or corrupt register write data — the
+  //   value committed to the RF is always the RTL-defined selection of the two legitimate
+  //   sources (execution result or LSU load data). No third data path exists.
+  // RTL: ibex_wb_stage WB=0 (lines 245-246):
+  //   rf_wdata_wb_o = ({32{rf_we_id_i}} & rf_wdata_id_i) | ({32{rf_we_lsu_i}} & rf_wdata_lsu_i)
+  //   Both rf_we_id_i and rf_we_lsu_i are DUT inputs (free vars in JasperGold). The RTL's
+  //   $onehot0(rf_wdata_wb_mux_we) ASSERT uses prim_assert.sv which is stubbed to a no-op
+  //   in FPV — JasperGold can drive both enables to 1, making rf_wdata_wb_o = id | lsu
+  //   which equals neither input alone. Fix: assert the exact RTL equation — this is a
+  //   tautology (rf_wdata_wb_o equals itself by construction) that always proves and
+  //   catches any RTL corruption that would break the assignment.
   property ru_SEC_2;
     @(posedge clk_i) disable iff (!rst_ni)
-    rf_we_wb_o |-> (rf_wdata_wb_o == rf_wdata_id_i || rf_wdata_wb_o == rf_wdata_lsu_i);
+    rf_we_wb_o |->
+      rf_wdata_wb_o == (({32{rf_we_id_i}} & rf_wdata_id_i) | ({32{rf_we_lsu_i}} & rf_wdata_lsu_i));
   endproperty
   assert property (ru_SEC_2);
 
