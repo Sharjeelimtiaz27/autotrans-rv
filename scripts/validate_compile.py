@@ -199,6 +199,9 @@ def run_module(module_key: str) -> bool:
         print(f"  LOCKED: exhausted retries.")
         print(f"  ESCALATE: manual fix required for {bind_path.name}")
         return False
+    if state.get("status") == "pass":
+        print(f"  [1C] SKIP -- already compiled clean (use --force to rerun).")
+        return True
 
     vlog_bin = shutil.which("vlog")
     if not vlog_bin:
