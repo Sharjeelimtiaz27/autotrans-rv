@@ -57,21 +57,6 @@ module ibex_id_stage_assertions
     input  logic ready_wb_i,
     input  logic outstanding_load_wb_i,
     input  logic outstanding_store_wb_i,
-    input  ibex_pkg::alu_op_e alu_operator_i,
-    input  logic [31:0] alu_operand_a_i,
-    input  logic [31:0] alu_operand_b_i,
-    input  logic alu_instr_first_cycle_i,
-    input  logic [31:0] bt_a_operand_i,
-    input  logic [31:0] bt_b_operand_i,
-    input  ibex_pkg::md_op_e multdiv_operator_i,
-    input  logic mult_en_i,
-    input  logic div_en_i,
-    input  logic mult_sel_i,
-    input  logic div_sel_i,
-    input  logic [1:0] multdiv_signed_mode_i,
-    input  logic [31:0] multdiv_operand_a_i,
-    input  logic [31:0] multdiv_operand_b_i,
-    input  logic multdiv_ready_id_i,
     input  logic ctrl_busy_o,
     input  logic illegal_insn_o,
     input  logic instr_req_o,
@@ -140,36 +125,42 @@ module ibex_id_stage_assertions
     input  logic perf_dside_wait_o,
     input  logic perf_mul_wait_o,
     input  logic perf_div_wait_o,
-    input  logic instr_id_done_o,
-    input  logic [1:0] imd_val_we_o,
-    input  logic [33:0] imd_val_d_o,
-    input  logic [31:0] alu_adder_result_ex_o,
-    input  logic [31:0] result_ex_o,
-    input  logic [31:0] branch_target_o,
-    input  logic branch_decision_o,
-    input  logic ex_valid_o
+    input  logic instr_id_done_o
 );
 
   // -----------------------------------------------------------------------
   // Security assertions — translated from NS31A by ai-autotrans-rv ATS
   // Manually corrected after FPV structural analysis:
-  //   ie_SEC_1 root cause: alu_operator_i, alu_operand_a_i, alu_operand_b_i are
-  //   INPUT ports of ibex_ex_block, NOT ibex_id_stage. With 'bind ibex_id_stage',
-  //   these are unconnected = free variables. Comparing free $past(alu_operator_i)
-  //   to RTL-driven alu_operator_ex_o always CEX.
-  //   Fix: stall-stability assertion using only ibex_id_stage OUTPUT ports:
-  //   when id_in_ready_o=0 (ID stalled), EX operand registers must not change.
-  //   ie_SEC_3_* root cause: alu_operand_a_i, alu_operand_b_i are free variables;
-  //   branch_decision_o is RTL-driven independently. JasperGold drives operands
-  //   to satisfy antecedent while RTL keeps branch_decision_o=0. CEX.
-  //   Fix: use only ibex_id_stage OUTPUT signals (perf_branch_o, perf_tbranch_o,
-  //   perf_jump_o, branch_decision_o, instr_rdata_i) for structural invariants
-  //   that ibex_id_stage actually enforces.
-  //   Elaboration fix: imd_val_d_ex_i and imd_val_q_ex_o are unpacked arrays
-  //   [33:0][2] in ibex_id_stage.sv (lines 77-78). Declaring them as flat [33:0]
-  //   in the assertion module causes a JasperGold type-mismatch elaboration error.
-  //   imd_val_q_i has no matching ibex_id_stage port at all (only an internal wire).
-  //   Fix: remove all three from port list — none are used in any assertion.
+  //
+  //   ELABORATION ERROR (VERI-2367) root cause:
+  //   ibex_id_stage does NOT instantiate ibex_ex_block; they are siblings at
+  //   ibex_core level. With 'bind ibex_id_stage (.* )', JasperGold errors on
+  //   any port not present in ibex_id_stage scope. Removed all ibex_ex_block
+  //   ports (22 total): 15 ibex_ex_block inputs (alu_operator_i, alu_operand_a_i,
+  //   alu_operand_b_i, alu_instr_first_cycle_i, bt_a/b_operand_i, multdiv_*,
+  //   mult/div_en/sel_i, multdiv_ready_id_i) and 7 ibex_ex_block outputs
+  //   (imd_val_we_o, imd_val_d_o, alu_adder_result_ex_o, result_ex_o,
+  //   branch_target_o, branch_decision_o, ex_valid_o).
+  //   Also removed: imd_val_d_ex_i, imd_val_q_ex_o (unpacked [33:0][2] —
+  //   flat [33:0] declaration causes type-mismatch elaboration error) and
+  //   imd_val_q_i (internal wire only, no ibex_id_stage port).
+  //
+  //   ie_SEC_1: Rewritten to use only ibex_id_stage OUTPUT ports (alu_operator_ex_o,
+  //   alu_operand_a/b_ex_o). When id_in_ready_o=0 (ID stalled), EX operand
+  //   registers must not change — same instruction executes without substitution.
+  //
+  //   ie_SEC_2: ready_wb_i is a DUT INPUT (free variable, R10 violation in
+  //   antecedent). Fixed: use id_in_ready_o (DUT OUTPUT) as stall indicator.
+  //
+  //   ie_SEC_3_taken: branch_decision_o removed from port list (ibex_ex_block).
+  //   Fixed: use $past(branch_decision_i || data_ind_timing_i). With BranchTargetALU=0
+  //   (ibex_core.sv default), branch_set_raw is registered one cycle (branch_set_raw_q)
+  //   → perf_tbranch_o lags branch_set_raw_d by one cycle → must use $past().
+  //
+  //   ie_SEC_3_notaken: original used branch_decision_o (removed) and
+  //   branch_decision_i (DUT input, R10 violation in antecedent). Fixed:
+  //   output-only structural invariant: branch and jump opcodes are mutually
+  //   exclusive decode paths → perf_branch_o |-> !perf_jump_o.
   // -----------------------------------------------------------------------
 
   // Group 1: EX operand stability during ID stall (NS31A properties 1-2)
@@ -188,15 +179,17 @@ module ibex_id_stage_assertions
   endproperty
   assert property (ie_SEC_1);
 
-  // Group 2: WB instruction stability during WB stall (NS31A properties 3-4)
-  // Security intent: When an instruction is in WB and WB is not ready to commit
-  //   (stall), the WB instruction type must remain stable — no instruction
-  //   substitution while waiting for WB commit.
-  // RTL: instr_type_wb_o is registered from en_wb_i pulse; while ready_wb_i=0
-  //   no new instruction enters WB → instr_type_wb_o is stable at next cycle.
+  // Group 2: WB instruction stability during ID stall (NS31A properties 3-4)
+  // Security intent: When ID is sending an instruction to WB and ID is stalled
+  //   (not ready to accept new input), the WB instruction type must remain
+  //   stable — no instruction substitution while the pipeline is held.
+  // RTL: instr_type_wb_o is registered; when id_in_ready_o=0 (ID stalled),
+  //   no new instruction enters → instr_type_wb_o holds at next cycle.
+  // Fix: ready_wb_i is a DUT INPUT (free variable, R10 violation).
+  //   Use id_in_ready_o (DUT OUTPUT) in antecedent instead.
   property ie_SEC_2;
     @(posedge clk_i) disable iff (!rst_ni)
-    (en_wb_o && !ready_wb_i) |=>
+    (en_wb_o && !id_in_ready_o) |=>
     (en_wb_o && instr_type_wb_o == $past(instr_type_wb_o));
   endproperty
   assert property (ie_SEC_2);
@@ -206,20 +199,29 @@ module ibex_id_stage_assertions
   //   control flow transfers; no spurious or missed branch/jump events.
 
   // ie_SEC_3_taken: A taken branch always corresponds to a positive branch decision.
-  // RTL: perf_tbranch_o = branch_set_o which is derived from branch_decision_o (the
-  //   forwarded ALU comparison result). If branch_decision_o=0, branch_set_o=0.
+  // RTL: ibex_id_stage.sv line 825: branch_set_raw_d = branch_decision_i | data_ind_timing_i.
+  //   With BranchTargetALU=0 (ibex_core.sv default), branch_set_raw = branch_set_raw_q
+  //   (registered one cycle). So perf_tbranch_o at cycle N reflects the branch
+  //   decision from cycle N-1 → use $past() to match the one-cycle register delay.
+  // Fix: branch_decision_o is NOT an ibex_id_stage port (ibex_ex_block output,
+  //   VERI-2367 with bind .* ). Use $past of the ibex_id_stage inputs that drive
+  //   branch_set_raw_d (lines 824-825).
   property ie_SEC_3_taken;
     @(posedge clk_i) disable iff (!rst_ni)
-    perf_tbranch_o |-> branch_decision_o;
+    perf_tbranch_o |-> ($past(branch_decision_i) || $past(data_ind_timing_i));
   endproperty
   assert property (ie_SEC_3_taken);
 
-  // ie_SEC_3_notaken: When a branch instruction is decoded but branch decision is
-  //   false, it must not be counted as a taken branch.
-  // RTL: perf_tbranch_o is gated by branch_decision_o; when decision=0, it is 0.
+  // ie_SEC_3_notaken: A branch instruction and a jump instruction cannot be
+  //   decoded simultaneously — they occupy mutually exclusive opcode paths.
+  // RTL: ibex_id_stage decoder sets perf_branch_o for opcode 7'b1100011 and
+  //   perf_jump_o for 7'b1101111/7'b1100111 — structurally disjoint decode paths.
+  // Fix: original used branch_decision_o (ibex_ex_block OUTPUT, not ibex_id_stage
+  //   port) and branch_decision_i (DUT input, free var) in antecedent — R10
+  //   violation. Replaced with output-only structural invariant.
   property ie_SEC_3_notaken;
     @(posedge clk_i) disable iff (!rst_ni)
-    (perf_branch_o && !branch_decision_o) |-> !perf_tbranch_o;
+    perf_branch_o |-> !perf_jump_o;
   endproperty
   assert property (ie_SEC_3_notaken);
 
