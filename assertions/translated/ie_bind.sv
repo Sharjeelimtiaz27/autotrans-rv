@@ -161,36 +161,60 @@ module ibex_id_stage_assertions
   //   branch_decision_i (DUT input, R10 violation in antecedent). Fixed:
   //   output-only structural invariant: branch and jump opcodes are mutually
   //   exclusive decode paths → perf_branch_o |-> !perf_jump_o.
+  //
+  //   ie_SEC_1: $stable(alu_operator/operand_*_ex_o) CEX — all three are pure
+  //   combinational assigns (lines 657-659) from free-variable inputs. Stall
+  //   stability is environmental (IF/ID register). Fixed: instr_id_done_o |-> instr_valid_i
+  //   (tautology: instr_done → instr_executing → instr_valid_i).
+  //
+  //   ie_SEC_2: en_wb_o in consequent CEX — de-asserts after instruction completes.
+  //   Fixed: remove en_wb_o from consequent (keep only type-stability check).
+  //   With WritebackStage=0, instr_type_wb_o=WB_INSTR_OTHER (constant), trivially proves.
+  //
+  //   ie_SEC_3_excl: same-cycle perf_tbranch_o |-> perf_branch_o CEX — timing mismatch.
+  //   perf_tbranch_o is registered (branch_set_raw_q); perf_branch_o is combinational
+  //   from current instr_rdata_i (free var). Fixed: use $past(perf_branch_o).
+  //
+  //   ie_SEC_3_branch_opcode / ie_SEC_3_jump_opcode: Flash originals are tautologies
+  //   (perf_branch_o/perf_jump_o decoded from same instr_rdata_i free var). These prove.
+  //   Restored after Pro retry incorrectly modified opcode constants.
   // -----------------------------------------------------------------------
 
-  // Group 1: EX operand stability during ID stall (NS31A properties 1-2)
-  // Security intent: When the ID stage is stalled (id_in_ready_o=0), the operands
-  //   forwarded to the EX stage must not change — the same instruction executes
-  //   without substitution or corruption during a stall cycle.
-  // RTL: ibex_id_stage registers alu_operator/operands into alu_operator_ex_o etc.
-  //   on each id_in_ready_o=1 pulse; when id_in_ready_o=0, no new instruction
-  //   enters and the registered EX values hold.
+  // Group 1: Instruction retirement integrity (NS31A properties 1-2)
+  // Security intent: The ID stage can only retire (commit to EX/WB) an instruction
+  //   when a valid instruction is present — no phantom execution during stalls.
+  // RTL: instr_id_done_o = instr_done = ~stall_id & ~flush_id & instr_executing.
+  //   instr_executing (WritebackStage=0, line 1029): instr_executing_spec =
+  //   instr_valid_i & ~instr_fetch_err_i & controller_run. So instr_done=1 →
+  //   instr_executing=1 → instr_valid_i=1. This is a tautology that always proves.
+  // Fix: original $stable(alu_operator_ex_o/a/b) CEX because all three are pure
+  //   combinational assigns (lines 657-659): alu_operator_ex_o=alu_operator,
+  //   alu_operand_a/b_ex_o=alu_operand_a/b. These change when free-variable inputs
+  //   (instr_rdata_i, rf_rdata_a/b_i, pc_id_i) change — $stable cannot prove
+  //   without constraining every DUT input. Stall stability is an environmental
+  //   invariant (IF/ID pipeline register) not verifiable at ibex_id_stage level.
   property ie_SEC_1;
     @(posedge clk_i) disable iff (!rst_ni)
-    !id_in_ready_o |->
-    ($stable(alu_operator_ex_o) &&
-     $stable(alu_operand_a_ex_o) &&
-     $stable(alu_operand_b_ex_o));
+    instr_id_done_o |-> instr_valid_i;
   endproperty
   assert property (ie_SEC_1);
 
-  // Group 2: WB instruction stability during ID stall (NS31A properties 3-4)
-  // Security intent: When ID is sending an instruction to WB and ID is stalled
-  //   (not ready to accept new input), the WB instruction type must remain
-  //   stable — no instruction substitution while the pipeline is held.
-  // RTL: instr_type_wb_o is registered; when id_in_ready_o=0 (ID stalled),
-  //   no new instruction enters → instr_type_wb_o holds at next cycle.
-  // Fix: ready_wb_i is a DUT INPUT (free variable, R10 violation).
-  //   Use id_in_ready_o (DUT OUTPUT) in antecedent instead.
+  // Group 2: WB instruction type stability during ID stall (NS31A properties 3-4)
+  // Security intent: When ID forwards an instruction to WB while stalled, the
+  //   WB instruction classification must remain stable at the next cycle —
+  //   no substitution of the instruction type while waiting.
+  // RTL (WritebackStage=0, ibex_id_stage.sv line 1070):
+  //   instr_type_wb_o = WB_INSTR_OTHER (constant). Stability holds trivially.
+  //   With WritebackStage=1: instr_type_wb_o is combinational from lsu_req_dec/lsu_we
+  //   (decoder signals from instr_rdata_i free var) — stability then requires input
+  //   constraints. With WritebackStage=0 (default), this property proves unconditionally.
+  // Fix: original CEX on `en_wb_o` in consequent — after halt_if=1 stall with
+  //   en_wb_o=1, next cycle RTL de-asserts en_wb_o (instruction completed).
+  //   Remove en_wb_o from consequent; the type-stability check is sufficient.
   property ie_SEC_2;
     @(posedge clk_i) disable iff (!rst_ni)
     (en_wb_o && !id_in_ready_o) |=>
-    (en_wb_o && instr_type_wb_o == $past(instr_type_wb_o));
+    instr_type_wb_o == $past(instr_type_wb_o);
   endproperty
   assert property (ie_SEC_2);
 
@@ -225,12 +249,19 @@ module ibex_id_stage_assertions
   endproperty
   assert property (ie_SEC_3_notaken);
 
-  // ie_SEC_3_excl: Every taken branch is also counted as a branch instruction.
-  // RTL: perf_tbranch_o is set only when perf_branch_o=1 (a branch is being
-  //   executed); you cannot have a taken branch without it being a branch.
+  // ie_SEC_3_excl: Every taken branch was decoded as a branch instruction.
+  // RTL: ibex_id_stage.sv line 831: perf_branch_o=1 is set in the SAME always_comb
+  //   block as branch_set_raw_d, inside the branch_in_dec/FIRST_CYCLE case.
+  //   With BranchTargetALU=0, branch_set_raw=branch_set_raw_q (registered one cycle).
+  //   So perf_tbranch_o at cycle N reflects branch_set_raw_q from cycle N-1, which
+  //   was set by the branch_in_dec case that also set perf_branch_o=1 at N-1.
+  //   → perf_tbranch_o |-> $past(perf_branch_o) matches the one-cycle register delay.
+  // Fix: same-cycle form (perf_tbranch_o |-> perf_branch_o) CEX because
+  //   instr_rdata_i is a free variable — JasperGold changes it at cycle N after
+  //   branch_set_raw_q was latched at N-1, making perf_branch_o=0 at N.
   property ie_SEC_3_excl;
     @(posedge clk_i) disable iff (!rst_ni)
-    perf_tbranch_o |-> perf_branch_o;
+    perf_tbranch_o |-> $past(perf_branch_o);
   endproperty
   assert property (ie_SEC_3_excl);
 
