@@ -352,7 +352,9 @@ def run_deepseek(prompt: str, model: str = DEEPSEEK_FLASH, timeout: int = 600) -
     api_key = _load_api_key()
 
     # Detect API version: 1.x uses OpenAI client; 0.x uses module-level calls
-    _ver = tuple(int(x) for x in _openai.__version__.split(".")[:2])
+    # openai 0.8.x on Python 3.6 servers has no __version__ attribute
+    _version_str = getattr(_openai, '__version__', '0.0')
+    _ver = tuple(int(x) for x in _version_str.split(".")[:2])
 
     try:
         if _ver >= (1, 0):
