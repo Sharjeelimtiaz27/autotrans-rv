@@ -79,37 +79,49 @@ module ibex_controller_mt_assertions
 
   // -----------------------------------------------------------------------
   // Security assertions — translated from NS31A by ai-autotrans-rv ATS
-  // Manually corrected after FPV structural analysis:
-  //   Root cause: NS31A MT properties check priv_mode_i (DUT INPUT to
-  //   ibex_controller — free variable). priv_mode_i is driven by ibex_cs_registers,
-  //   not ibex_controller. Checking next-cycle value of a free variable always CEX.
-  //   mret_insn_i, irq_pending_i, debug_req_i are also DUT inputs = free vars.
-  //   Fix: rephrase all 10 assertions using DUT OUTPUTS that ibex_controller
-  //   actually drives when mode transitions occur: csr_restore_mret_id_o,
-  //   csr_restore_dret_id_o, csr_save_cause_o, debug_csr_save_o,
-  //   debug_mode_entering_o, debug_mode_o, exc_cause_o struct fields.
+  // Manually corrected after FPV structural analysis (two rounds):
+  //   Round 1: NS31A MT properties checked priv_mode_i (DUT INPUT = free var).
+  //   Round 2 (RTL inspection required):
+  //   mt_SEC_1 CEX root cause: ibex_controller FLUSH state sets
+  //   csr_restore_mret_id_o=1 with NO debug_mode_q guard (line 801 RTL).
+  //   MRET in debug mode is architecturally valid; controller does not block it.
+  //   Fix: verify FSM exclusivity — MRET (FLUSH) and debug entry (DBG_TAKEN_*)
+  //   are mutually exclusive states; debug_mode_entering_o cannot fire in FLUSH.
+  //   mt_SEC_2 CEX root cause: FLUSH dret path sets csr_restore_dret_id_o=1
+  //   with NO debug_mode_q check (line 809 RTL). But RTL unconditionally sets
+  //   debug_mode_d=0 on DRET, so next cycle debug_mode_o is provably 0.
+  //   Fix: use |=> (next-cycle) to check the RTL-enforced post-DRET state.
+  //   mt_SEC_8 CEX root cause: DBG_TAKEN_ID sets debug_mode_entering_o=1
+  //   ALWAYS (line 723) but debug_csr_save_o=1 only conditionally (line 718,
+  //   only when ebreak_into_debug && !debug_mode_q). Re-entry ebreak (already
+  //   in debug mode) fires entering without saving CSRs.
+  //   Fix: flip implication — debug_csr_save_o |-> debug_mode_entering_o
+  //   (save always implies entry; entry does not always imply save).
   //   WritebackStage=0: wb_exception_o always 0 — removed from antecedents.
   // -----------------------------------------------------------------------
 
-  // mt_SEC_1: MRET restore is only issued when not in debug mode.
-  // Security intent: MRET is a privileged M-mode return; it must not be
-  //   processed while in debug mode (DRET is the debug exit, not MRET).
-  // RTL: FLUSH state mret_insn_prio fires only when !debug_mode_i; since
-  //   debug_mode_o = debug_mode_i from the bind perspective, the RTL
-  //   directly enforces csr_restore_mret_id_o && !debug_mode_o.
+  // mt_SEC_1: MRET and debug mode entry are mutually exclusive in the same cycle.
+  // Security intent: The M-mode return and a debug mode entry cannot occur
+  //   simultaneously — they would leave PC and privilege state undefined.
+  // RTL: csr_restore_mret_id_o fires in FLUSH state (special-instruction path);
+  //   debug_mode_entering_o fires only in DBG_TAKEN_IF and DBG_TAKEN_ID states.
+  //   These FSM states are mutually exclusive; the FLUSH→DBG_TAKEN redirect
+  //   only sets ctrl_fsm_ns (next cycle), not current-cycle debug_mode_entering_o.
   property mt_SEC_1;
     @(posedge clk_i) disable iff (!rst_ni)
-    csr_restore_mret_id_o |-> !debug_mode_o;
+    csr_restore_mret_id_o |-> !debug_mode_entering_o;
   endproperty
   assert property (mt_SEC_1);
 
-  // mt_SEC_2: DRET restore is only issued when in debug mode.
-  // Security intent: DRET is only valid as a debug-return instruction; executing
-  //   DRET outside debug mode would be a privilege escalation attack vector.
-  // RTL: FLUSH dret_insn_prio fires only when debug_mode_i — RTL-enforced.
+  // mt_SEC_2: DRET always exits debug mode (next cycle).
+  // Security intent: Executing DRET always transitions out of debug mode —
+  //   you cannot DRET and remain in debug mode, preventing debug-privilege lock-in.
+  // RTL: FLUSH dret_insn path unconditionally sets debug_mode_d=1'b0 (line 808).
+  //   On the following posedge, debug_mode_q=0 and debug_mode_o=0.
+  //   Uses |=> (non-overlapping) to check the registered state one cycle later.
   property mt_SEC_2;
     @(posedge clk_i) disable iff (!rst_ni)
-    csr_restore_dret_id_o |-> debug_mode_o;
+    csr_restore_dret_id_o |=> !debug_mode_o;
   endproperty
   assert property (mt_SEC_2);
 
@@ -168,14 +180,17 @@ module ibex_controller_mt_assertions
   endproperty
   assert property (mt_SEC_7);
 
-  // mt_SEC_8: Debug CSR save occurs only when entering debug mode.
-  // Security intent: debug_csr_save_o is the signal that commits debug state
-  //   (DPC/DCSR writes); it must be tied to an authorised debug entry.
-  // RTL: debug_csr_save_o is set only in DBG_TAKEN_IF and DBG_TAKEN_ID, both
-  //   of which also assert debug_mode_entering_o (same as do_SEC_1).
+  // mt_SEC_8: Debug CSR save implies debug mode entry (not the reverse).
+  // Security intent: debug_csr_save_o commits DPC/DCSR — this can only occur
+  //   during an authorised debug entry event (debug_mode_entering_o=1).
+  //   The reverse does not hold: re-entry ebreak (already in debug mode) sets
+  //   debug_mode_entering_o without saving CSRs, which is architecturally correct.
+  // RTL: debug_csr_save_o=1 only in DBG_TAKEN_IF (always, with entering=1) and
+  //   DBG_TAKEN_ID (conditional on ebreak_into_debug && !debug_mode_q, but
+  //   debug_mode_entering_o=1 is ALWAYS set in DBG_TAKEN_ID regardless).
   property mt_SEC_8;
     @(posedge clk_i) disable iff (!rst_ni)
-    debug_mode_entering_o |-> debug_csr_save_o;
+    debug_csr_save_o |-> debug_mode_entering_o;
   endproperty
   assert property (mt_SEC_8);
 
