@@ -1,0 +1,8 @@
+{
+  "module": "pmp",
+  "condition": "no_rvsigex",
+  "total_identifiers_in_properties": 0,
+  "invented_signals": 0,
+  "invented_signal_names": [],
+  "ns31a_groups": 10
+}
