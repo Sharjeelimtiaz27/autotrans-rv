@@ -29,5 +29,15 @@
     }
   ],
   "timestamp": "2026-05-10T17:59:13.485932+00:00",
-  "translation_coverage": 100.0
+  "translation_coverage": 100.0,
+  "TAR": 100.0,
+  "proven_non_vacuous": 3,
+  "total_assertions_in_bind": 3,
+  "fpv_baseline": {
+    "_assert_1": "proven",
+    "_assert_2": "proven",
+    "_assert_3": "proven"
+  },
+  "fpv_vacuity": {},
+  "fpv_timestamp": "2026-05-13T20:31:20.832721+00:00"
 }

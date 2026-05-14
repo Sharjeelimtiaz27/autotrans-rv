@@ -29,5 +29,20 @@
     }
   ],
   "timestamp": "2026-05-10T18:07:37.088927+00:00",
-  "translation_coverage": 100.0
+  "translation_coverage": 100.0,
+  "TAR": 266.7,
+  "proven_non_vacuous": 8,
+  "total_assertions_in_bind": 8,
+  "fpv_baseline": {
+    "_assert_1": "proven",
+    "_assert_2": "proven",
+    "_assert_3": "proven",
+    "_assert_4": "proven",
+    "_assert_5": "proven",
+    "_assert_6": "proven",
+    "_assert_7": "proven",
+    "_assert_8": "proven"
+  },
+  "fpv_vacuity": {},
+  "fpv_timestamp": "2026-05-13T21:35:25.341885+00:00"
 }

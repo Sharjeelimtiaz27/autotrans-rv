@@ -5,7 +5,7 @@
     2024.06p002 64 bits for Linux64 3.10.0-1160.21.1.el7.x86_64
     Host Name: ekleer.pld.ttu.ee
     User Name: sharjeel
-    Printed on: Wednesday, May13, 2026 09:27:27 PM EEST
+    Printed on: Wednesday, May13, 2026 11:19:28 PM EEST
     Working Directory: /home/sharjeel/sharjeelphd/Research/Ai_autoasser_rv/ai-autotrans-rv
 
 
@@ -18,21 +18,21 @@ RESULTS
 ----------------------------------------------------------------------------------------------------------------
 
 ---[ <embedded> ]-----------------------------------------------------------------------------------------------
-[1]   ibex_controller.u_cf_assert._assert_1                         cex             N             4    0.014 s      
-[2]   ibex_controller.u_cf_assert._assert_1:precondition1           covered         N         2 - 4    0.014 s      
-[3]   ibex_controller.u_cf_assert._assert_2                         proven          Hp     Infinite    0.005 s      
-[4]   ibex_controller.u_cf_assert._assert_2:precondition1           covered         N         2 - 4    0.014 s      
-[5]   ibex_controller.u_cf_assert._assert_3                         cex             PRE           1    0.000 s      
-[6]   ibex_controller.u_cf_assert._assert_3:precondition1           covered         PRE           1    0.000 s      
-[7]   ibex_controller.u_cf_assert._assert_4                         proven          PRE    Infinite    0.000 s      
-[8]   ibex_controller.u_cf_assert._assert_4:precondition1           unreachable     PRE    Infinite    0.000 s      
-[9]   ibex_controller.u_cf_assert._assert_5                         proven          Hp     Infinite    0.006 s      
-[10]  ibex_controller.u_cf_assert._assert_5:precondition1           covered         N             5    0.003 s      
-[11]  ibex_controller.u_cf_assert._assert_6                         proven          Hp     Infinite    0.007 s      
-[12]  ibex_controller.u_cf_assert._assert_6:precondition1           covered         N             4    0.003 s      
-[13]  ibex_controller.u_cf_assert._assert_7                         proven          Hp     Infinite    0.008 s      
-[14]  ibex_controller.u_cf_assert._assert_7:precondition1           covered         N             4    0.003 s      
-[15]  ibex_controller.u_cf_assert._assert_8                         cex             Hp            4    0.025 s      
-[16]  ibex_controller.u_cf_assert._assert_8:precondition1           covered         Hp            4    0.025 s      
-[17]  ibex_controller.u_cf_assert._assert_9                         proven          Hp     Infinite    0.008 s      
-[18]  ibex_controller.u_cf_assert._assert_9:precondition1           unreachable     Hp     Infinite    0.009 s      
+[1]   ibex_controller.u_cf_assert._assert_1                         proven          PRE    Infinite    0.000 s      
+[2]   ibex_controller.u_cf_assert._assert_1:precondition1           covered         PRE           1    0.000 s      
+[3]   ibex_controller.u_cf_assert._assert_2                         proven          Hp     Infinite    0.003 s      
+[4]   ibex_controller.u_cf_assert._assert_2:precondition1           covered         PRE           1    0.000 s      
+[5]   ibex_controller.u_cf_assert._assert_3                         proven          Hp     Infinite    0.004 s      
+[6]   ibex_controller.u_cf_assert._assert_3:precondition1           covered         N             4    0.002 s      
+[7]   ibex_controller.u_cf_assert._assert_4                         proven          Hp     Infinite    0.004 s      
+[8]   ibex_controller.u_cf_assert._assert_4:precondition1           covered         N         2 - 4    0.002 s      
+[9]   ibex_controller.u_cf_assert._assert_5                         proven          Hp     Infinite    0.004 s      
+[10]  ibex_controller.u_cf_assert._assert_5:precondition1           covered         N             5    0.001 s      
+[11]  ibex_controller.u_cf_assert._assert_6                         proven          Hp     Infinite    0.005 s      
+[12]  ibex_controller.u_cf_assert._assert_6:precondition1           covered         N             4    0.001 s      
+[13]  ibex_controller.u_cf_assert._assert_7                         proven          Hp     Infinite    0.005 s      
+[14]  ibex_controller.u_cf_assert._assert_7:precondition1           covered         N             4    0.001 s      
+[15]  ibex_controller.u_cf_assert._assert_8                         proven          Hp     Infinite    0.006 s      
+[16]  ibex_controller.u_cf_assert._assert_8:precondition1           covered         Hp            4    0.016 s      
+[17]  ibex_controller.u_cf_assert._assert_9                         proven          Hp     Infinite    0.006 s      
+[18]  ibex_controller.u_cf_assert._assert_9:precondition1           covered         Hp            5    0.019 s      
