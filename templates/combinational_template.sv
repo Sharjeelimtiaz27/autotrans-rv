@@ -28,27 +28,30 @@ module {{MODULE_NAME}}_assertions (
     output logic        pmp_req_err_o
 );
 
-  // -----------------------------------------------------------------------
-  // Property 1: pure combinational implication (no temporal operators)
-  // NS31A source: <original NS31A assertion name or ID>
-  // Ibex mapping: <ns31a_signal> → <ibex_signal>
-  // -----------------------------------------------------------------------
-  property {{MODULE_SHORT}}_SEC_1;
-    <combinational_antecedent> |-> <combinational_consequent>;
-  endproperty
-  assert property ({{MODULE_SHORT}}_SEC_1);
+  // All assertions grouped in one always_comb block.
+  // Use immediate assertions only — no property/endproperty, no assert property.
+  // Boolean implication A -> B expressed as !A || B.
+  always_comb begin
 
-  // -----------------------------------------------------------------------
-  // Property 2: bit-field check — inspect a specific configuration field
-  // -----------------------------------------------------------------------
-  property {{MODULE_SHORT}}_SEC_2;
-    <field_condition> |-> <expected_output_condition>;
-  endproperty
-  assert property ({{MODULE_SHORT}}_SEC_2);
+    // -----------------------------------------------------------------------
+    // Assertion 1: pure combinational implication
+    // NS31A source: <original NS31A assertion name or ID>
+    // Ibex mapping: <ns31a_signal> → <ibex_signal>
+    // -----------------------------------------------------------------------
+    a_{{MODULE_SHORT}}_SEC_1: assert (!<combinational_antecedent> || <combinational_consequent>)
+      else $error("{{MODULE_SHORT}}_SEC_1: <description of violated security property>");
 
-  // -----------------------------------------------------------------------
-  // ... add one block per translated NS31A assertion ...
-  // -----------------------------------------------------------------------
+    // -----------------------------------------------------------------------
+    // Assertion 2: bit-field check — inspect a specific configuration field
+    // -----------------------------------------------------------------------
+    a_{{MODULE_SHORT}}_SEC_2: assert (!<field_condition> || <expected_output_condition>)
+      else $error("{{MODULE_SHORT}}_SEC_2: <description>");
+
+    // -----------------------------------------------------------------------
+    // ... add one block per translated NS31A assertion ...
+    // -----------------------------------------------------------------------
+
+  end
 
 endmodule
 

@@ -1,25 +1,52 @@
-# ai-autotrans-rv
+# AutoTrans
 
-**AI-AutoTrans: AI-Assisted Automatic Translation of Security Assertions for RISC-V Processors**
+**AutoTrans: AI-Assisted Automatic Translation of Security Assertions for RISC-V Processors**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+
+BEC 2026 — Sharjeel Imtiaz, Uljana Reinsalu, Tara Ghasempouri — TalTech
 
 ---
 
 ## Overview
 
-This repository implements **Stage 1 (Assertion Translation Stage)** of a larger formal
-security verification flow for RISC-V processors.
+AutoTrans is a fully automated pipeline for cross-architecture translation of RISC-V security
+assertions. It takes the NS31A security assertion corpus (Chuah et al., MEMOCODE 2023) and
+automatically translates it to lowRISC Ibex SVA bind files, validated end-to-end by QuestaSim
+compilation and JasperGold Formal Property Verification.
 
-The pipeline takes NS31A security assertions from MEMOCODE 2023 (Chuah et al.) and
-automatically translates them to Ibex RTL SVA using an **RV-SigEx**-grounded fixed-template
-approach with DeepSeek V4-Flash/Pro via NVIDIA NIM API, validated end-to-end by QuestaSim
-compilation and JasperGold FPV.
+**Results on Ibex (9 security modules, 68 NS31A groups):**
+- **78% Auto TAR** — automated pipeline (Flash + Pro retries), zero human intervention
+- **100% Final TAR** — after targeted manual resolution of JasperGold structural constraints
+- **100% translation coverage** — every NS31A group produces at least one SVA property
 
 ---
 
-## Pipeline — How It Works
+## Four Contributions
+
+1. **Parser-grounded prompt assembly** — a regex-based SystemVerilog signal extractor
+   (`parse_rtl.py`) grounds every LLM prompt in the exact target RTL interface, eliminating
+   signal hallucination without EDA infrastructure or licences. The LLM sees only signals that
+   actually exist in the RTL.
+
+2. **Reproducible deterministic translation** — a fixed SVA template plus `temperature=0.0`
+   and `seed=42` enforce byte-identical prompt assembly on every run. A two-tier model
+   strategy (V4-Flash for initial translation, V4-Pro for all retries) keeps cost near zero
+   with no GPU and no fine-tuning.
+
+3. **Natural-language SVA synthesis** — the pipeline generates formal SVA from English-only
+   security descriptions, covering all 22 such NS31A properties with no manual authoring,
+   extending beyond what prior work required formal SVA source code to translate.
+
+4. **Industry-grade validation gate and TAR metric** — every translated assertion must pass
+   QuestaSim SVA compilation (syntax) then JasperGold FPV Proven + non-vacuous (semantics)
+   before counting. TAR (Translation Acceptance Rate = proven\_non\_vacuous / total\_groups)
+   measures mechanically verified quality, not BLEU or self-report. Released open source.
+
+---
+
+## Pipeline — Two Stages
 
 ```
  INPUTS
@@ -28,123 +55,96 @@ compilation and JasperGold FPV.
   rtl/ibex/original/*.sv          assertion_dataset/ns31a_<MODULE>.csv
   (Ibex RTL — never modify)       (NS31A source assertions — 9 modules)
          │                                        │
-         │                                        │
          ▼                                        │
- ┌───────────────────────┐                        │
- │   STEP 1A             │                        │
- │   parse_rtl.py        │                        │
- │   RV-SigEx parser     │                        │
- │   (regex-based SV)    │                        │
- └──────────┬────────────┘                        │
-            │                                     │
-            ▼                                     │
-  results/signals/                                │
-  <MODULE>_signals.json           prompts/sequential_prompt.txt
-  (ports, internals,              prompts/combinational_prompt.txt
-   pkg_types, connectivity)       (fixed templates — never modify)
-            │                                     │
-            └─────────────────┬───────────────────┘
-                              │
-                              ▼
-                  ┌───────────────────────┐
-                  │   STEP 1B             │
-                  │   translate.py        │
-                  │                       │
-                  │   DeepSeek V4-Flash   │
-                  │   NVIDIA NIM API      │
-                  │   temperature = 0.0   │
-                  │   seed = 42           │
-                  │                       │
-                  │   Translate security  │
-                  │   INTENT — every      │
-                  │   assertion group     │
-                  │   must translate      │
-                  └──────────┬────────────┘
-                             │
-                             ▼
-               assertions/translated/<MODULE>_bind.sv
-               results/logs/<MODULE>_tar_log.json
-               prompts/final/<MODULE>_final_prompt.txt
-                             │
-                             ▼
-                  ┌───────────────────────┐        ┌──────────────────────────┐
-                  │   STEP 1C             │  FAIL  │  Retry (max 3)           │
-                  │   validate_compile.py ├───────►│  DeepSeek V4-Pro         │
-                  │   QuestaSim           │        │  prompt + error log      │
-                  │   SVA syntax check    │        │  fix syntax only         │
-                  └──────────┬────────────┘        └──────────────────────────┘
-                             │ PASS
-                             ▼
-                  ┌───────────────────────┐        ┌──────────────────────────┐
-                  │   STEP 1D             │  FAIL  │  Retry (max 3)           │
-                  │   validate_fpv.py     ├───────►│  DeepSeek V4-Pro         │
-                  │   JasperGold FPV      │        │  prompt + error + stage  │
-                  │   Proven +            │        │  fix assertion logic      │
-                  │   non-vacuous         │        └──────────────────────────┘
-                  └──────────┬────────────┘
-                             │ PROVEN + NON-VACUOUS
-                             ▼
-               results/step1/<MODULE>_fpv_baseline.txt
-               results/step1/<MODULE>_vacuity.txt
-               results/step1/<MODULE>_cov.txt
-                             │
-                             ▼
-              ╔══════════════════════════════╗
-              ║   TAR (Translation           ║
-              ║   Acceptance Rate)           ║
-              ║                              ║
-              ║   proven_assertions          ║
-              ║   ──────────────── × 100     ║
-              ║   total_ns31a_groups         ║
-              ║                              ║
-              ║   Computed per module by     ║
-              ║   validate_fpv.py            ║
-              ╚══════════════════════════════╝
+ ╔═══════════════════════════════════════════════════════════════╗
+ ║  STAGE 1 — Security SVA Translation (laptop, no EDA needed)  ║
+ ╚═══════════════════════════════════════════════════════════════╝
+         │
+         ▼
+ ┌───────────────────────┐
+ │   STEP 1A             │
+ │   parse_rtl.py        │
+ │   Regex-based SV      │
+ │   signal extractor    │
+ └──────────┬────────────┘
+            │
+            ▼
+  results/signals/<MODULE>_signals.json
+  (ports, internals, pkg_types)
+            │
+            └──────────────────────────────────────────────────┐
+                                                               │
+  prompts/sequential_prompt.txt                               │
+  prompts/combinational_prompt.txt                            │
+  (fixed templates — never modify)                            │
+                                                               │
+ ┌─────────────────────────────────────────────────────────────┐
+ │   STEP 1B             │
+ │   translate.py        │  ← build_prompt() fills all {{PLACEHOLDERS}}
+ │   Prompt Assembly     │    from signals.json + CSV + fixed template
+ └──────────┬────────────┘
+            │
+            ▼
+  prompts/final/<MODULE>_final_prompt.txt
+            │
+            ▼
+ ┌───────────────────────┐
+ │   STEP 1C             │
+ │   translate.py        │
+ │   DeepSeek V4-Flash   │
+ │   NVIDIA NIM API      │
+ │   temperature = 0.0   │
+ │   seed = 42           │
+ └──────────┬────────────┘
+            │
+            ▼
+  assertions/translated/<MODULE>_bind.sv
+  results/logs/<MODULE>_tar_log.json
+            │
+            ▼
+ ╔═══════════════════════════════════════════════════════════════╗
+ ║  STAGE 2 — Security SVA Validation (EDA server, licences)    ║
+ ╚═══════════════════════════════════════════════════════════════╝
+            │
+            ▼
+ ┌───────────────────────┐        ┌──────────────────────────────┐
+ │   STEP 2A             │  FAIL  │  DeepSeek V4-Pro retry       │
+ │   validate_compile.py ├───────►│  orig. prompt + error log    │
+ │   vlog -sv12compat    │        │  instruction: fix syntax     │
+ │   QuestaSim compile   │        │  only, preserve logic        │
+ └──────────┬────────────┘        │  max 3 retries → LOCK        │
+            │ PASS                └──────────────────────────────┘
+            ▼
+ ┌───────────────────────┐        ┌──────────────────────────────┐
+ │   STEP 2B             │  FAIL  │  DeepSeek V4-Pro retry       │
+ │   validate_fpv.py     ├───────►│  orig. prompt + NS31A source │
+ │   JasperGold FPV      │        │  + signal classification     │
+ │   prove -all          │        │  + Ibex FPV pitfall notes    │
+ │   report -vacuity     │        │  CEX: fix logic              │
+ │   Proven + non-vac    │        │  Vacuous: rewrite antecedent │
+ └──────────┬────────────┘        │  max 3 retries → LOCK        │
+            │ ALL PASS            └──────────────────────────────┘
+            ▼
+  results/step1/<MODULE>_fpv_baseline.txt
+  results/step1/<MODULE>_vacuity.txt
+            │
+            ▼
+  TAR = proven_non_vacuous / total_ns31a_groups × 100
+  Written to results/logs/<MODULE>_tar_log.json
 
  NOTES
  ══════════════════════════════════════════════════════════════════
- Steps 1A + 1B run on any laptop (no EDA tools needed).
- Steps 1C + 1D require QuestaSim + JasperGold licences (EDA server).
+ Stage 1 (Steps 1A–1C) runs on any laptop — no EDA tools needed.
+ Stage 2 (Steps 2A–2B) requires QuestaSim + JasperGold licences (EDA server).
 
  LLM tier strategy:
-   Flash  → initial translation only (cheap first attempt)
-   Pro    → ALL retries: QuestaSim compile failures + JasperGold FPV failures
-            (QuestaSim errors involve enum scope, struct fields, port widths —
-             they need deep RTL reasoning, not just syntax pattern matching)
+   V4-Flash → initial translation only (Step 1C — cheap, fast)
+   V4-Pro   → ALL retries at both steps (deeper RTL reasoning for
+              enum scope, struct fields, port widths, FPV semantics)
 
- After 3 failed retries at either step: assertion is DROPPED, error
- logged to errors/archive/ (never delete — paper evidence).
+ After 3 failed retries at either step: module is LOCKED (ESCALATE),
+ error logs archived to errors/archive/ — never delete (paper evidence).
 ```
-
----
-
-## Three Contributions
-
-1. **RV-SigEx — regex-based SystemVerilog signal extractor for LLM prompt grounding.**
-   RV-SigEx extracts ports, internal signals, package types (typedef enums, structs), and
-   parameterized widths from real-world SV into a structured JSON injected into every
-   prompt. Unlike PyVerilog, which builds a full parse tree and struggles with advanced
-   Ibex constructs (package-scoped enums in separate files, struct-typed ports,
-   parameterized arrays), RV-SigEx uses targeted regex patterns tuned to real RISC-V SV
-   style. The LLM sees only signals that actually exist in the RTL — it cannot hallucinate
-   non-existent signal names.
-
-2. **Hallucination-free, reproducible SVA translation with a two-tier LLM cost strategy.**
-   RV-SigEx grounding + fixed template + `temperature=0.0` + `seed=42` together eliminate
-   the two failure modes of raw-LLM translation: hallucinated signals and non-reproducible
-   outputs. A two-tier model strategy — Flash for initial generation (cheap, fast), Pro for
-   all retries (deeper RTL reasoning for type-scope and struct-field errors) — bounds cost
-   while maximising fix quality. No GPU, no fine-tuning; only NVIDIA NIM free-tier credits.
-   The pipeline covers the complete NS31A corpus: **46 security SVA** (formal NS31A
-   assertions, adapted to Ibex signals) and **22 security properties** (English descriptions
-   only, from which the framework generates formal SVA directly).
-
-3. **Two-step industry-grade validation gate and TAR metric.** Every translated assertion
-   must pass two gates before it counts: QuestaSim SVA compile (syntax) then JasperGold
-   FPV Proven + non-vacuous on clean RTL (semantics). TAR (Translation Acceptance Rate =
-   proven\_non\_vacuous / total\_ns31a\_groups) measures mechanically verified translation
-   quality — not LLM self-report or BLEU/ROUGE. Applied to NS31A → Ibex across 9 security
-   modules without manual porting of any assertion.
 
 ---
 
@@ -152,74 +152,51 @@ compilation and JasperGold FPV.
 
 ### One-command check
 
-After completing the steps below:
-
 ```bash
 python scripts/setup_env.py
 ```
 
----
-
-### Step 1 — Python dependencies
+### Python dependencies
 
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-Installs: `pyverilog`, `pandas`, `openai`, `python-dotenv`.
+Installs: `openai`, `python-dotenv`. (`parse_rtl.py` uses only stdlib regex — no parser library needed.)
 
----
-
-### Step 2 — NVIDIA NIM API key
+### NVIDIA NIM API key
 
 Get a free API key at [build.nvidia.com](https://build.nvidia.com) (1000 free credits).
 
-Create a `.env` file in the project root:
+Create `.env` in the project root:
 
 ```
 NVIDIA_API_KEY=nvapi-...your-key-here...
 ```
 
-The `.env` file is gitignored — never commit it.
-
-**No GPU required. No paid subscription. Just the free NVIDIA developer account.**
-
----
-
-### Step 3 — Ibex RTL + NS31A data (already in repo)
-
-- `rtl/ibex/original/` — clean Ibex RTL (read-only, never modify)
-- `assertion_dataset/ns31a_<module>.csv` — NS31A assertion source files
+The `.env` file is gitignored — never commit it. **No GPU required.**
 
 ---
 
 ## Running the Pipeline
 
-### Local mode — Steps 1A + 1B (laptop, no EDA tools)
+### Stage 1 — laptop (no EDA tools)
 
-**Single module:**
 ```bash
-python scripts/run_step1.py --module pmp --mode local
-```
-
-**All 9 modules:**
-```bash
+# All 9 modules
 python scripts/run_step1.py --all-modules --mode local
+
+# Single module
+python scripts/run_step1.py --module pmp --mode local
+
+# Individual steps
+python scripts/parse_rtl.py --module pmp          # Step 1A: extract signals
+python scripts/translate.py  --module pmp          # Steps 1B+1C: assemble prompt + translate
+python scripts/translate.py  --module pmp --pro    # Force Pro model
+python scripts/translate.py  --module pmp --dry-run  # Build prompt only, no API call
 ```
 
-**Individual steps:**
-```bash
-python scripts/parse_rtl.py --module pmp          # Step 1A: parse RTL
-python scripts/translate.py  --module pmp          # Step 1B: translate assertions
-python scripts/translate.py  --module pmp --pro    # Step 1B: use Pro model
-```
-
-**Dry-run (build prompt only, no API call):**
-```bash
-python scripts/translate.py --module pmp --dry-run
-```
-
-### Server mode — Steps 1C + 1D (QuestaSim + JasperGold)
+### Stage 2 — EDA server (QuestaSim + JasperGold)
 
 ```bash
 git pull
@@ -237,17 +214,17 @@ python scripts/run_step1.py --status
 ## Laptop + Server Workflow
 
 ```bash
-# --- LAPTOP (parse + translate, no EDA licences) ---
+# --- LAPTOP (Stage 1 — parse + translate) ---
 python scripts/run_step1.py --all-modules --mode local
-git add assertions/translated/ results/logs/
-git commit -m "Step1 local: all modules translated"
+git add assertions/translated/ results/logs/ prompts/final/
+git commit -m "Stage 1: all modules translated"
 git push
 
-# --- SERVER (QuestaSim + JasperGold) ---
+# --- SERVER (Stage 2 — compile + FPV) ---
 git pull
 python scripts/run_step1.py --all-modules --mode server
 git add results/ errors/
-git commit -m "Step1 server: all modules validated"
+git commit -m "Stage 2: all modules validated"
 git push
 
 # --- LAPTOP (collect results) ---
@@ -257,7 +234,7 @@ python scripts/run_step1.py --status
 
 ---
 
-## Ibex Security Modules
+## Ibex Security Modules (9 total)
 
 | Module | RTL File | Type | Bind File |
 |--------|----------|------|-----------|
@@ -282,37 +259,36 @@ Clock: `clk_i`. Reset: `rst_ni` (active-low).
 ```
 ai-autotrans-rv/
 ├── README.md
-├── requirements.txt                 ← pyverilog, pandas, openai, python-dotenv
-├── .env                             ← NVIDIA_API_KEY (gitignored — never commit)
+├── requirements.txt                 ← openai, python-dotenv
+├── .env                             ← NVIDIA_API_KEY (gitignored)
 │
-├── prompts/                         ← prompt templates
-│   ├── sequential_prompt.txt        ← FIXED sequential SVA template
-│   ├── combinational_prompt.txt     ← FIXED combinational SVA template
+├── prompts/                         ← prompt templates (fixed — edit with advisor approval)
+│   ├── sequential_prompt.txt
+│   ├── combinational_prompt.txt
 │   └── final/                       ← assembled prompts per module (gitignored)
 │
-├── scripts/                         ← Python pipeline scripts
-│   ├── setup_env.py                 ← environment checker (run first)
+├── scripts/
+│   ├── setup_env.py                 ← environment checker
 │   ├── run_step1.py                 ← master orchestrator
-│   ├── parse_rtl.py                 ← 1A: RV-SigEx (regex-based SV parser)
-│   ├── translate.py                 ← 1B: DeepSeek V4-Flash translation
-│   ├── validate_compile.py          ← 1C: QuestaSim compile loop
-│   └── validate_fpv.py              ← 1D: JasperGold FPV baseline
+│   ├── parse_rtl.py                 ← Step 1A: regex SV signal extractor
+│   ├── translate.py                 ← Steps 1B+1C: prompt assembly + DeepSeek translation
+│   ├── validate_compile.py          ← Step 2A: QuestaSim compile loop
+│   ├── validate_fpv.py              ← Step 2B: JasperGold FPV loop
+│   └── ablation_no_rvsigex.py       ← ablation: ungrounded baseline
 │
-├── rtl/
-│   └── ibex/
-│       ├── original/                ← clean Ibex RTL (parser input — never modify)
-│       └── trojaned_rtl/            ← trojaned RTL for assertion testing
-│
-├── assertion_dataset/               ← NS31A source CSV files (one per module)
+├── rtl/ibex/original/               ← clean Ibex RTL (never modify)
+├── assertion_dataset/               ← NS31A CSV files (one per module)
 │
 ├── assertions/
-│   └── translated/                  ← SVA bind files (pipeline output)
+│   ├── translated/                  ← SVA bind files (pipeline output)
+│   ├── fpv/                         ← FPV wrappers (PMP combinational wrapper)
+│   └── backup_working_20May2026/    ← FPV-validated bind files before advisor demo
 │
 ├── results/
-│   ├── signals/                     ← MODULE_signals.json (parser output)
-│   ├── logs/                        ← MODULE_tar_log.json (translation log)
-│   ├── raw/                         ← LLM raw output per module (gitignored)
-│   └── step1/                       ← FPV reports, vacuity, COV files
+│   ├── signals/                     ← <MODULE>_signals.json (parser output)
+│   ├── logs/                        ← <MODULE>_tar_log.json (TAR data)
+│   ├── raw/                         ← LLM raw output (gitignored)
+│   └── step1/                       ← FPV reports, vacuity, state files
 │
 └── errors/
     └── archive/                     ← QuestaSim + JasperGold error logs (NEVER DELETE)
@@ -320,82 +296,52 @@ ai-autotrans-rv/
 
 ---
 
-## Requirements Summary
+## Tool Requirements
 
-| Tool | Purpose | Required for | Install |
-|------|---------|-------------|---------|
-| Python 3.10+ | Pipeline scripts | All steps | python.org |
-| pyverilog | RTL parsing | Step 1A | `pip install pyverilog` |
-| pandas | CSV handling | Step 1B | `pip install pandas` |
-| openai | NVIDIA NIM API client | Step 1B | `pip install openai` |
-| python-dotenv | .env file loading | Step 1B | `pip install python-dotenv` |
-| NVIDIA NIM account | Free API credits | Step 1B | build.nvidia.com |
-| QuestaSim | SVA compilation | Step 1C | EDA server |
-| JasperGold | Formal verification | Step 1D | EDA server |
+| Tool | Purpose | Step |
+|------|---------|------|
+| Python 3.10+ | Pipeline scripts | All |
+| openai | NVIDIA NIM API client | 1B/1C |
+| python-dotenv | .env loading | 1B/1C |
+| NVIDIA NIM account | Free API credits (1000) | 1B/1C |
+| QuestaSim | SVA compilation | 2A |
+| JasperGold | Formal verification | 2B |
 
-**Steps 1A + 1B run entirely on a laptop. No GPU. No paid subscription.**
-
----
-
-## LLM Model Tiers
-
-| Model | ID | Used for |
-|-------|----|---------|
-| DeepSeek V4-Flash | `deepseek-ai/deepseek-v4-flash` | Initial translation only (Step 1B) |
-| DeepSeek V4-Pro | `deepseek-ai/deepseek-v4-pro` | All retries: QuestaSim compile (Step 1C) + JasperGold FPV (Step 1D) |
-
-Both called via NVIDIA NIM (OpenAI-compatible API, `https://integrate.api.nvidia.com/v1`).
-`temperature=0.0`, `seed=42` for reproducibility.
-
----
-
-## RV-SigEx — RISC-V Signal Extractor
-
-`scripts/parse_rtl.py` implements **RV-SigEx**, a regex-based SystemVerilog signal extractor.
-
-**What it extracts:**
-- Port declarations (inputs/outputs) with width and direction
-- Internal signals (logic/wire/reg and typedef'd enum/struct variables)
-- Parameters
-- Package types (typedef enum/struct from ibex_pkg.sv), filtered per module
-- Connectivity (assign statements + always_comb block assignments)
-
-**Validated on Ibex (9 modules):**
-
-| Module | RTL File | Inputs | Outputs | Internals | PkgTypes |
-|--------|----------|--------|---------|-----------|----------|
-| pmp | ibex_pmp.sv | 7 | 1 | 12 | 4 |
-| csr | ibex_cs_registers.sv | 44 | 27 | 109 | 9 |
-| do/eti/cf/mt | ibex_controller.sv | 38 | 27 | 39 | 7 |
-| ma | ibex_load_store_unit.sv | 13 | 18 | 20 | 0 |
-| ie | ibex_id_stage.sv + ibex_ex_block.sv | 64 | 77 | 89 | 15 |
-| ru | ibex_wb_stage.sv | 15 | 15 | 18 | 1 |
-
-Full stats: [`results/signals/parser_stats.txt`](results/signals/parser_stats.txt)
-
-**Reproducibility:** `git diff results/signals/` = empty on every re-run.
-
-**General-purpose usage:**
-```bash
-python scripts/parse_rtl.py --sv-file path/to/any_module.sv
-python scripts/parse_rtl.py --sv-file path/to/any_module.sv --pkg-file path/to/pkg.sv
-```
+**Stage 1 runs entirely on a laptop. No GPU. No EDA licence. No paid subscription.**
 
 ---
 
 ## TAR Metric
 
 ```
-TAR = proven_assertions / total_ns31a_groups × 100   (per module)
+TAR = proven_non_vacuous / total_ns31a_groups × 100   (per module)
 ```
 
-- `proven_assertions` — assertions that pass JasperGold FPV (Proven + non-vacuous),
-  without any manual intervention
-- `total_ns31a_groups` — number of NS31A assertion groups in the source CSV
+- **Auto TAR**: groups proven by automated pipeline (Flash + Pro retries), no human intervention
+- **Final TAR**: Auto TAR + groups proven after targeted manual resolution of JasperGold structural constraints (port scope, free-variable antecedents, timing, Ibex-specific opcodes)
 
-TAR is computed by `validate_fpv.py` and stored in `results/logs/<MODULE>_tar_log.json`.
-The translation step (Step 1B) aims for 100% translation coverage; TAR filters to only
-what is formally verified.
+TAR is computed by `validate_fpv.py` at Step 2B and stored in `results/logs/<MODULE>_tar_log.json`.
+
+---
+
+## Signal Extractor (`parse_rtl.py`)
+
+Regex-based SystemVerilog parser — no EDA tools or parser libraries required.
+
+**Extracts per module:**
+- Port declarations (inputs/outputs) with width and direction
+- Internal signals (`logic`/`wire`/`reg` and typedef'd enum/struct variables)
+- Parameter names
+- Package types (`typedef enum`/`struct` from `ibex_pkg.sv`), filtered to those referenced by the module
+- Signal connectivity (`assign` + `always_comb` assignments)
+
+**General-purpose usage (any SV module):**
+```bash
+python scripts/parse_rtl.py --sv-file path/to/module.sv
+python scripts/parse_rtl.py --sv-file path/to/module.sv --pkg-file path/to/pkg.sv
+```
+
+**Reproducibility:** `git diff results/signals/` is empty on every re-run (deterministic regex).
 
 ---
 
@@ -403,10 +349,9 @@ what is formally verified.
 
 | Paper | Role |
 |-------|------|
-| ISCAS (our group) | Upstream context — cited in §1 |
-| Chuah MEMOCODE 2023 | Source of NS31A assertion corpus |
-| AutoAssert/TrustAssert DATE 2026 | Different problem (generation, not translation) |
-| SecMetric journal paper | Downstream companion — picks up Stages 2-5 |
+| Imtiaz et al., ISCAS 2025 | Our prior work — semi-automated, 5 modules, no FPV gate |
+| Chuah et al., MEMOCODE 2023 | Source of NS31A assertion corpus |
+| SecMetric journal paper | Downstream companion — Stages 2–5 of the broader flow |
 
 ---
 
@@ -415,29 +360,16 @@ what is formally verified.
 Built on the **lowRISC Ibex** RISC-V processor (Apache 2.0).
 NS31A assertion corpus from **Chuah et al., MEMOCODE 2023**.
 Funded by the Estonian Research Council grant **PSG837**.
-
----
-
-## Development Tools
-
-| Tool | Role |
-|------|------|
-| [Claude Code](https://claude.ai/code) (Anthropic) | Pipeline code development, script optimization, bug fixing, and manuscript writing assistance |
-| [NVIDIA NIM](https://build.nvidia.com) | Free developer credits for all DeepSeek V4-Flash and V4-Pro API inference calls |
-
-> This pipeline was developed with the assistance of **Claude Code** (Anthropic) —
-> used for writing and optimizing the Python scripts (`parse_rtl.py`, `translate.py`,
-> `validate_compile.py`, `validate_fpv.py`, `run_step1.py`), debugging, and improving
-> the paper text. All LLM inference during the research runs was served via
-> **NVIDIA NIM** free developer credits at [build.nvidia.com](https://build.nvidia.com).
+LLM inference via **NVIDIA NIM** free developer credits.
+Pipeline development assisted by **Claude Code** (Anthropic).
 
 ---
 
 ## Citation
 
 ```bibtex
-@inproceedings{imtiaz2026bec,
-  title     = {{AI}-{AutoTrans}: {AI}-Assisted Automatic Translation of
+@inproceedings{imtiaz2026autotrans,
+  title     = {{AutoTrans}: {AI}-Assisted Automatic Translation of
                Security Assertions for {RISC-V} Processors},
   author    = {Imtiaz, Sharjeel and Reinsalu, Uljana and Ghasempouri, Tara},
   booktitle = {Baltic Electronic Conference (BEC)},
